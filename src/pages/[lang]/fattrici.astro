@@ -1,0 +1,315 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { useTranslations } from '../../i18n/utils';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  return [
+    { params: { lang: 'it' } },
+    { params: { lang: 'en' } },
+  ];
+}
+
+const { lang } = Astro.params;
+const t = useTranslations(lang);
+const isEn = lang === 'en';
+const langPrefix = '/' + lang;
+
+// Recupero tutte le fattrici
+const allFattriciRaw = await getCollection('fattrici');
+const allFattrici = allFattriciRaw.filter(f => !f.id.startsWith('_'));
+
+// Ordina per nome
+allFattrici.sort((a, b) => a.data.name.localeCompare(b.data.name));
+
+// Helper: determina badge (Stesso stile stalloni)
+function getBadges(tags, customBadge) {
+  if (customBadge) {
+    return customBadge.split('·').map(part => {
+      const label = part.trim();
+      const lower = label.toLowerCase();
+      let type = 'mds'; // default
+      if (lower.includes('hall of fame')) type = 'hof';
+      return { type, label };
+    });
+  }
+
+  const b = [];
+  if (tags.includes('hall-of-fame')) {
+    b.push({ type: 'hof', label: 'Hall of Fame' });
+  }
+  if (tags.includes('million-dollar-dam')) {
+    b.push({ type: 'mds', label: 'Million Dollar Dam' });
+  }
+  return b;
+}
+---
+
+<Layout 
+  title={isEn ? "The World's Best Dams | Reining Factory" : "Le Grandi Fattrici — Hall of Fame | Reining Factory"}
+  description={isEn ? "The mares that wrote reining history. Pedigrees, earnings, and offspring of the greatest legends." : "Le fattrici che hanno scritto la storia del reining. Pedigree, vincite e la prole delle più grandi leggende mondiali."}
+>
+
+  <!-- HERO -->
+  <section class="db-hero">
+    <div class="db-hero-bg"></div>
+    <div class="db-hero-content">
+      <p class="db-eyebrow">{t('fattrici.db')}</p>
+      <h1 class="db-title">
+        <span>{isEn ? "Leading" : "Le Grandi"} <em>{isEn ? "Mares" : "Fattrici"}</em></span>
+      </h1>
+      <p class="db-subtitle">
+        {isEn 
+          ? "A tribute to the mares that defined reining history through their achievements and their legendary offspring." 
+          : "Un tributo alle fattrici che hanno definito la storia del reining attraverso i loro successi e la loro leggendaria prole."}
+      </p>
+    </div>
+  </section>
+
+  <div class="db-results-bar" style="max-width: 1400px; margin: 2rem auto 0;">
+    <span class="db-results-count">{allFattrici.length} {isEn ? "Mares" : "Fattrici"}</span>
+    <div class="db-view-toggle">
+      <button class="db-view-btn active" data-view="grid" title="Grid View">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+      </button>
+      <button class="db-view-btn" data-view="list" title="List View">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- GRIGLIA (Identica a Stalloni, senza filtri) -->
+  <div class="db-grid-wrap" style="padding-top: 1rem;">
+    <div class="db-grid" id="fattriciGrid">
+      {allFattrici.map((f, index) => {
+        const h = f.data;
+        const badges = getBadges(h.tags || [], isEn ? h.badge_en : h.badge);
+        return (
+          <a
+            href={`${langPrefix}/fattrici/${f.id}`}
+            class="db-card"
+            style={`animation-delay: ${(index % 20) * 0.04}s`}
+          >
+            <div class="db-card-media">
+              {(h.cardImage || h.mainImage)
+                ? <img src={h.cardImage || h.mainImage} alt={h.name} loading="lazy" />
+                : <div class="db-card-placeholder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>
+              }
+              <div class="db-badges-container">
+                {(() => {
+                  const bCard = isEn ? h.badge_en : h.badge;
+                  const tags = h.tags || [];
+                  const combined = [];
+                  
+                  if (bCard) {
+                    combined.push(...bCard.split('·').map(s => s.trim()));
+                  }
+                  
+                  combined.push(...tags);
+
+                  const badges = [];
+                  let hasMds = false;
+                  let hasHof = false;
+
+                  for (const t of combined) {
+                    const low = t.toLowerCase();
+                    if (!hasMds && low.includes('million dollar')) {
+                      badges.push({ type: 'mds', label: t.toUpperCase() });
+                      hasMds = true;
+                    }
+                    if (!hasHof && low.includes('hall of fame')) {
+                      badges.push({ type: 'hof', label: t.toUpperCase() });
+                      hasHof = true;
+                    }
+                  }
+
+                  return badges.map(badge => (
+                    <div class={`db-badge db-badge-${badge.type}`}>{badge.label}</div>
+                  ));
+                })()}
+              </div>
+              {h.origine && (
+                <div class={`db-origin-tag db-origin-${h.origine.toLowerCase()}`}>
+                  {h.origine}
+                </div>
+              )}
+            </div>
+            <div class="db-card-body">
+              <h3 class="db-card-name">{h.name}</h3>
+              {(h.pedigree?.sire || h.pedigree?.dam) && (
+                <p class="db-card-pedigree">
+                  {h.pedigree?.sire && <span class="db-ped-sire">{h.pedigree.sire}</span>}
+                  {h.pedigree?.sire && h.pedigree?.dam && <span class="db-ped-sep"> × </span>}
+                  {h.pedigree?.dam && <span class="db-ped-dam">{h.pedigree.dam}</span>}
+                </p>
+              )}
+              <div class="db-card-footer">
+                {h.yearOfBirth && (
+                  <div class="db-card-stat">
+                    <span class="db-stat-label">{isEn ? 'Born' : 'Anno'}</span>
+                    <span class="db-stat-value">{h.yearOfBirth}</span>
+                  </div>
+                )}
+                {h.stats?.earnings && (
+                  <div class="db-card-stat">
+                    <span class="db-stat-label">LTE</span>
+                    <span class="db-stat-value db-stat-gold">{h.stats.earnings}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </a>
+        );
+      })}
+    </div>
+  </div>
+
+<script is:inline>
+  const viewBtns = document.querySelectorAll('.db-view-btn');
+  const grid = document.getElementById('fattriciGrid');
+  const savedView = localStorage.getItem('stalloniViewPref') || 'grid'; // Usa la stessa preferenza
+  
+  if (savedView === 'list') {
+    grid.classList.add('view-list');
+    document.querySelector('.db-view-btn[data-view="list"]').classList.add('active');
+    document.querySelector('.db-view-btn[data-view="grid"]').classList.remove('active');
+  }
+
+  viewBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      viewBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      if (btn.dataset.view === 'list') {
+        grid.classList.add('view-list');
+        localStorage.setItem('stalloniViewPref', 'list');
+      } else {
+        grid.classList.remove('view-list');
+        localStorage.setItem('stalloniViewPref', 'grid');
+      }
+    });
+  });
+</script>
+
+<style is:global>
+  :root {
+    --db-gold: #C8973A; 
+    --db-gold-lt: #E8C068; 
+    --db-dark: #0D0B04; 
+    --db-dark2: #1A1610; 
+    --db-dark3: #221A0A; 
+    --db-warm-gray: #9A9188; 
+    --db-border: rgba(200,151,58,0.18); 
+    --db-cream: #F5F0E8;
+  }
+
+  /* HERO (Copia esatta Stalloni) */
+  .db-hero { 
+    position: relative; 
+    min-height: 60vh; 
+    display: flex; 
+    align-items: flex-start; 
+    overflow: hidden; 
+    background: #0d0b04; /* Fallback solido */
+    z-index: 10;
+  }
+  .db-hero-bg { 
+    position: absolute; 
+    inset: 0; 
+    z-index: 1;
+    background: linear-gradient(135deg, rgba(13,11,4,0.88) 40%, rgba(107,76,42,0.35) 100%), url('/immagini/fattrici-hero.jpg') center/cover no-repeat; 
+  }
+  .db-hero-bg::after { 
+    content: ''; 
+    position: absolute; 
+    inset: 0; 
+    background: radial-gradient(ellipse at 70% 50%, rgba(200,151,58,0.07) 0%, transparent 70%); 
+  }
+  .db-hero-content { 
+    position: relative; 
+    z-index: 5; 
+    padding: 150px 4rem 3rem; 
+    max-width: 900px; 
+  }
+  .db-eyebrow { font-family: 'Barlow Condensed', sans-serif; font-size: 0.8rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--db-gold); margin-bottom: 1.5rem; }
+  .db-title { font-family: 'Playfair Display', serif; font-size: clamp(2.5rem, 6vw, 5rem); font-weight: 900; line-height: 0.95; color: var(--db-cream); margin-bottom: 1.2rem; }
+  .db-title em { font-style: italic; color: var(--db-gold); display: block; }
+  .db-subtitle { font-size: 1.1rem; font-weight: 300; color: rgba(245,240,232,0.7); max-width: 600px; line-height: 1.75; }
+
+  /* GRID (Copia esatta Stalloni) */
+  .db-grid-wrap { padding: 3rem 2rem 6rem; background: var(--db-dark); min-height: 40vh; }
+  .db-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; max-width: 1400px; margin: 0 auto; }
+
+  /* VIEW TOGGLE */
+  .db-results-bar { padding: 0.5rem 1.8rem 0.8rem; display: flex; justify-content: space-between; align-items: center; }
+  .db-results-count { font-family: 'Barlow Condensed', sans-serif; font-size: 0.68rem; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(154,145,136,0.6); }
+  .db-view-toggle { display: flex; gap: 0.4rem; }
+  .db-view-btn { background: transparent; border: 1px solid transparent; color: rgba(245,240,232,0.3); padding: 0.35rem; border-radius: 4px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+  .db-view-btn svg { width: 16px; height: 16px; }
+  .db-view-btn:hover { color: var(--db-gold); }
+  .db-view-btn.active { color: var(--db-gold); border-color: rgba(200,151,58,0.3); background: rgba(200,151,58,0.05); }
+
+  /* CARD (Copia esatta Stalloni) */
+  .db-card { display: flex; flex-direction: column; background: var(--db-dark2); border: 1px solid rgba(200,151,58,0.1); text-decoration: none; color: inherit; transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s; opacity: 0; animation: dbCardIn 0.5s ease forwards; cursor: pointer; }
+  .db-card:hover { border-color: var(--db-gold); transform: translateY(-4px); box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 0 1px rgba(200,151,58,0.2); }
+  .db-card-media { position: relative; aspect-ratio: 4 / 5; overflow: hidden; background: var(--db-dark3); }
+  .db-card-media img { width: 100%; height: 100%; object-fit: cover; filter: saturate(0.85); transition: transform 0.5s ease, filter 0.3s ease; }
+  .db-card:hover .db-card-media img { transform: scale(1.08); filter: saturate(1); }
+  
+  /* BADGES (Copia esatta Stalloni) */
+  .db-badges-container { position: absolute; top: 0.75rem; left: 0.75rem; display: flex; flex-direction: column; gap: 0.5rem; z-index: 5; }
+  .db-badge { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.35rem 0.7rem; font-family: 'Barlow Condensed', sans-serif; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; border-radius: 2px; backdrop-filter: blur(8px); width: fit-content; position: relative; }
+  .db-badge-hof { background: rgba(200,151,58,0.9); color: #0D0B04; }
+  .db-badge-mds { background: rgba(13,11,4,0.85); color: var(--db-gold-lt); border: 1px solid rgba(200,151,58,0.5); }
+  
+  /* ORIGIN (Copia esatta Stalloni - Posizione in basso a destra) */
+  .db-origin-tag { position: absolute; bottom: 0.6rem; right: 0.6rem; font-family: 'Barlow Condensed', sans-serif; font-size: 0.58rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; padding: 0.2rem 0.5rem; backdrop-filter: blur(6px); border-radius: 2px; }
+  .db-origin-tag.db-origin-usa { background: rgba(160,180,212,0.2); color: #a0b4d4; border: 1px solid rgba(160,180,212,0.3); }
+  .db-origin-tag.db-origin-eu { background: rgba(154,145,136,0.2); color: #d4b896; border: 1px solid rgba(212,184,150,0.3); }
+
+  .db-card-body { padding: 0.8rem 1.1rem 1.1rem; display: flex; flex-direction: column; gap: 0.2rem; flex: 1; }
+  .db-card-name { font-family: 'Bebas Neue', sans-serif; font-size: clamp(1.4rem, 1.8vw, 1.8rem); font-weight: 400; color: var(--db-cream); line-height: 0.95; min-height: 2em; display: flex; align-items: flex-start; text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 0.1rem; }
+  .db-card-pedigree { font-family: 'Barlow Condensed', sans-serif; font-size: 0.72rem; letter-spacing: 0.05em; color: rgba(154,145,136,0.7); line-height: 1.4; }
+  .db-ped-sire { color: rgba(200,151,58,0.7); }
+  .db-ped-sep { color: rgba(154,145,136,0.4); margin: 0 1px; }
+  .db-ped-dam { color: rgba(154,145,136,0.6); }
+  .db-card-footer { display: flex; gap: 1.2rem; margin-top: auto; padding-top: 0.6rem; border-top: 1px solid rgba(200,151,58,0.08); }
+  .db-card-stat { display: flex; flex-direction: column; gap: 1px; }
+  .db-stat-label { font-family: 'Barlow Condensed', sans-serif; font-size: 0.62rem; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(154,145,136,0.6); }
+  .db-stat-value { font-family: 'Barlow Condensed', sans-serif; font-size: 0.95rem; font-weight: 600; letter-spacing: 0.04em; color: var(--db-cream); }
+  .db-stat-gold { color: var(--db-gold); }
+
+  @keyframes dbCardIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* LIST VIEW MODIFIERS */
+  .db-grid.view-list { grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+  .db-grid.view-list .db-card { flex-direction: row; align-items: center; padding: 0.8rem; gap: 1rem; min-height: 85px; }
+  .db-grid.view-list .db-card-media { width: 64px; height: 64px; flex-shrink: 0; border-radius: 50%; border: 1px solid rgba(200,151,58,0.2); }
+  .db-grid.view-list .db-badges-container,
+  .db-grid.view-list .db-origin-tag { display: none; }
+  .db-grid.view-list .db-card-body { padding: 0; gap: 0.2rem; }
+  .db-grid.view-list .db-card-name { font-size: 1.3rem; min-height: auto; margin: 0; display: block; }
+  .db-grid.view-list .db-card-pedigree { font-size: 0.65rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+  .db-grid.view-list .db-card-footer { border: none; padding-top: 0; margin-top: 0; display: flex; align-items: center; gap: 0.8rem; }
+  .db-grid.view-list .db-card-stat { flex-direction: row; gap: 0.3rem; align-items: baseline; }
+  .db-grid.view-list .db-stat-label { font-size: 0.55rem; }
+  .db-grid.view-list .db-stat-value { font-size: 0.85rem; }
+
+  @media (max-width: 1280px) { .db-grid { grid-template-columns: repeat(3, 1fr); } .db-grid.view-list { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 1024px) { .db-hero-content { padding: 150px 2rem 2.5rem; } .db-grid-wrap { padding: 2.5rem 1rem 5rem; } .db-results-bar { padding: 0.5rem 1rem 0.8rem; margin: 1rem 0.75rem 0; } }
+  @media (max-width: 768px) { 
+    .db-hero { min-height: 60vh; } 
+    .db-hero-content { padding: 140px 1.5rem 1rem; }
+    .db-grid-wrap { padding: 2rem 0.75rem 4rem; }
+    .db-grid { grid-template-columns: repeat(2, 1fr); gap: 0.8rem; } 
+    
+    /* LIST VIEW MOBILE */
+    .db-grid.view-list { grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
+    .db-grid.view-list .db-card { padding: 0.5rem; gap: 0.6rem; min-height: 60px; flex-direction: row; align-items: center; }
+    .db-grid.view-list .db-card-media { width: 42px; height: 42px; }
+    .db-grid.view-list .db-card-name { font-size: 0.95rem; text-align: left; }
+    .db-grid.view-list .db-card-pedigree { display: none; }
+    .db-grid.view-list .db-card-footer { display: none; }
+  }
+  @media (max-width: 480px) { .db-grid { grid-template-columns: 1fr; } .db-grid.view-list { grid-template-columns: 1fr; } .db-card-name { font-size: 1.1rem; } }
+</style>
+</Layout>

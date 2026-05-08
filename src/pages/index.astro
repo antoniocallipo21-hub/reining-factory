@@ -1,11 +1,18 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
-
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+// Auto-detect browser language and redirect
+// Defaults to English for non-Italian users
+export const partial = true;
 ---
-
-<Layout>
-	<Welcome />
-</Layout>
+<script>
+  (function() {
+    var lang = navigator.language || navigator.userLanguage;
+    if (lang && lang.toLowerCase().startsWith('it')) {
+      window.location.replace('/it/');
+    } else {
+      window.location.replace('/en/');
+    }
+  })();
+</script>
+<noscript>
+  <meta http-equiv="refresh" content="0;url=/en/" />
+</noscript>

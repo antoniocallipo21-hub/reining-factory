@@ -1,0 +1,233 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { useTranslations } from '../../i18n/utils';
+import { getCollection } from 'astro:content';
+import hofData from '../../data/hof.json';
+
+export async function getStaticPaths() {
+  return [
+    { params: { lang: 'it' } },
+    { params: { lang: 'en' } },
+  ];
+}
+
+const { lang } = Astro.params;
+const t = useTranslations(lang);
+const isEn = lang === 'en';
+const langPrefix = '/' + lang;
+
+// Configuration
+const CATEGORIES = ['horses', 'people', 'lifetime'];
+const TITOLI = {
+  horses:   isEn ? 'NRHA Hall of Fame — <em>Horses</em>' : 'NRHA Hall of Fame — <em>Cavalli</em>',
+  people:   isEn ? 'NRHA Hall of Fame — <em>People</em>' : 'NRHA Hall of Fame — <em>Persone</em>',
+  lifetime: isEn ? 'NRHA Hall of Fame — <em>Lifetime Achievement</em>' : 'NRHA Hall of Fame — <em>Lifetime Achievement</em>',
+};
+
+// Data Processing
+const allStallions = await getCollection('stalloni');
+const stallionMap = new Map();
+allStallions.forEach(s => {
+  if (s.data.name) {
+    stallionMap.set(s.data.name.toLowerCase().trim(), s.id);
+  }
+  if (s.data.nickname) {
+    stallionMap.set(s.data.nickname.toLowerCase().trim(), s.id);
+  }
+});
+
+const processedData = {};
+CATEGORIES.forEach(cat => {
+  const catRows = hofData.filter(r => (r.Categoria || '').trim().toLowerCase() === cat);
+  const groupedByYear = {};
+  
+  catRows.forEach(r => {
+    const year = (r.Anno || '').trim();
+    if (!year) return;
+    if (!groupedByYear[year]) groupedByYear[year] = [];
+
+    // Auto-link horse names if they exist in our DB (prioritize internal link)
+    const lowerName = (r.Nome || '').toLowerCase().trim();
+    let link = (r.Link || '').trim();
+    if (cat === 'horses' && stallionMap.has(lowerName)) {
+      link = `/stalloni/${stallionMap.get(lowerName)}`;
+    }
+
+    groupedByYear[year].push({ ...r, Link: link });
+  });
+  
+  const sortedYears = Object.keys(groupedByYear).sort((a, b) => parseInt(b) - parseInt(a));
+  processedData[cat] = {
+    title: TITOLI[cat],
+    years: sortedYears,
+    groups: groupedByYear
+  };
+});
+
+---
+
+<Layout title={isEn ? "NRHA Hall of Fame | Reining Factory" : "NRHA Hall of Fame | Reining Factory"}>
+
+  <style>
+    /* PAGE HERO */
+    .page-hero { min-height: 60vh; position: relative; display: flex; align-items: flex-start; overflow: hidden; background: linear-gradient(to bottom, rgba(26,20,8,0.5) 0%, rgba(26,20,8,0.95) 100%), url('/immagini/hof-hero.jpg') center/cover no-repeat; }
+    .page-hero-content { position: relative; z-index: 2; padding: 150px 4rem 3rem; max-width: 900px; }
+    .page-hero-eyebrow { font-family: 'Barlow Condensed', sans-serif; font-size: 0.8rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); margin-bottom: 1.5rem; }
+    .page-hero-title { font-family: 'Playfair Display', serif; font-size: clamp(2.5rem, 6vw, 5rem); font-weight: 900; line-height: 0.95; margin-bottom: 1.2rem; }
+    .page-hero-title em { font-style: italic; color: var(--gold); display: block; }
+    .page-hero-subtitle { font-size: 1.1rem; font-weight: 300; color: rgba(245,240,232,0.7); max-width: 600px; line-height: 1.75; }
+
+    /* CONTENT */
+    .content-wrap { max-width: 1100px; margin: 0 auto; padding: 4rem; }
+
+    /* LINK UTILI */
+    .link-utili { background: rgba(201,150,58,0.06); border: 1px solid var(--border); border-left: 4px solid var(--gold); padding: 1.2rem 2rem; margin-bottom: 3rem; display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; }
+    .link-utili-label { font-family: 'Barlow Condensed', sans-serif; font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-right: 0.5rem; flex-shrink: 0; }
+    .link-utili a { font-family: 'Barlow Condensed', sans-serif; font-size: 0.78rem; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(245,240,232,0.6); text-decoration: none; border: 1px solid rgba(201,150,58,0.2); padding: 0.45rem 1.2rem; transition: all 0.2s; white-space: nowrap; display: flex; align-items: center; gap: 0.5rem; }
+    .link-utili a:hover { color: var(--gold); border-color: var(--gold); background: rgba(201,150,58,0.05); }
+
+    /* TABS */
+    .tabs-wrap { margin-bottom: 2.5rem; }
+    .tabs-label { font-family: 'Barlow Condensed', sans-serif; font-size: 0.72rem; letter-spacing: 0.25em; text-transform: uppercase; color: rgba(245,240,232,0.4); margin-bottom: 0.8rem; }
+    .tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tab-btn { font-family: 'Barlow Condensed', sans-serif; font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; background: transparent; border: 1px solid rgba(201,150,58,0.2); color: rgba(245,240,232,0.5); padding: 0.5rem 1.1rem; cursor: pointer; transition: all 0.2s; }
+    .tab-btn:hover { border-color: rgba(201,150,58,0.5); color: var(--cream); }
+    .tab-btn.active { background: var(--gold); color: var(--dark); border-color: var(--gold); font-weight: 700; }
+
+    /* PANELS */
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; animation: fadeIn 0.4s ease; }
+
+    /* PANEL TITLE */
+    .panel-title { font-family: 'Playfair Display', serif; font-size: clamp(1.5rem, 4vw, 2.2rem); font-weight: 700; color: var(--cream); margin: 0 0 1.5rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--border); }
+    .panel-title :global(em) { font-style: italic; color: var(--gold); }
+
+    /* FASCIA ANNO */
+    .fascia { font-family: 'Barlow Condensed', sans-serif; font-size: 0.72rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); padding: 0.6rem 0; border-bottom: 1px solid var(--border); margin: 2rem 0 0.8rem; }
+
+    /* GRIGLIA NOMI */
+    .hof-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: var(--border); margin-bottom: 0.5rem; border: 1px solid var(--border); }
+    .hof-item { background: var(--card); padding: 0.9rem 1.4rem; font-family: 'Barlow Condensed', sans-serif; font-size: 0.95rem; letter-spacing: 0.04em; color: rgba(245,240,232,0.7); text-decoration: none; transition: all 0.2s; display: flex; align-items: center; }
+    .hof-item span { border-bottom: 1px solid rgba(201,150,58,0.25); padding-bottom: 2px; transition: all 0.2s; }
+    .hof-item:hover { background: rgba(201,150,58,0.08); color: var(--cream); padding-left: 1.8rem; }
+    .hof-item:hover span { border-bottom-color: var(--gold); color: var(--gold-light); }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* RESPONSIVE */
+    @media (max-width: 1024px) {
+      .page-hero-content { padding: 150px 2rem 3rem 2rem; }
+      .content-wrap { padding: 3rem 2rem; }
+    }
+    @media (max-width: 768px) {
+      .page-hero { min-height: 60vh; }
+      .page-hero-content { padding: 140px 1.5rem 1rem; }
+      .page-hero-subtitle { font-size: 0.95rem; }
+      .content-wrap { padding: 2.5rem 1.5rem; }
+      .hof-grid { grid-template-columns: 1fr; }
+      .link-utili { padding: 1rem 1.5rem; margin-bottom: 2rem; }
+    }
+  </style>
+
+  <!-- HERO -->
+  <div class="page-hero">
+    <div class="page-hero-content">
+      <p class="page-hero-eyebrow">{t('hof.hero_eyebrow')}</p>
+      <h1 class="page-hero-title">{t('hof.hero_title')} <em>{t('hof.hero_title_em')}</em></h1>
+      <p class="page-hero-subtitle">{t('hof.hero_sub')}</p>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content-wrap">
+
+    <!-- LINK UFFICIALE -->
+    <div class="link-utili reveal">
+      <span class="link-utili-label">{t('hof.source_label')}</span>
+      <a href="https://nrha.com/hall-fame/" target="_blank" rel="noopener" style="margin-left:auto;">
+        {t('hof.source_link')}
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+      </a>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs-wrap reveal">
+      <div class="tabs-label">{t('hof.tabs_label')}</div>
+      <div class="tabs" id="tabsContainer">
+        {CATEGORIES.map((cat, idx) => (
+          <button class={`tab-btn ${idx === 0 ? 'active' : ''}`} data-tab={cat}>
+            {t(`hof.tab.${cat}`)}
+          </button>
+        ))}
+      </div>
+    </div>
+
+    <!-- PANELS -->
+    <div id="panelsContainer" class="reveal">
+      {CATEGORIES.map((cat, idx) => {
+        const data = processedData[cat];
+        return (
+          <div class={`tab-panel ${idx === 0 ? 'active' : ''}`} id={`panel-${cat}`}>
+            <h2 class="panel-title" set:html={data.title} />
+
+            {data.years.length === 0 ? (
+              <p class="ev-empty">{t('hof.empty')}</p>
+            ) : (
+              data.years.map(year => (
+                <div class="year-block">
+                  <div class="fascia">{year}</div>
+                  <div class="hof-grid">
+                    {data.groups[year].map(item => (
+                      item.Link ? (
+                        <a href={item.Link.startsWith('http') ? item.Link : langPrefix + item.Link} class="hof-item">
+                          <span>{item.Nome}</span>
+                        </a>
+                      ) : (
+                        <div class="hof-item">{item.Nome}</div>
+                      )
+                    ))}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        );
+      })}
+    </div>
+
+  </div>
+
+  <script is:inline>
+    document.addEventListener('astro:page-load', () => {
+      function activateTab(cat) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.getAttribute('data-tab') === cat));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + cat));
+        
+        const offsetTarget = document.getElementById('panelsContainer');
+        if (offsetTarget) {
+          const top = offsetTarget.getBoundingClientRect().top + window.scrollY - 160;
+          window.scrollTo({top: top, behavior: 'smooth'});
+        }
+      }
+
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const cat = e.currentTarget.getAttribute('data-tab');
+          activateTab(cat);
+        });
+      });
+
+      // Simple reveal observer
+      const obs = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+          if(e.isIntersecting) {
+            e.target.classList.add('visible');
+            obs.unobserve(e.target);
+          }
+        });
+      }, {threshold: 0.1});
+      document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+    });
+  </script>
+
+</Layout>

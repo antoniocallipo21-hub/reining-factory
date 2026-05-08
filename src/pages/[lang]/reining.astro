@@ -1,0 +1,933 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { useTranslations } from '../../i18n/utils';
+
+export async function getStaticPaths() {
+  return [
+    { params: { lang: 'it' } },
+    { params: { lang: 'en' } },
+  ];
+}
+
+const { lang } = Astro.params;
+const t = useTranslations(lang);
+const isEn = lang === 'en';
+---
+
+<style is:global>
+  .reining-page-root {
+    background: var(--dark, #1a1408);
+    color: var(--cream, #f5f0e8);
+    font-family: 'Barlow', sans-serif;
+    font-weight: 300;
+  }
+
+  /* Offset per navbar fissa + subnav */
+  .reining-page-root [id] { scroll-margin-top: 260px; }
+
+  /* PAGE HERO (Allineata a db-hero) */
+  .reining-page-root .page-hero { position: relative; min-height: 60vh; display: flex; align-items: flex-start; overflow: hidden; background-color: var(--dark); }
+  .reining-page-root .page-hero-bg { position: absolute; inset: 0; z-index: 1; background: linear-gradient(135deg, rgba(13,11,4,0.88) 40%, rgba(107,76,42,0.35) 100%), url('/immagini/reining-hero.jpg') center/cover no-repeat; }
+  .reining-page-root .page-hero-bg::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 70% 50%, rgba(200,151,58,0.07) 0%, transparent 70%); }
+  .reining-page-root .page-hero-content { position: relative; z-index: 2; padding: 150px 4rem 3rem; max-width: 900px; }
+  .reining-page-root .page-hero-eyebrow { font-family: 'Barlow Condensed', sans-serif; font-size: 0.8rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); margin-bottom: 1.5rem; }
+  .reining-page-root .page-hero-title { font-family: 'Playfair Display', serif; font-size: clamp(2.5rem, 6vw, 5rem); font-weight: 900; line-height: 0.95; color: var(--cream); margin-bottom: 1.2rem; }
+  .reining-page-root .page-hero-title em { font-style: italic; color: var(--gold); display: block; }
+  .reining-page-root .page-hero-subtitle { font-size: 1rem; font-weight: 300; color: rgba(245,240,232,0.65); max-width: 600px; line-height: 1.75; }
+
+  /* STICKY SUBNAV */
+  .reining-page-root .subnav {
+    position: -webkit-sticky;
+    position: sticky;
+    top: 142px;
+    z-index: 900;
+    margin: 0.8rem 4rem 0;
+    border-radius: 6px;
+    
+    /* Stile scuro richiesto */
+    background: rgba(26,22,10,0.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(201,150,58,0.18);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    
+    /* Layout dello screenshot */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 4rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .reining-page-root .subnav::-webkit-scrollbar { display: none; }
+  .reining-page-root .subnav a {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(245,240,232,0.6);
+    text-decoration: none;
+    padding: 0.5rem 0.5rem;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    transition: all 0.3s;
+    font-weight: 600;
+  }
+  .reining-page-root .subnav a:hover,
+  .reining-page-root .subnav a.active {
+    color: var(--gold);
+    border-bottom-color: var(--gold);
+    font-weight: 600;
+  }
+
+  /* CONTENT LAYOUT */
+  .reining-page-root .content-wrap { max-width: 1100px; margin: 0 auto; padding: 5rem 4rem; }
+
+  /* SECTION DIVIDER */
+  .reining-page-root .guide-section { margin-bottom: 6rem; }
+  .reining-page-root .guide-section-header {
+    display: flex; align-items: center; gap: 1.5rem;
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .reining-page-root .guide-section-num {
+    font-family:'Playfair Display',serif;
+    font-size:4rem;font-weight:900;
+    color:rgba(201,150,58,0.12);
+    line-height:1;flex-shrink:0;
+  }
+  .reining-page-root .guide-section-title { font-family:'Playfair Display',serif;font-size:2rem;font-weight:700; color:var(--cream);}
+  .reining-page-root .guide-section-title em { font-style:italic;color:var(--gold); }
+
+  /* TYPOGRAPHY */
+  .reining-page-root .guide-section p {
+    color:rgba(245,240,232,0.7);line-height:1.9;
+    margin-bottom:1.4rem;font-size:1rem;
+  }
+  .reining-page-root .guide-section h3 {
+    font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;
+    margin:2.5rem 0 1rem;color:var(--cream);
+  }
+  .reining-page-root .guide-section h4 {
+    font-family:'Barlow Condensed',sans-serif;font-size:0.9rem;
+    letter-spacing:0.12em;text-transform:uppercase;
+    color:var(--gold);margin:1.8rem 0 0.8rem;
+  }
+  .reining-page-root .guide-section ul, 
+  .reining-page-root .guide-section ol {
+    margin-left:1.5rem;margin-bottom:1.4rem;
+  }
+  .reining-page-root .guide-section li {
+    color:rgba(245,240,232,0.65);line-height:1.8;margin-bottom:0.4rem;font-size:0.97rem;
+  }
+  .reining-page-root .guide-section strong { color:var(--cream);font-weight:600; }
+
+  /* HIGHLIGHT BOX */
+  .reining-page-root .hl-box {
+    border-left: 3px solid var(--gold);
+    background: rgba(201,150,58,0.06);
+    padding: 1.5rem 1.8rem;
+    margin: 2rem 0;
+  }
+  .reining-page-root .hl-box p { margin-bottom:0.5rem; }
+  .reining-page-root .hl-box p:last-child { margin-bottom:0; }
+
+  /* CARDS GRID */
+  .reining-page-root .cards-2 { display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);margin:1.5rem 0; }
+  .reining-page-root .cards-3 { display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);margin:1.5rem 0; }
+  .reining-page-root .g-card {
+    background:var(--dark);padding:1.8rem;
+    transition:background 0.3s;
+  }
+  .reining-page-root .g-card:hover { background:var(--card); }
+  .reining-page-root .g-card h4 { font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--cream);margin-bottom:0.5rem;text-transform:none;letter-spacing:0; }
+  .reining-page-root .g-card p { font-size:0.88rem;color:rgba(245,240,232,0.55);margin-bottom:0.5rem; }
+  .reining-page-root .g-card ul { margin-left:1rem; }
+  .reining-page-root .g-card li { font-size:0.85rem; }
+  .reining-page-root .badge {
+    display:inline-block;margin-top:0.5rem;
+    padding:0.2rem 0.6rem;
+    background:rgba(201,150,58,0.08);
+    border:1px solid rgba(201,150,58,0.25);
+    font-family:'Barlow Condensed',sans-serif;
+    font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);
+  }
+
+  /* MANOVRE */
+  .reining-page-root .manovra {
+    border:1px solid var(--border);
+    padding:1.5rem 1.8rem;
+    margin:1rem 0;
+    position:relative;
+    transition:border-color 0.3s;
+  }
+  .reining-page-root .manovra:hover { border-color:rgba(201,150,58,0.4); }
+  .reining-page-root .manovra h4 {
+    font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;
+    color:var(--cream);margin:0 0 0.7rem;text-transform:none;letter-spacing:0;
+  }
+  .reining-page-root .manovra p { font-size:0.95rem;color:rgba(245,240,232,0.65);margin:0;line-height:1.75; }
+  .reining-page-root .manovra-num {
+    position:absolute;top:1rem;right:1.2rem;
+    font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;
+    color:rgba(201,150,58,0.1);
+  }
+
+  /* TABLES */
+  .reining-page-root .table-wrap { overflow-x:auto;margin:1.5rem 0; }
+  .reining-page-root table { width:100%;border-collapse:collapse; }
+  .reining-page-root thead tr { background:rgba(201,150,58,0.12); }
+  .reining-page-root th {
+    font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;
+    letter-spacing:0.12em;text-transform:uppercase;
+    color:var(--gold);padding:0.9rem 1rem;text-align:left;
+    border-bottom:1px solid var(--border);
+  }
+  .reining-page-root td {
+    padding:0.85rem 1rem;font-size:0.9rem;
+    color:rgba(245,240,232,0.65);
+    border-bottom:1px solid rgba(201,150,58,0.06);
+  }
+  .reining-page-root tr:hover td { background:rgba(201,150,58,0.03); }
+  .reining-page-root .penalty-ns td { background:rgba(220,50,50,0.08); }
+  .reining-page-root .penalty-zero td { background:rgba(220,80,50,0.06); }
+  .reining-page-root .penalty-5 td { background:rgba(220,120,30,0.07); }
+  .reining-page-root .penalty-2 td { background:rgba(220,150,30,0.05); }
+  .reining-page-root .penalty-1 td { background:rgba(220,180,50,0.04); }
+  .reining-page-root .penalty-half td { background:rgba(220,200,80,0.03); }
+  .reining-page-root .table-section-header td {
+    font-family:'Barlow Condensed',sans-serif;font-size:0.8rem;
+    letter-spacing:0.15em;text-transform:uppercase;
+    text-align:center;font-weight:700;padding:0.7rem;
+  }
+  .reining-page-root .header-ns { background:rgba(200,40,40,0.25)!important;color:#ff8080!important; }
+  .reining-page-root .header-zero { background:rgba(200,70,40,0.2)!important;color:#ff9970!important; }
+  .reining-page-root .header-5 { background:rgba(200,120,20,0.2)!important;color:#ffb060!important; }
+  .reining-page-root .header-2 { background:rgba(200,150,20,0.15)!important;color:#ffc870!important; }
+  .reining-page-root .header-1 { background:rgba(200,170,40,0.12)!important;color:#ffd880!important; }
+  .reining-page-root .header-half { background:rgba(200,190,60,0.1)!important;color:#ffe890!important; }
+  .reining-page-root .header-other { background:rgba(100,150,200,0.1)!important;color:#90b8e0!important; }
+
+  /* SCORE BOX */
+  .reining-page-root .score-box {
+    background: var(--gold);
+    color: white;
+    padding: 2rem 2.5rem;
+    text-align: center;
+    margin: 2rem 0;
+  }
+  .reining-page-root .score-box h3 { font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;margin-bottom:0.5rem; color:white; }
+  .reining-page-root .score-box p { font-size:0.95rem;font-weight:500;opacity:0.75;margin:0; }
+
+  .reining-page-root .btn-doc {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    background: rgba(201,150,58,0.12);
+    border: 1px solid var(--gold);
+    color: var(--cream);
+    padding: 1.1rem 2.2rem;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: all 0.3s;
+    max-width: 400px;
+    box-sizing: border-box;
+  }
+  .reining-page-root .btn-doc:hover { background: var(--gold); color: var(--dark); }
+
+  /* FONTE */
+  .reining-page-root .fonte {
+    margin-top:4rem;padding:2rem;
+    border:1px solid var(--border);
+    text-align:center;
+  }
+  .reining-page-root .fonte p { font-size:0.85rem;color:rgba(245,240,232,0.4);margin-bottom:0.4rem; }
+  .reining-page-root .fonte a { color:var(--gold);text-decoration:none; }
+  .reining-page-root .fonte a:hover { text-decoration:underline; }
+
+  /* REVEAL */
+  .reining-page-root .reveal { opacity:0;transform:translateY(28px);transition:opacity 0.7s ease,transform 0.7s ease; }
+  .reining-page-root .reveal.visible { opacity:1;transform:translateY(0); }
+
+  /* RESPONSIVE */
+  @media(max-width:1024px){
+    .reining-page-root .page-hero-content { padding: 150px 2rem 2.5rem; }
+    .reining-page-root .subnav{margin:0.8rem 2rem 0;}
+    .reining-page-root .content-wrap{padding:4rem 2rem;}
+    .reining-page-root .cards-3{grid-template-columns:1fr 1fr;}
+  }
+  @media(max-width:768px){
+    .reining-page-root .page-hero { min-height: 60vh; }
+    .reining-page-root .page-hero-content { padding: 140px 1.5rem 1rem; }
+    .reining-page-root .subnav{margin: 0.6rem 1rem 0; top: 125px; padding: 1.5rem 1.5rem; gap: 2.8rem; justify-content: flex-start;}
+    .reining-page-root .content-wrap{padding:3rem 1.5rem;}
+    .reining-page-root .cards-2,
+    .reining-page-root .cards-3{grid-template-columns:1fr;}
+    .reining-page-root .guide-section-num{font-size:2.5rem;}
+    .reining-page-root .guide-section-title{font-size:1.5rem;}
+  }
+</style>
+
+<Layout 
+  title={isEn ? "The Reining — Complete Guide | Reining Factory" : "Il Reining — Guida Completa | Reining Factory"}
+  description={isEn ? "Guida completa al reining: storia, categorie, pattern, punteggio, penalità, regolamento tecnico ed eventi." : "Guida completa al reining: storia, categorie, pattern, punteggio, penalità, regolamento tecnico ed eventi. La risorsa italiana più completa."}
+>
+
+  <div class="reining-page-root">
+    
+    <!-- PAGE HERO -->
+    <section class="page-hero">
+      <div class="page-hero-bg"></div>
+      <div class="page-hero-content">
+        <p class="page-hero-eyebrow">{isEn ? "The Discipline" : "La disciplina"}</p>
+        <h1 class="page-hero-title">
+          <span>{isEn ? "Complete" : "Guida"} <em>{isEn ? "Guide" : "Completa"}</em></span>
+        </h1>
+        <p class="page-hero-subtitle">
+          {isEn
+            ? "The complete guide to the discipline: origins, maneuvers, categories, scoring and rules. Everything you need to know about reining."
+            : "La guida completa alla disciplina: origini, manovre, categorie, punteggio e regolamento. Tutto quello che devi sapere sul reining."}
+        </p>
+      </div>
+    </section>
+
+    <!-- STICKY SUBNAV -->
+    <nav class="subnav" id="subnav">
+      <a href="#introduzione">Introduzione</a>
+      <a href="#categorie">Categorie</a>
+      <a href="#pattern">Pattern</a>
+      <a href="#punteggio">Punteggio</a>
+      <a href="#penalita">Penalità</a>
+      <a href="#regolamento">Regolamento</a>
+      <a href="#eventi">Eventi</a>
+    </nav>
+
+    <!-- CONTENT -->
+    <div class="content-wrap">
+
+      <!-- 01 INTRODUZIONE -->
+      <section class="guide-section reveal" id="introduzione">
+        <div class="guide-section-header">
+          <div class="guide-section-num">01</div>
+          <h2 class="guide-section-title">{isEn ? "What is" : "Cos'è"} <em>{isEn ? "Reining?" : "il Reining?"}</em></h2>
+        </div>
+
+        <p>{isEn 
+          ? <Fragment><strong>Reining</strong> is a western equestrian discipline that represents the essence of American equestrian tradition. It stems from the cowboys' need to have agile, fast, and perfectly controllable horses for cattle work.</Fragment>
+          : <Fragment>Il <strong>Reining</strong> è una disciplina equestre western che rappresenta l'essenza della tradizione equestre americana. Nasce dall'esigenza dei cowboys di avere cavalli agili, veloci e perfettamente controllabili per il lavoro con il bestiame.</Fragment>
+        }</p>
+
+        <div class="hl-box">
+          <h4>{isEn ? "Official Definition" : "Definizione Ufficiale"}</h4>
+          <p>{isEn
+            ? <Fragment>According to the IRHA (Italian Reining Horse Association) rulebook, to rein a horse is not only to guide him, but also to <strong>control his every movement</strong>. The best reined horse should be willingly guided or controlled with little or no apparent resistance.</Fragment>
+            : <Fragment>Secondo il regolamento IRHA (Italian Reining Horse Association), montare un cavallo da Reining non significa solamente guidarlo, ma <strong>controllare ogni suo movimento</strong>. Il miglior cavallo da Reining deve essere guidato o controllato senza che opponga la minima resistenza.</Fragment>
+          }</p>
+        </div>
+
+        <h3>{isEn ? "Main Characteristics" : "Caratteristiche Principali"}</h3>
+        <ul>
+          <li><strong>{isEn ? "Precision" : "Precisione"}</strong>: {isEn ? "each maneuver must be executed exactly in the designated spot" : "ogni manovra deve essere eseguita con esattezza nel punto richiesto"}</li>
+          <li><strong>{isEn ? "Fluidity" : "Fluidità"}</strong>: {isEn ? "movements must flow naturally without interruptions" : "i movimenti devono scorrere naturalmente senza interruzioni"}</li>
+          <li><strong>{isEn ? "Speed" : "Velocità"}</strong>: {isEn ? "fast maneuvers increase the degree of difficulty and spectacle" : "le manovre veloci aumentano il grado di difficoltà e lo spettacolo"}</li>
+          <li><strong>{isEn ? "Finesse" : "Finezza"}</strong>: {isEn ? "control must be invisible, the horse should appear to be moving autonomously" : "il controllo deve essere invisibile, il cavallo sembra muoversi autonomamente"}</li>
+          <li><strong>{isEn ? "Attitude" : "Attitudine"}</strong>: {isEn ? "the horse must show enthusiasm and willingness" : "il cavallo deve dimostrare entusiasmo e disponibilità"}</li>
+        </ul>
+
+        <h3>{isEn ? "Fundamental Principle" : "Principio Fondamentale"}</h3>
+        <p>{isEn
+          ? <Fragment>Any movement made by the horse of its own accord must be considered a <strong>lack of control</strong>. Any deviation from the pattern will be penalized according to the severity of the deviation. Horse and rider must operate in perfect harmony, demonstrating total control with no evident aids from the rider.</Fragment>
+          : <Fragment>Qualsiasi movimento compiuto dal cavallo di sua iniziativa deve essere considerato <strong>mancanza di controllo</strong>. Ogni deviazione dal pattern viene penalizzata secondo la gravità della deviazione. Il cavallo e il cavaliere devono operare in perfetta armonia, dimostrando un controllo totale senza evidenti aiuti da parte del cavaliere.</Fragment>
+        }</p>
+
+        <div class="hl-box">
+          <p>{isEn
+            ? <Fragment><strong>Reining is often described as "western dressage"</strong> due to the precision required and the necessary technical perfection. It is one of the few western equestrian disciplines recognized by the FEI (Fédération Équestre Internationale) at the Olympic level.</Fragment>
+            : <Fragment><strong>Il Reining è spesso definito come "il dressage western"</strong> per la precisione richiesta e la perfezione tecnica necessaria. È una delle poche discipline equestri western riconosciute dalla FEI (Fédération Équestre Internationale) a livello olimpico.</Fragment>
+          }</p>
+        </div>
+      </section>
+
+      <!-- 02 CATEGORIE -->
+      <section class="guide-section reveal" id="categorie">
+        <div class="guide-section-header">
+          <div class="guide-section-num">02</div>
+          <h2 class="guide-section-title">{isEn ? "Rider" : "Categorie"} <em>{isEn ? "Categories" : "dei Cavalieri"}</em></h2>
+        </div>
+
+        <p>{isEn ? "In Reining, riders are divided into two main macro-categories based on their professional relationship with horseback riding:" : "Nel Reining, i cavalieri sono suddivisi in due macrocategorie principali in base al loro rapporto professionale con l'equitazione:"}</p>
+
+        <h3>{isEn ? "Professional Athlete (OPEN)" : "Atleta Professionista (OPEN)"}</h3>
+        <div class="hl-box">
+          <h4>{isEn ? "Official Definition" : "Definizione Ufficiale"}</h4>
+          <p>{isEn 
+            ? <Fragment>Classified as <strong>"professional riders"</strong> are all athletes who receive compensation from equestrian activities in any form.</Fragment>
+            : <Fragment>Sono classificati <strong>"cavalieri professionisti"</strong> tutti gli atleti che percepiscono compenso dall'attività equestre in qualsiasi forma.</Fragment>
+          }</p>
+        </div>
+        <p>{isEn ? "Considered a Professional Athlete is anyone who:" : "Viene considerato Atleta Professionista chi:"}</p>
+        <ul>
+          <li>{isEn ? "Gives horseback riding lessons for money" : "Impartisce lezioni di equitazione"}</li>
+          <li>{isEn ? "Trains horses for third parties" : "Addestra cavalli per terzi"}</li>
+          <li>{isEn ? "Accompanies students in competitions" : "Accompagna allievi in gara"}</li>
+          <li>{isEn ? "Rides non-owned horses at home and/or in competitions" : "Monta cavalli non di proprietà a casa e/o in gara"}</li>
+          <li>{isEn ? "Is a federal technical executive practicing the profession" : "È quadro tecnico federale che esercita la professione"}</li>
+        </ul>
+
+        <h4>{isEn ? "Professional Subcategories" : "Sottocategorie Professionisti"}</h4>
+        <div class="cards-3">
+          <div class="g-card"><h4>OPEN</h4><p>{isEn ? "Category open to all professional riders with no earnings limitations." : "Categoria aperta a tutti i cavalieri professionisti senza limitazioni di earnings."}</p><span class="badge">{isEn ? "Highest Level" : "Livello Massimo"}</span></div>
+          <div class="g-card"><h4>INTERMEDIATE OPEN</h4><p>{isEn ? "Intermediate category for professionals with specific earnings under NRHA rules." : "Categoria intermedia per professionisti con earnings specifici secondo regolamento NRHA."}</p><span class="badge">{isEn ? "Intermediate Level" : "Livello Intermedio"}</span></div>
+          <div class="g-card"><h4>LIMITED OPEN</h4><p>{isEn ? "Category for professionals with limited earnings under NRHA parameters." : "Categoria per professionisti con earnings limitati secondo parametri NRHA."}</p><span class="badge">{isEn ? "Base Pro" : "Base Pro"}</span></div>
+          <div class="g-card"><h4>ROOKIE PROFESSIONAL</h4><p>{isEn ? "For professionals with early competitive experiences." : "Per professionisti alle prime esperienze competitive."}</p><span class="badge">{isEn ? "Rookie Pro" : "Esordienti Pro"}</span></div>
+          <div class="g-card"><h4>GREEN REINER PROFESSIONAL</h4><p>{isEn ? "For professionals working with young or training horses." : "Per professionisti che lavorano con cavalli giovani o in addestramento."}</p><span class="badge">{isEn ? "Specialization" : "Specializzazione"}</span></div>
+        </div>
+
+        <h3>{isEn ? "Non-Professional Athlete (NON PRO)" : "Atleta Non Professionista (NON PRO)"}</h3>
+        <div class="hl-box">
+          <h4>{isEn ? "Official Definition" : "Definizione Ufficiale"}</h4>
+          <p>{isEn
+            ? <Fragment>Classified as <strong>"non-professional riders"</strong> are all athletes who DO NOT receive compensation from equestrian activities in any form and can <strong>only ride owned horses</strong>.</Fragment>
+            : <Fragment>Sono classificati <strong>"cavalieri non professionisti"</strong> tutti gli atleti che NON percepiscono compenso dall'attività equestre in qualsiasi forma e possono montare <strong>solo cavalli di proprietà</strong>.</Fragment>
+          }</p>
+        </div>
+
+        <h4>{isEn ? "Fundamental Rules for Non Pros" : "Regole Fondamentali per i Non Pro"}</h4>
+        <ul>
+          <li>{isEn ? "Rides only horses owned by him/herself" : "Monta solo cavalli di sua proprietà"}</li>
+          <li>{isEn ? "The horse can be owned by the athlete or immediate family" : "Il cavallo può essere di proprietà dell'atleta o della primissima parentela"}</li>
+          <li>{isEn ? "The horse can belong to a syndicate with family ties among members" : "Il cavallo può essere di proprietà di una syndicate con legame di parentela tra i soci"}</li>
+          <li>{isEn ? "Does not train horses for third parties" : "Non addestra cavalli per terze persone"}</li>
+          <li>{isEn ? "Receives no direct or indirect compensation" : "Non riceve compensi diretti o indiretti"}</li>
+          <li>{isEn ? "Does not give riding lessons" : "Non impartisce lezioni di equitazione"}</li>
+        </ul>
+
+        <div class="hl-box">
+          <h4>{isEn ? "Immediate Family" : "Primissima Parentela"}</h4>
+          <p>{isEn
+            ? <Fragment>"Immediate family" includes: husband, wife, parents, step-parents, child, brother/sister, step-brother/sister, uncle/aunt, nephew/niece, grandparent, parent-in-law, brother/sister-in-law, son/daughter-in-law, and <strong>cohabitant</strong> (with proof of residence).</Fragment>
+            : <Fragment>Per "primissima parentela" si intendono: marito, moglie, genitori, patrigno, matrigna, figlio, fratello, fratellastro, sorella, sorellastra, zio/a, nipote, nonno/a, suocero/a, cognato/a, genero, nuora e <strong>convivente</strong> (con certificato di residenza).</Fragment>
+          }</p>
+        </div>
+
+        <h4>{isEn ? "Non-Professional Subcategories" : "Sottocategorie Non Professionisti"}</h4>
+        <div class="cards-3">
+          <div class="g-card"><h4>NON PRO</h4><p>{isEn ? "Category open to all non-professional riders." : "Categoria aperta a tutti i cavalieri non professionisti."}</p><span class="badge">{isEn ? "Owned Horse" : "Cavallo di proprietà"}</span></div>
+          <div class="g-card"><h4>INTERMEDIATE NON PRO</h4><p>{isEn ? "Intermediate category with earnings according to NRHA rules." : "Categoria intermedia con earnings secondo regolamento NRHA."}</p><span class="badge">{isEn ? "Owned Horse" : "Cavallo di proprietà"}</span></div>
+          <div class="g-card"><h4>LIMITED NON PRO</h4><p>{isEn ? "For riders with lifetime earnings below $10,000." : "Per cavalieri con lifetime earnings inferiori a $10.000."}</p><span class="badge">Lifetime &lt; $10.000</span></div>
+          <div class="g-card"><h4>ROOKIE LEVEL 1 & 2</h4><p>{isEn ? "For early experience non-professional riders." : "Per cavalieri non professionisti alle prime esperienze."}</p><span class="badge">{isEn ? "Beginners" : "Esordienti"}</span></div>
+          <div class="g-card"><h4>GREEN REINER 1 & 2</h4><p>{isEn ? "Category for non-professionals riding young horses." : "Categoria per non professionisti che montano cavalli giovani."}</p><span class="badge">{isEn ? "Young Horses" : "Cavalli giovani"}</span></div>
+        </div>
+
+        <h3>{isEn ? "Special Non Pro Rules" : "Regole Speciali Non Pro"}</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>{isEn ? "Situation" : "Situazione"}</th><th>{isEn ? "Rule" : "Regola"}</th></tr></thead>
+            <tbody>
+              <tr><td>{isEn ? "Repurchase of sold horse" : "Riacquisto cavallo venduto"}</td><td>{isEn ? <Fragment>Cannot participate in NON PRO events before <strong>180 days</strong> from the sale date</Fragment> : <Fragment>Non può partecipare a gare NON PRO prima di <strong>180 giorni</strong> dalla data di vendita</Fragment>}</td></tr>
+              <tr><td>{isEn ? "Switch from PRO to NON PRO" : "Passaggio da PRO a NON PRO"}</td><td>{isEn ? <Fragment>Must not have trained or ridden third-party horses for <strong>3 consecutive years</strong>. Request via FISE/IRHA</Fragment> : <Fragment>Deve non aver addestrato o montato cavalli di terzi per <strong>3 anni consecutivi</strong>. Richiesta tramite raccomandata/PEC a FISE e IRHA</Fragment>}</td></tr>
+              <tr><td>{isEn ? "Federal NON PRO Technicians" : "Tecnici federali NON PRO"}</td><td>{isEn ? <Fragment>Can ONLY give lessons to immediate family and NOT be on the technical grid of federal centers</Fragment> : <Fragment>Possono impartire lezioni SOLO alla primissima parentela e NON essere nella griglia tecnici dei centri federali</Fragment>}</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>{isEn ? "Youth Categories" : "Categorie Youth (Giovani)"}</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>{isEn ? "Category" : "Categoria"}</th><th>{isEn ? "Age" : "Età"}</th><th>{isEn ? "Notes" : "Note"}</th></tr></thead>
+            <tbody>
+              <tr><td>YOUTH 14-18</td><td>{isEn ? "14-18 years" : "14-18 anni"}</td><td>{isEn ? "Anyone turning 19 after Jan 1st can participate for the current season" : "Chi compie 19 anni dopo il 1° gennaio può partecipare per la stagione in corso"}</td></tr>
+              <tr><td>YOUTH 13 &amp; UNDER</td><td>{isEn ? "Under 13 years" : "Sotto i 13 anni"}</td><td>{isEn ? "Anyone turning 14 after Jan 1st can participate for the current season" : "Chi compie 14 anni dopo il 1° gennaio può partecipare per la stagione in corso"}</td></tr>
+              <tr><td>SHORT STIRRUP</td><td>{isEn ? "Youth Category" : "Categoria giovani"}</td><td>{isEn ? "Introductory category for the little ones" : "Categoria introduttiva per i più piccoli"}</td></tr>
+              <tr><td>ENTRY LEVEL YOUTH</td><td>{isEn ? "Youth Category" : "Categoria giovani"}</td><td>{isEn ? "First competitive youth level" : "Primo livello competitivo youth"}</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="hl-box">
+          <h4>{isEn ? "Youth Safety" : "Sicurezza Youth"}</h4>
+          <p>{isEn ? "Underage riders (under 18) must:" : "I cavalieri minorenni (under 18) devono:"}</p>
+          <ul>
+            <li>{isEn ? <Fragment>Always be assisted by a <strong>Federal Technician</strong> of Western/Reining Riding</Fragment> : <Fragment>Essere sempre assistiti da un <strong>Tecnico Federale</strong> di Equitazione Americana/Reining</Fragment>}</li>
+            <li>{isEn ? <Fragment>Wear mandatory <strong>protective helmet</strong> and <strong>protective vest or back protector</strong></Fragment> : <Fragment>Indossare <strong>caschetto protettivo</strong> e <strong>giubbetto protettivo o paraschiena</strong> obbligatori</Fragment>}</li>
+            <li>{isEn ? <Fragment>Foreign riders with a guest license must have a primary adult guardian</Fragment> : <Fragment>I cavalieri stranieri con licenza d'ospite devono avere un accompagnatore maggiorenne</Fragment>}</li>
+          </ul>
+        </div>
+
+        <h3>{isEn ? "Special Category" : "Categoria Speciale"}</h3>
+        <div class="g-card" style="border:1px solid var(--border);max-width:900px;">
+          <h4>LADIES</h4>
+          <p>{isEn ? "Category reserved for women, open to both professionals and non-professionals according to their respective qualifications." : "Categoria riservata alle donne, aperta sia a professioniste che non professioniste secondo le rispettive qualifiche."}</p>
+        </div>
+        
+        <div style="margin-top:2.5rem;text-align:center;">
+          {isEn ? (
+            <a href="/NRHA-Approved-Classes.pdf" target="_blank" class="btn-doc">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 13H7"/><path d="M19 9h-4"/><path d="M3 3v16a2 2 0 0 0 2 2h16"/><rect x="15" y="5" width="4" height="12" rx="1"/><rect x="7" y="8" width="4" height="9" rx="1"/></svg>    NRHA Approved Classes
+            </a>
+          ) : (
+            <a href="https://www.reiningfactory.com/2026-irha-rulebook-schema-categorie.pdf" target="_blank" class="btn-doc">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 13H7"/><path d="M19 9h-4"/><path d="M3 3v16a2 2 0 0 0 2 2h16"/><rect x="15" y="5" width="4" height="12" rx="1"/><rect x="7" y="8" width="4" height="9" rx="1"/></svg>    Schema Categorie IRHA 2026
+            </a>
+          )}
+        </div>
+      </section>
+
+      <!-- 03 PATTERN -->
+      <section class="guide-section reveal" id="pattern">
+        <div class="guide-section-header">
+          <div class="guide-section-num">03</div>
+          <h2 class="guide-section-title">{isEn ? "The Patterns" : "I Pattern"} <em>{isEn ? "in Reining" : "nel Reining"}</em></h2>
+        </div>
+
+        <p>{isEn 
+          ? <Fragment><strong>Patterns</strong> are predetermined sequences of maneuvers that horse and rider must perform during competition. Each pattern is numbered and codified by the NRHA (National Reining Horse Association).</Fragment>
+          : <Fragment>I <strong>pattern</strong> sono sequenze prestabilite di manovre che cavaliere e cavallo devono eseguire durante una competizione. Ogni pattern è numerato e codificato dalla NRHA (National Reining Horse Association).</Fragment>
+        }</p>
+
+        <div class="hl-box">
+          <p>{isEn
+            ? <Fragment>All official NRHA patterns are divided into <strong>7 or 8 maneuver groups</strong>. Each pattern specifies the exact order of maneuvers, their location in the arena, and the required execution characteristics.</Fragment>
+            : <Fragment>Tutti i pattern NRHA ufficiali sono divisi in <strong>7 o 8 gruppi di manovre</strong>. Ogni pattern specifica l'ordine esatto delle manovre, la loro posizione nell'arena e le caratteristiche di esecuzione richieste.</Fragment>
+          }</p>
+        </div>
+
+        <h3>{isEn ? "Official NRHA Patterns" : "Pattern Ufficiali NRHA"}</h3>
+        <ul>
+          <li>Pattern 1, 2, 3, 4, 5, 6, 7, 8, 9, 10</li>
+          <li>Pattern 11, 12, 13, 15, 16, 17, 18</li>
+          <li>{isEn ? "Pattern A and B (specific for certain categories)" : "Pattern A e B (specifici per alcune categorie)"}</li>
+        </ul>
+
+        <h3>{isEn ? "Reining Maneuvers" : "Le Manovre del Reining"}</h3>
+        <p>{isEn ? "Each pattern is composed of a combination of the following fundamental maneuvers:" : "Ogni pattern è composto da una combinazione delle seguenti manovre fondamentali:"}</p>
+
+        <div class="manovra"><div class="manovra-num">01</div><h4>Walk-in {isEn ? "— Walk in entry" : "— Entrata al Passo"}</h4><p>{isEn ? "The horse enters the arena at a walk, from the gate to the center. He must appear relaxed and confident. Any action creating the appearance of intimidation is penalized." : "Il cavallo entra in arena al passo, dal cancello al centro. Deve apparire rilassato e fiducioso. Qualsiasi azione che dia l'impressione di intimidazione viene penalizzata."}</p></div>
+        <div class="manovra"><div class="manovra-num">02</div><h4>Trot-in {isEn ? "— Trot in entry" : "— Entrata al Trotto"}</h4><p>{isEn ? "Horses must jog the majority of the way to the center of the arena. Failure to comply results in a score of 0." : "I cavalli devono essere al trotto per la maggior parte della \"strada\" per arrivare al centro dell'arena. Il mancato rispetto comporta uno score di 0."}</p></div>
+        <div class="manovra"><div class="manovra-num">03</div><h4>Stop — Sliding Stop</h4><p>{isEn ? "The act of slowing the horse from a lope to a stopped position. The horse brings his hind legs under him in a sliding motion, rounding his back while maintaining forward movement with his front feet. During the sliding stop, the horse must continue in a straight line." : "L'azione che rallenta il cavallo dal galoppo ad una posizione di arresto. Il cavallo porta i posteriori sotto di sé in posizione scorrevole, piega la schiena mantenendo il movimento in avanti con gli anteriori. Durante lo sliding stop il cavallo deve continuare in linea retta."}</p></div>
+        <div class="manovra"><div class="manovra-num">04</div><h4>Spin</h4><p>{isEn ? "A series of 360° turns executed over a stationary inside hind leg. Propulsion is supplied by the outside rear leg and front legs. The hind leg should remain fixed throughout the turns, with cadence, attitude, smoothness, speed, and finesse." : "Serie di rotazioni di 360° eseguite su un posteriore interno che rimane fisso. La propulsione è fornita dagli anteriori e dal posteriore esterno. Il posteriore deve mantenere la posizione fissa durante tutte le rotazioni, con cadenza, atteggiamento, fluidità, velocità e finezza."}</p></div>
+        <div class="manovra"><div class="manovra-num">05</div><h4>Rollback</h4><p>{isEn ? "A 180° reversal of forward motion completed by executing a stop, turning the shoulders back in the opposite direction over the hocks, and departing in a lope. It is a continuous motion with no hesitation." : "Inversione di 180° completata eseguendo uno stop, una rotazione delle spalle verso la direzione opposta facendo perno sui garretti, per poi ripartire al galoppo. È un movimento continuo senza esitazioni."}</p></div>
+        <div class="manovra"><div class="manovra-num">06</div><h4>{isEn ? "Circles" : "Cerchi"}</h4><p>{isEn ? "Maneuvers executed at a lope of designated size and speed. There must be a clearly defined difference in speed and size between small/slow circles and large/fast circles." : "Manovre eseguite al galoppo con dimensioni e velocità precise specificate nel pattern. Deve esserci una differenza chiaramente definita nella velocità e dimensione tra cerchi piccoli/lenti e cerchi grandi/veloci."}</p></div>
+        <div class="manovra"><div class="manovra-num">07</div><h4>Back {isEn ? "— Backing up" : "— Indietreggiare"}</h4><p>{isEn ? "A reverse motion in a straight line for a required minimum distance of 10 feet. It must be executed smoothly and with no hesitation." : "Movimento inverso in linea retta per una distanza minima di 10 piedi (circa 3 metri). Deve essere eseguito senza esitazioni e in modo fluido."}</p></div>
+        <div class="manovra"><div class="manovra-num">08</div><h4>Hesitate {isEn ? "— Hesitation / Pause" : "— Esitazione / Pausa"}</h4><p>{isEn ? "Demonstrates the horse's ability to stand in a relaxed manner in a specific area. All patterns require a hesitation upon completion to indicate to the judge that the pattern is finished." : "Dimostra la capacità del cavallo di stare fermo in modo rilassato in una specifica area. Tutti i pattern prevedono l'esitazione dopo l'ultima manovra per indicare al giudice che la prova è terminata."}</p></div>
+        <div class="manovra"><div class="manovra-num">09</div><h4>{isEn ? "Lead Changes" : "Cambi di Galoppo"}</h4><p>{isEn ? "The change must take place without changing gait or speed, in a specific area of the pattern, and within a single stride to avoid penalties." : "Il cambio deve avvenire senza cambiare andatura né velocità, in un'area specifica del pattern e in una sola falcata per evitare penalità."}</p></div>
+        <div class="manovra"><div class="manovra-num">10</div><h4>Run Down {isEn ? "and" : "e"} Run Around</h4><p>{isEn 
+          ? <Fragment><strong>Run Down</strong>: runs along the length of the arena to the far end. Must demonstrate control and gradual build of speed to the stop. <strong>Run Around</strong>: circular path maintaining at least 10 feet from either side of the center of the arena.</Fragment>
+          : <Fragment><strong>Run Down</strong>: corse lungo il lato lungo dell'arena fino alla fine. Devono dimostrare controllo e progressione graduale della velocità fino allo stop. <strong>Run Around</strong>: percorso circolare mantenendo almeno 3 metri di distanza da entrambi i lati del centro dell'arena.</Fragment>
+        }</p></div>
+      
+      <div style="margin-top:2.5rem;text-align:center;">
+        {isEn ? (
+          <a href="/2026-NRHA-Patterns.pdf" target="_blank" class="btn-doc">
+            <svg style="margin-top:2px" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10a8 8 0 1 1 8 8H4"/><path d="m8 22-4-4 4-4"/></svg>    Official NRHA Patternbook
+          </a>
+        ) : (
+          <a href="https://www.reiningfactory.com/2026-irha-patternbook.pdf" target="_blank" class="btn-doc">
+            <svg style="margin-top:2px" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10a8 8 0 1 1 8 8H4"/><path d="m8 22-4-4 4-4"/></svg>    Patternbook Ufficiale IRHA 2026
+          </a>
+        )}
+      </div>
+      
+      </section>
+
+      <!-- 04 PUNTEGGIO -->
+      <section class="guide-section reveal" id="punteggio">
+        <div class="guide-section-header">
+          <div class="guide-section-num">04</div>
+          <h2 class="guide-section-title">{isEn ? "Scoring" : "Sistema di"} <em>{isEn ? "System" : "Punteggio"}</em></h2>
+        </div>
+
+        <div class="score-box">
+          <h3>{isEn ? "Base Score: 70" : "Punteggio Base: 70"}</h3>
+          <p>{isEn ? "Score ranges from 0 to infinity — 70 denotes an average performance." : "Il punteggio varia da 0 a infinito — 70 denota uno svolgimento medio del percorso"}</p>
+        </div>
+
+        <p>{isEn ? "Each maneuver is evaluated individually by the judge in half-point increments:" : "Ogni manovra viene valutata individualmente dal giudice con incrementi di mezzo punto:"}</p>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>{isEn ? "Evaluation" : "Valutazione"}</th><th>{isEn ? "Score" : "Punteggio"}</th><th>{isEn ? "Meaning" : "Significato"}</th></tr></thead>
+            <tbody>
+              <tr><td>{isEn ? "Excellent" : "Eccellente"}</td><td style="color:var(--gold);font-weight:700">+1½</td><td>{isEn ? "Maneuver executed exceptionally" : "Manovra eseguita in modo eccezionale"}</td></tr>
+              <tr><td>{isEn ? "Very Good" : "Molto Buona"}</td><td style="color:var(--gold)">+1</td><td>{isEn ? "Maneuver executed very well" : "Manovra eseguita molto bene"}</td></tr>
+              <tr><td>{isEn ? "Good" : "Buona"}</td><td style="color:var(--gold)">+½</td><td>{isEn ? "Maneuver executed well" : "Manovra eseguita bene"}</td></tr>
+              <tr><td>{isEn ? "Average" : "Media"}</td><td>0</td><td>{isEn ? "Maneuver correct with no degree of difficulty" : "Manovra corretta ma senza gradi di difficoltà"}</td></tr>
+              <tr><td>{isEn ? "Poor" : "Sotto la Media"}</td><td style="color:#ff9970">-½</td><td>{isEn ? "Maneuver with minor imperfections" : "Manovra con piccole imperfezioni"}</td></tr>
+              <tr><td>{isEn ? "Very Poor" : "Scarsa"}</td><td style="color:#ff7050">-1</td><td>{isEn ? "Maneuver with obvious mistakes" : "Manovra con evidenti errori"}</td></tr>
+              <tr><td>{isEn ? "Extremely Poor" : "Molto Scarsa"}</td><td style="color:#ff5030;font-weight:700">-1½</td><td>{isEn ? "Maneuver executed extremely poorly" : "Manovra eseguita molto male"}</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="hl-box">
+          <p style="font-size:1.1rem;text-align:center"><strong>{isEn ? "Base Score (70) + Sum of maneuver evaluations − Penalties" : "Punteggio Base (70) + Somma valutazioni manovre − Penalità"}</strong></p>
+        </div>
+
+        <h3>{isEn ? "Evaluation Criteria" : "Criteri di Valutazione"}</h3>
+        <ul>
+          <li><strong>{isEn ? "Smoothness" : "Fluidità dei movimenti"}</strong>: {isEn ? "soft transitions between maneuvers" : "transizioni morbide tra le manovre"}</li>
+          <li><strong>{isEn ? "Finesse" : "Finezza"}</strong>: {isEn ? "nearly invisible control of the horse" : "controllo quasi invisibile del cavallo"}</li>
+          <li><strong>{isEn ? "Attitude" : "Attitudine"}</strong>: {isEn ? "willingness and enthusiasm of the horse" : "disponibilità e entusiasmo del cavallo"}</li>
+          <li><strong>{isEn ? "Speed" : "Velocità"}</strong>: {isEn ? "appropriate and controlled" : "appropriata e controllata"}</li>
+          <li><strong>{isEn ? "Authority" : "Autorità"}</strong>: {isEn ? "decisive execution of maneuvers" : "esecuzione decisa delle manovre"}</li>
+          <li><strong>{isEn ? "Speed Control" : "Controllo della velocità"}</strong>: {isEn ? "increases the degree of difficulty" : "aumenta il grado di difficoltà"}</li>
+        </ul>
+
+        <div class="hl-box">
+          <h4>{isEn ? "Final Score Examples" : "Esempi di Punteggio Finale"}</h4>
+          <ul>
+            <li><strong>75+</strong>: {isEn ? "Excellent performance" : "Eccellente performance"}</li>
+            <li><strong>72-74</strong>: {isEn ? "Very good performance" : "Ottima performance"}</li>
+            <li><strong>70-71</strong>: {isEn ? "Good performance" : "Buona performance"}</li>
+            <li><strong>68-69</strong>: {isEn ? "Average / below average performance" : "Performance media / sotto la media"}</li>
+            <li><strong>65 {isEn ? "or less" : "o meno"}</strong>: {isEn ? "Performance with significant errors" : "Performance con significativi errori"}</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- 05 PENALITÀ -->
+      <section class="guide-section reveal" id="penalita">
+        <div class="guide-section-header">
+          <div class="guide-section-num">05</div>
+          <h2 class="guide-section-title">Penalità <em>{isEn ? "in Reining" : "nel Reining"}</em></h2>
+        </div>
+
+        <p>{isEn ? "Penalties are divided into several categories depending on the severity of the mistake. They range from small half-point deductions up to total disqualification (No Score)." : "Le penalità sono suddivise in diverse categorie a seconda della gravità dell'errore commesso. Possono andare da piccole detrazioni di mezzo punto fino alla squalifica totale (No Score)."}</p>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>{isEn ? "Type" : "Tipo"}</th><th>{isEn ? "Points" : "Punti"}</th><th>{isEn ? "Description" : "Descrizione"}</th></tr></thead>
+            <tbody>
+              <tr class="table-section-header"><td colspan="3" class="header-ns">NO SCORE — {isEn ? "Disqualification" : "Squalifica Totale"}</td></tr>
+              <tr class="penalty-ns"><td>No Score</td><td>NS</td><td>{isEn ? "Infraction of state or federal laws concerning horses" : "Infrazione di leggi statali o federali riguardanti cavalli"}</td></tr>
+              <tr class="penalty-ns"><td>No Score</td><td>NS</td><td>{isEn ? "Abuse of the horse in or prior to the exhibition" : "Abuso del cavallo in gara o prima della gara"}</td></tr>
+              <tr class="penalty-ns"><td>No Score</td><td>NS</td><td>{isEn ? "Use of prohibited tack (wire on bits, bosals, curb chains)" : "Uso di finimenti non consentiti (filo di ferro su morsi, bosal, barbozzali)"}</td></tr>
+              <tr class="penalty-ns"><td>No Score</td><td>NS</td><td>{isEn ? "Use of illegal bits, bosals, or curb chains" : "Uso di morsi, bosal o barbozzali illegali"}</td></tr>
+              <tr class="penalty-ns"><td>No Score</td><td>NS</td><td>{isEn ? "Use of tack collars, tie downs, or nose bands" : "Uso di tack collars, abbassa testa o chiudi bocca"}</td></tr>
+              <tr class="penalty-ns"><td>No Score</td><td>NS</td><td>{isEn ? "Use of whips or bats" : "Uso di frustini o bastoni"}</td></tr>
+              <tr class="penalty-ns"><td>No Score</td><td>NS</td><td>{isEn ? "Equipment that alters tail movement or circulation" : "Attrezzatura che altera movimento o circolazione nella coda"}</td></tr>
+              <tr class="penalty-ns"><td>No Score</td><td>NS</td><td>{isEn ? "Belly bands or materials hiding them" : "Fascia copri pancia/fianchi o materiali che li nascondono"}</td></tr>
+              <tr class="penalty-ns"><td>No Score</td><td>NS</td><td>{isEn ? "Refusal to dismount for tack inspection" : "Rifiuto di scendere da cavallo per ispezione finimenti"}</td></tr>
+              <tr class="penalty-ns"><td>No Score</td><td>NS</td><td>{isEn ? "Misconduct or disrespect of the competitor" : "Mal condotta o mancanza di rispetto del concorrente"}</td></tr>
+              <tr class="penalty-ns"><td>No Score</td><td>NS</td><td>{isEn ? "Closed reins not allowed (except specific categories)" : "Redini chiuse non permesse (eccetto categorie specifiche)"}</td></tr>
+              <tr class="penalty-ns"><td>No Score</td><td>NS</td><td>{isEn ? "Use of Bluetooth earpieces or electronics (unless Special Event)" : "Uso di cuffiette Bluetooth o apparati elettronici (Special Event)"}</td></tr>
+
+              <tr class="table-section-header"><td colspan="3" class="header-zero">{isEn ? "ZERO SCORE" : "PUNTEGGIO ZERO"}</td></tr>
+              <tr class="penalty-zero"><td>Score 0</td><td>0</td><td>{isEn ? "More than one finger between the reins (except index/first finger)" : "Più di un dito tra le redini (eccetto indice/primo dito)"}</td></tr>
+              <tr class="penalty-zero"><td>Score 0</td><td>0</td><td>{isEn ? "Use of two hands (except Snaffle Bit, Hackamore, or 2-hand classes)" : "Uso di due mani (eccetto categorie Snaffle Bit, Hackamore, classi a due mani)"}</td></tr>
+              <tr class="penalty-zero"><td>Score 0</td><td>0</td><td>{isEn ? "Changing hands on reins (except in classes that allow it)" : "Cambio di mano (eccetto classi che lo permettono)"}</td></tr>
+              <tr class="penalty-zero"><td>Score 0</td><td>0</td><td>{isEn ? "Improper use of the romal" : "Uso scorretto del romal"}</td></tr>
+              <tr class="penalty-zero"><td>Score 0</td><td>0</td><td>{isEn ? "Failure to complete pattern as written" : "Pattern non completato come descritto"}</td></tr>
+              <tr class="penalty-zero"><td>Score 0</td><td>0</td><td>{isEn ? "Performing maneuvers out of order or out by more than 1/4 circle" : "Manovre non nell'ordine richiesto o fuori di più di 1/4 di cerchio"}</td></tr>
+              <tr class="penalty-zero"><td>Score 0</td><td>0</td><td>{isEn ? "Backing more than 4 steps when not required" : "Indietreggiare per più di 4 passi quando non richiesto"}</td></tr>
+              <tr class="penalty-zero"><td>Score 0</td><td>0</td><td>{isEn ? "Turning more than 90° when not required" : "Girarsi oltre 90° quando non richiesto"}</td></tr>
+              <tr class="penalty-zero"><td>Score 0</td><td>0</td><td>{isEn ? "Stopping before first marker during a run-in pattern" : "Stop prima del primo marker con ingresso al galoppo"}</td></tr>
+              <tr class="penalty-zero"><td>Score 0</td><td>0</td><td>{isEn ? "Horse balking or refusing command delaying pattern execution" : "Cavallo rifiuta comando e ritarda svolgimento percorso"}</td></tr>
+              <tr class="penalty-zero"><td>Score 0</td><td>0</td><td>{isEn ? "Jogging over 1/2 circle or 1/2 length of arena" : "Trotto per oltre mezzo cerchio o metà lunghezza arena"}</td></tr>
+              <tr class="penalty-zero"><td>Score 0</td><td>0</td><td>{isEn ? "Over spinning more than 1/4 turn" : "Più di 1/4 di spin in più"}</td></tr>
+              <tr class="penalty-zero"><td>Score 0</td><td>0</td><td>{isEn ? "Fall to the ground by horse or rider" : "Caduta a terra del cavallo o del cavaliere"}</td></tr>
+              <tr class="penalty-zero"><td>Score 0</td><td>0</td><td>{isEn ? "Dropping a rein that contacts the ground while horse is in motion" : "Caduta di una redine a contatto col terreno mentre cavallo in movimento"}</td></tr>
+              <tr class="penalty-zero"><td>Score 0</td><td>0</td><td>{isEn ? "Improper western attire" : "Abbigliamento western inadeguato"}</td></tr>
+
+              <tr class="table-section-header"><td colspan="3" class="header-5">{isEn ? "5 POINT PENALTIES" : "PENALITÀ 5 PUNTI"}</td></tr>
+              <tr class="penalty-5"><td>{isEn ? "Penalty" : "Penalità"}</td><td>-5</td><td>{isEn ? "Spurring in front of the cinch" : "Speronare il cavallo davanti al sottopancia"}</td></tr>
+              <tr class="penalty-5"><td>{isEn ? "Penalty" : "Penalità"}</td><td>-5</td><td>{isEn ? "Use of either hand to instill fear or praise" : "Uso della mano per incutere paura o lodare il cavallo"}</td></tr>
+              <tr class="penalty-5"><td>{isEn ? "Penalty" : "Penalità"}</td><td>-5</td><td>{isEn ? "Holding saddle with either hand (except specific classes)" : "Tenersi alla sella con una o l'altra mano (eccetto categorie specifiche)"}</td></tr>
+              <tr class="penalty-5"><td>{isEn ? "Penalty" : "Penalità"}</td><td>-5</td><td>{isEn ? "Horse dropping to its knees or hocks" : "Cavallo che si lascia cadere in ginocchio o sui garretti"}</td></tr>
+              <tr class="penalty-5"><td>{isEn ? "Penalty" : "Penalità"}</td><td>-5</td><td>{isEn ? "Blatant disobedience (kicking, biting, bucking, rearing)" : "Disobbedienza del cavallo (calciare, rampare, mordere, sgroppare, impennare)"}</td></tr>
+
+              <tr class="table-section-header"><td colspan="3" class="header-2">{isEn ? "2 POINT PENALTIES" : "PENALITÀ 2 PUNTI"}</td></tr>
+              <tr class="penalty-2"><td>{isEn ? "Penalty" : "Penalità"}</td><td>-2</td><td>{isEn ? "Break of gait (jog or walk)" : "Rottura di andatura (trotto o passo)"}</td></tr>
+              <tr class="penalty-2"><td>{isEn ? "Penalty" : "Penalità"}</td><td>-2</td><td>{isEn ? "Freeze up in spins or rollbacks" : "Freeze up (cavallo si ferma completamente) in spin o rollback"}</td></tr>
+              <tr class="penalty-2"><td>{isEn ? "Penalty" : "Penalità"}</td><td>-2</td><td>{isEn ? "Walk-in entry: horse lopes and doesn't stop before departure" : "Ingresso al passo: cavallo galoppa e non si ferma prima di partire"}</td></tr>
+              <tr class="penalty-2"><td>{isEn ? "Penalty" : "Penalità"}</td><td>-2</td><td>{isEn ? "Run-in entry: not at a lope prior to first marker" : "Partenza da fondo campo: non al galoppo prima del primo marker"}</td></tr>
+              <tr class="penalty-2"><td>{isEn ? "Penalty" : "Penalità"}</td><td>-2</td><td>{isEn ? "Failure to go past marker before initiating a stop" : "Cavallo non passa completamente il marker prima dello stop"}</td></tr>
+              <tr class="penalty-2"><td>{isEn ? "Penalty" : "Penalità"}</td><td>-2</td><td>{isEn ? "Wrong lead: over half the short wall or completely missing change" : "Galoppo falso: oltrepassa metà lato corto o non cambia affatto"}</td></tr>
+
+              <tr class="table-section-header"><td colspan="3" class="header-1">{isEn ? "1 POINT PENALTIES" : "PENALITÀ 1 PUNTO"}</td></tr>
+              <tr class="penalty-1"><td>{isEn ? "Penalty" : "Penalità"}</td><td>-1</td><td>{isEn ? "Wrong lead: per each 1/4 circle on wrong lead" : "Galoppo falso: penalità per ogni 1/4 di cerchio al galoppo sbagliato"}</td></tr>
+              <tr class="penalty-1"><td>{isEn ? "Penalty" : "Penalità"}</td><td>-1</td><td>{isEn ? "Delayed lead change by more than one stride" : "Ritardo sul cambio di galoppo per più di una falcata"}</td></tr>
+              <tr class="penalty-1"><td>{isEn ? "Penalty" : "Penalità"}</td><td>-1</td><td>{isEn ? "Over/Under spinning by a quarter turn" : "Ogni quarto di spin in più o in meno"}</td></tr>
+              <tr class="penalty-1"><td>{isEn ? "Penalty" : "Penalità"}</td><td>-1</td><td>{isEn ? "Wrong lead down to the middle of the short wall" : "Galoppo falso fino alla metà del lato corto"}</td></tr>
+
+              <tr class="table-section-header"><td colspan="3" class="header-half">{isEn ? "½ POINT PENALTIES" : "PENALITÀ ½ PUNTO"}</td></tr>
+              <tr class="penalty-half"><td>{isEn ? "Penalty" : "Penalità"}</td><td>-½</td><td>{isEn ? "Starting circles at a jog/trot (up to 2 strides)" : "Partenza al trotto nei cerchi (fino a 2 falcate)"}</td></tr>
+              <tr class="penalty-half"><td>{isEn ? "Penalty" : "Penalità"}</td><td>-½</td><td>{isEn ? "Jogging exiting a rollback (up to 2 strides)" : "Trotto uscendo dal rollback (fino a 2 falcate)"}</td></tr>
+              <tr class="penalty-half"><td>{isEn ? "Penalty" : "Penalità"}</td><td>-½</td><td>{isEn ? "Over/Under spinning by 1/8 of a turn" : "Ogni ottavo di spin in più o in meno"}</td></tr>
+              <tr class="penalty-half"><td>{isEn ? "Penalty" : "Penalità"}</td><td>-½</td><td>{isEn ? "Stop/Rollback: horse within 20 feet of the fence" : "Stop o rollback: cavallo a meno di 20 piedi dalla staccionata"}</td></tr>
+              <tr class="penalty-half"><td>{isEn ? "Penalty" : "Penalità"}</td><td>-½</td><td>{isEn ? "Run around: failure to stay 10 feet from center" : "Run around: non rispettata distanza di 3 metri dal centro arena"}</td></tr>
+              <tr class="penalty-half"><td>{isEn ? "Penalty" : "Penalità"}</td><td>-½</td><td>{isEn ? "One stride delay in lead change" : "Ritardo di una falcata nel cambio di galoppo"}</td></tr>
+              <tr class="penalty-half"><td>{isEn ? "Penalty" : "Penalità"}</td><td>-½</td><td>{isEn ? "Horse severely stumbling" : "Cavallo che incespica gravemente"}</td></tr>
+
+              <tr class="table-section-header"><td colspan="3" class="header-other">{isEn ? "OTHER SANCTIONS" : "ALTRE SANZIONI"}</td></tr>
+              <tr><td>{isEn ? "Fine" : "Multa"}</td><td>$25</td><td>{isEn ? "Back number not correctly displayed" : "Numero di testiera non esposto correttamente"}</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="hl-box">
+          <h4>{isEn ? "Important Penalty Notes" : "Note Importanti sulle Penalità"}</h4>
+          <ul>
+            <li>{isEn ? <Fragment>A score of 0 or No Score <strong>cannot place</strong> in a go round</Fragment> : <Fragment>Un punteggio 0 o No Score <strong>non può piazzarsi</strong> in un go round</Fragment>}</li>
+            <li>{isEn ? <Fragment>A score of 0 or No Score <strong>cannot advance</strong> in multi-go events</Fragment> : <Fragment>Un punteggio 0 o No Score <strong>non può avanzare</strong> in competizioni con più go</Fragment>}</li>
+            <li>{isEn ? <Fragment>Penalties are <strong>cumulative</strong>: multiple similar errors increase the total deduction</Fragment> : <Fragment>Le penalità sono <strong>cumulative</strong>: più errori dello stesso tipo aumentano la penalità totale</Fragment>}</li>
+          </ul>
+        </div>
+
+        <h3>{isEn ? "Video Review of Penalties" : "Video Review delle Penalità"}</h3>
+        <p>{isEn ? "Judges can use video review to verify major penalties. The procedure dictates:" : "I giudici possono utilizzare il video per verificare le \"major penalties\". La procedura prevede:"}</p>
+        <ul>
+          <li>{isEn ? "The judge holds the score but indicates the mark" : "Il giudice indica il punteggio ma lo tiene sospeso"}</li>
+          <li>{isEn ? "Views the video during a drag or as soon as possible" : "Visiona il video durante il passaggio del trattore o appena possibile"}</li>
+          <li>{isEn ? "Penalties clearly visible in the video must be applied" : "La penalità risultata chiara in video deve essere applicata"}</li>
+          <li>{isEn ? <Fragment>The judge <strong>cannot change</strong> the maneuver score after watching the video</Fragment> : <Fragment>Il giudice <strong>non può cambiare</strong> il punteggio dopo aver visto il video</Fragment>}</li>
+        </ul>
+      </section>
+
+      <!-- 06 REGOLAMENTO -->
+      <section class="guide-section reveal" id="regolamento">
+        <div class="guide-section-header">
+          <div class="guide-section-num">06</div>
+          <h2 class="guide-section-title">{isEn ? "Technical" : "Regolamento"} <em>{isEn ? "Rules" : "Tecnico"}</em></h2>
+        </div>
+
+        <h3>{isEn ? "Required Attire" : "Abbigliamento Obbligatorio"}</h3>
+        <div class="hl-box" style="border-color:#ff7050">
+          <p><strong>{isEn ? "Failure to wear proper western attire results in a SCORE 0" : "Non indossare l'abbigliamento western corretto comporta uno SCORE 0"}</strong></p>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>{isEn ? "Item" : "Capo"}</th><th>{isEn ? "Specifications" : "Specifiche"}</th><th>{isEn ? "Required" : "Obbligatorio"}</th></tr></thead>
+            <tbody>
+              <tr><td>{isEn ? "Shirt" : "Camicia"}</td><td>{isEn ? "Long sleeved with collar, western style" : "A maniche lunghe, stile western"}</td><td>{isEn ? "YES" : "SÌ"}</td></tr>
+              <tr><td>{isEn ? "Western Hat" : "Cappello Western"}</td><td>{isEn ? "Traditional western hat" : "Tradizionale cappello western"}</td><td>{isEn ? "YES (except under 18)" : "SÌ (eccetto under 18)"}</td></tr>
+              <tr><td>{isEn ? "Safety Helmet" : "Caschetto Protettivo"}</td><td>{isEn ? "Approved riding helmet" : "Protezione omologata"}</td><td>{isEn ? "YES (mandatory under 18)" : "SÌ (obbligatorio under 18)"}</td></tr>
+              <tr><td>{isEn ? "Vest / Back Protector" : "Giubbetto / Paraschiena"}</td><td>{isEn ? "Back protection per FISE rules" : "Protezione dorsale secondo regolamento FISE"}</td><td>✅ {isEn ? "YES (mandatory under 18)" : "SÌ (obbligatorio under 18)"}</td></tr>
+              <tr><td>{isEn ? "Boots" : "Stivali"}</td><td>{isEn ? "Western boots with heel" : "Stivali western con tacco"}</td><td>{isEn ? "YES" : "SÌ"}</td></tr>
+              <tr><td>{isEn ? "Western Saddle" : "Sella Western"}</td><td>{isEn ? "Western type saddle" : "Sella di tipo western"}</td><td>{isEn ? "YES" : "SÌ"}</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>{isEn ? "Allowed Bits and Mouthpieces" : "Imboccature e Morsi Consentiti"}</h3>
+
+        <h4>1. HACKAMORE (Bosal)</h4>
+        <div class="hl-box">
+          <ul>
+            <li><strong>{isEn ? "Material:" : "Materiale:"}</strong> {isEn ? "Flexible, braided rawhide, leather, or rope" : "Flessibile, intrecciato, in corda o pelle"}</li>
+            <li><strong>{isEn ? "Max diameter:" : "Diametro massimo:"}</strong> {isEn ? "3/4 inch at the cheek" : "3/4 di pollice misurato alla guancia"}</li>
+            <li>{isEn ? "PROHIBITED: Rigid material under the jaw or on the noseband" : "VIETATO: Materiale rigido sotto la mascella o sulla capezza"}</li>
+            <li>{isEn ? "PROHIBITED: Horsehair bosals" : "VIETATO: Bosal in crine di cavallo"}</li>
+            <li>{isEn ? "PROHIBITED: Mechanical hackamores" : "VIETATO: Hackamore meccanici"}</li>
+          </ul>
+          <p style="margin-top:0.8rem"><span class="badge">{isEn ? "Two-handed use allowed" : "Uso a due mani consentito"}</span></p>
+        </div>
+
+        <h4>2. SNAFFLE BIT {isEn ? "(O-Ring/D-Ring)" : "(Morso Spezzato)"}</h4>
+        <div class="hl-box">
+          <p><strong>{isEn ? "Rings:" : "Anelli:"}</strong> {isEn ? "O-ring, egg-butt or D-ring — NO larger than 4 inches, NO smaller than 2 inches." : "tondi, a uovo o a forma di D — NON più grandi di 4 pollici, NON più piccoli di 2 pollici."}</p>
+          <p><strong>{isEn ? "Mouthpiece:" : "Imboccatura:"}</strong> {isEn ? "round, smooth metal, uncovered. Minimum diameter 5/16 inch." : "rotonda, liscia di metallo, senza fili. Diametro barre minimo 5/16 di pollice."}</p>
+          <p><strong>{isEn ? "Curb strap:" : "Barbozzale:"}</strong> {isEn ? "Leather optional — Chain NOT accepted." : "In cuoio optional — A catena NON accettato."}</p>
+          <p style="margin-top:0.8rem"><span class="badge">{isEn ? "Two-handed use allowed" : "Uso a due mani consentito"}</span></p>
+        </div>
+
+        <h4>3. CURB BIT {isEn ? "(Shanked Bit)" : "(Morso Con Barbozzale)"}</h4>
+        <div class="hl-box">
+          <ul>
+            <li>{isEn ? "Maximum shank length:" : "Lunghezza massima leve:"} <strong>{isEn ? "8 ½ inches" : "8 pollici e mezzo"}</strong></li>
+            <li>{isEn ? "Mouthpiece: smooth, uncovered, diameter from 5/16\" to 3/4\"" : "Imboccatura: liscia, senza fili, diametro da 5/16\" a 3/4\""}</li>
+            <li>{isEn ? "Maximum port height:" : "Altezza massima ponte (Port):"} <strong>{isEn ? "3 ½ inches" : "3 pollici e mezzo"}</strong></li>
+            <li>{isEn ? "No slip or gag bits — No mechanical devices" : "No Slip or gag bits — No Morsi con marchingegni meccanici"}</li>
+            <li>{isEn ? "A standard bit has" : "Un morso standard ha"} <strong>{isEn ? "only one point of pull" : "un solo punto di trazione"}</strong></li>
+          </ul>
+          <p style="margin-top:0.8rem"><span class="badge">{isEn ? "One-handed use required" : "Uso a una mano obbligatorio"}</span></p>
+        </div>
+
+        <h3>{isEn ? "Use of Hands and Reins" : "Uso delle Mani e delle Redini"}</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>{isEn ? "Category/Class" : "Categoria/Classe"}</th><th>{isEn ? "Hands" : "Mani"}</th><th>{isEn ? "Notes" : "Note"}</th></tr></thead>
+            <tbody>
+              <tr><td>SNAFFLE BIT classes</td><td>1 {isEn ? "or" : "o"} 2 {isEn ? "hands" : "mani"}</td><td>{isEn ? "Hand switching possible during pattern" : "Possibile cambio durante il pattern"}</td></tr>
+              <tr><td>BOSAL/HACKAMORE classes</td><td>1 {isEn ? "or" : "o"} 2 {isEn ? "hands" : "mani"}</td><td>{isEn ? "Hand switching possible during pattern" : "Possibile cambio durante il pattern"}</td></tr>
+              <tr><td>GREEN, Entry Level, Ride &amp; Slide</td><td>1 {isEn ? "or" : "o"} 2 {isEn ? "hands" : "mani"}</td><td>{isEn ? "Hand switching possible at any time" : "Possibile cambio in qualsiasi momento"}</td></tr>
+              <tr><td>PARAREINING</td><td>1 {isEn ? "or" : "o"} 2 {isEn ? "hands" : "mani"}</td><td>{isEn ? "Hand switching possible at any time" : "Possibile cambio in qualsiasi momento"}</td></tr>
+              <tr class="penalty-ns"><td>{isEn ? "All other categories" : "Tutte le altre categorie"}</td><td><strong>{isEn ? "ONLY 1 HAND" : "SOLO 1 MANO"}</strong></td><td>{isEn ? "Changing hands = SCORE 0" : "Cambio mano = SCORE 0"}</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="hl-box">
+          <h4>{isEn ? "Rules for One-Handed Rein Use" : "Regole per l'Uso delle Redini a Una Mano"}</h4>
+          <ul>
+            <li>{isEn ? "The hand must be around the reins, excess tail dropping from the bottom of the palm" : "La mano deve essere attorno alle redini, coda in eccesso esce dal basso del palmo"}</li>
+            <li>{isEn ? <Fragment>Only the <strong>index/first finger</strong> or <strong>no finger</strong> is allowed between reins</Fragment> : <Fragment>Solo l'<strong>indice/primo dito</strong> o <strong>nessun dito</strong> è permesso tra le redini</Fragment>}</li>
+            <li>{isEn ? <Fragment>More than one finger between reins = <strong>SCORE 0</strong></Fragment> : <Fragment>Più di un dito tra le redini = <strong>SCORE 0</strong></Fragment>}</li>
+          </ul>
+        </div>
+
+        <h3>{isEn ? "Tails and Manes" : "Code e Criniere"}</h3>
+        <div class="hl-box">
+          <ul>
+            <li>{isEn ? "Permitted to lengthen tails by horsehair-to-horsehair braiding" : "Consentito allungare le code attraverso l'intreccio di crine con crine"}</li>
+            <li>{isEn ? "Legal to apply artificial tails" : "Legale applicare code artificiali"}</li>
+            <li>{isEn ? "PROHIBITED any attachment applied directly to the tailbone" : "VIETATO qualsiasi aggancio applicato direttamente all'osso della coda"}</li>
+            <li>{isEn ? "PROHIBITED extra weight or excessive weight" : "VIETATO extrapeso o peso eccessivo"}</li>
+            <li>{isEn ? "Permitted to detangle or straighten the mane when horse is completely stopped" : "Permesso districare o raddrizzare la criniera quando il cavallo è completamente fermo"}</li>
+          </ul>
+        </div>
+
+        <h3>{isEn ? "Bit Inspection" : "Controllo Imboccature"}</h3>
+        <div class="hl-box">
+          <p><strong>{isEn ? "Mandatory Post-Run Procedure:" : "Procedura Obbligatoria Post-Gara:"}</strong></p>
+          <ul>
+            <li>{isEn ? <Fragment>All riders must <strong>dismount</strong> immediately following the run</Fragment> : <Fragment>Tutti i cavalieri devono <strong>scendere da cavallo</strong> immediatamente dopo il percorso</Fragment>}</li>
+            <li>{isEn ? <Fragment>Must <strong>drop the bridle</strong> immediately</Fragment> : <Fragment>Devono <strong>togliere l'imboccatura</strong> subito</Fragment>}</li>
+            <li>{isEn ? <Fragment>Horse and equipment must be <strong>presented to the judge</strong> in the arena</Fragment> : <Fragment>Il cavallo e l'attrezzatura devono essere <strong>presentati al giudice</strong> in arena</Fragment>}</li>
+            <li>{isEn ? <Fragment>Refusal to dismount or allow inspection = <strong>NO SCORE</strong></Fragment> : <Fragment>Rifiuto di scendere o far ispezionare = <strong>NO SCORE</strong></Fragment>}</li>
+          </ul>
+        </div>
+        
+       <div style="margin-top:2.5rem;display:flex;justify-content:center;">
+        {isEn ? (
+          <a href="https://www.reiningfactory.com/2026-NRHA-Handbook.pdf" target="_blank" class="btn-doc">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>    NRHA Handbook 2026
+          </a>
+        ) : (
+          <a href="https://www.reiningfactory.com/2026-irha-rulebook.pdf" target="_blank" class="btn-doc">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>    Rulebook IRHA 2026
+          </a>
+        )}
+      </div>
+      </section>
+
+      <!-- 07 EVENTI -->
+      <section class="guide-section reveal" id="eventi">
+        <div class="guide-section-header">
+          <div class="guide-section-num">07</div>
+          <h2 class="guide-section-title">{isEn ? "Major" : "Maggiori"} <em>{isEn ? "Events" : "Eventi"}</em></h2>
+        </div>
+
+        <p>{isEn ? "The Reining world offers numerous competitive opportunities at the national and international levels, organized by IRHA, FISE, and NRHA." : "Il mondo del Reining offre numerose opportunità competitive a livello nazionale e internazionale, organizzate da IRHA, FISE e NRHA."}</p>
+
+        <h3>{isEn ? "Italian Championships" : "Campionati Italiani"}</h3>
+        <div class="cards-3">
+          <div class="g-card">
+            <h4>{isEn ? "Italian Debutant Championship" : "Campionato Italiano Debuttanti"}</h4>
+            <p>{isEn ? "Reserved for riders and horses with early competitive experiences." : "Riservato ai cavalieri e cavalli alle prime esperienze competitive."}</p>
+            <p><strong>{isEn ? "Qualifying categories:" : "Categorie qualificanti:"}</strong></p>
+            <ul><li>Green Level</li><li>Short Stirrup</li><li>Entry Level Youth Bis</li></ul>
+          </div>
+          <div class="g-card">
+            <h4>{isEn ? "Italian Championship" : "Campionato Italiano"}</h4>
+            <p>{isEn ? "For Intermediate level horses and riders." : "Per cavalieri e cavalli di livello intermedio."}</p>
+            <p><strong>{isEn ? "Qualifying categories:" : "Categorie qualificanti:"}</strong></p>
+            <ul><li>Prime Time Non Pro / Open</li><li>Rookie Professional</li><li>Green Reiner</li><li>Rookie Level 1 {isEn ? "&" : "e"} 2</li><li>Entry Level Youth</li><li>Ladies</li></ul>
+          </div>
+          <div class="g-card">
+            <h4>{isEn ? "Absolute Italian Championship" : "Campionato Italiano Assoluto"}</h4>
+            <p>{isEn ? "The highest competitive national level, with NRHA approved finals." : "Il più alto livello competitivo nazionale, con finale approvata NRHA."}</p>
+            <p><strong>{isEn ? "Categories:" : "Categorie:"}</strong></p>
+            <ul><li>Youth 14-18 / 13 &amp; Under</li><li>Limited / Intermediate / Non Pro</li><li>Limited / Intermediate / Open</li></ul>
+          </div>
+        </div>
+
+        <h3>Special Events</h3>
+        <div class="cards-3">
+          <div class="g-card"><h4>Futurity {isEn ? "3 Years" : "3 Anni"} IRHA/IRBHA</h4><p>{isEn ? "Reserved for 3-year-old horses in all categories." : "Riservato ai cavalli di 3 anni in tutte le categorie."}</p><span class="badge">{isEn ? "Age: 3 years" : "Età: 3 anni"}</span></div>
+          <div class="g-card"><h4>Futurity {isEn ? "4 Years" : "4 Anni"} IRHA/IRBHA</h4><p>{isEn ? "Reserved for 4-year-old horses in OPEN and NON PRO categories." : "Riservato ai cavalli di 4 anni in categorie OPEN e NON PRO."}</p><span class="badge">{isEn ? "Age: 4 years" : "Età: 4 anni"}</span></div>
+          <div class="g-card"><h4>Derby IRHA/IRBHA</h4><p>{isEn ? "Dedicated to horses in their phase of maximum maturity." : "Dedicato ai cavalli nella loro fase di massima maturità."}</p><span class="badge">{isEn ? "Age: 5-8 years" : "Età: 5-8 anni"}</span></div>
+          <div class="g-card"><h4>Maturity IRHA</h4><p>{isEn ? "For older, experienced horses showing longevity and consistent performance." : "Per cavalli esperti che dimostrano longevità e prestazioni costanti."}</p><span class="badge">{isEn ? "Age: 9+ years" : "Età: 9+ anni"}</span></div>
+          <div class="g-card"><h4>Futurity EU NRHA</h4><p>{isEn ? "Prestigious European competition organized by the NRHA." : "Competizione europea di prestigio organizzata dalla NRHA."}</p><span class="badge">{isEn ? "International" : "Internazionale"}</span></div>
+          <div class="g-card"><h4>Derby EU NRHA</h4><p>{isEn ? "European-level Derby with international participation." : "Derby a livello europeo con partecipazione internazionale."}</p><span class="badge">{isEn ? "International" : "Internazionale"}</span></div>
+        </div>
+
+        <div class="hl-box">
+          <h4>{isEn ? "Event Approval" : "Approvazione Eventi"}</h4>
+          <p>{isEn 
+            ? <Fragment>All national and international Special Events organized in Italy must be <strong>approved by IRHA/FISE and NRHA</strong>. Competitions with Added Money greater than $2,500 total or $1,000 per category require mandatory NRHA approval.</Fragment>
+            : <Fragment>Tutti gli Special Events nazionali ed internazionali organizzati in Italia devono essere <strong>approvati da IRHA/FISE e NRHA</strong>. Le gare con Added Money superiore a $2.500 totali o $1.000 per categoria richiedono approvazione NRHA obbligatoria.</Fragment>
+          }</p>
+        </div>
+
+        <h3>{isEn ? "International Competitions" : "Competizioni Internazionali"}</h3>
+        <ul>
+          <li><strong>FEI World Equestrian Games</strong>: {isEn ? "World Equestrian Games" : "i Giochi Mondiali Equestri"}</li>
+          <li><strong>FEI European Championships</strong>: {isEn ? "European Championships" : "Campionati Europei"}</li>
+          <li><strong>NRHA World Championships</strong>: {isEn ? "NRHA World Championships" : "Campionati Mondiali NRHA"}</li>
+          <li><strong>Nations Cup</strong>: {isEn ? "National team competition" : "Competizione a squadre nazionali"}</li>
+        </ul>
+
+        <div class="fonte">
+          <p><strong>{isEn ? "Source:" : "Fonte:"}</strong> {isEn ? "IRHA (Italian Reining Horse Association) Rulebook — 2025 Edition" : "Regolamento IRHA (Italian Reining Horse Association) — Edizione 2025"}</p>
+          <p>{isEn ? "For official information:" : "Per informazioni ufficiali:"} <a href="https://www.irha.it" target="_blank">www.irha.it</a> | <a href="https://www.nrha.com" target="_blank">www.nrha.com</a></p>
+          <p style="margin-top:0.8rem;font-size:0.8rem">© 2025 — {isEn ? "All patterns are copyright NRHA 2025" : "Tutti i pattern sono copyright NRHA 2025"}</p>
+        </div>
+      </section>
+
+    </div><!-- /content-wrap -->
+  </div>
+
+  <script is:inline>
+    // Reveal script 
+    document.addEventListener('astro:page-load', () => {
+      // Setup Subnav scrollspy
+      const navbar = document.getElementById('navbar') || document.querySelector('nav');
+      const backTop = document.getElementById('backTop');
+
+      window.addEventListener('scroll', () => {
+        if (navbar) navbar.classList.toggle('scrolled', window.scrollY > 60);
+        if (backTop) backTop.classList.toggle('visible', window.scrollY > 400);
+
+        // Active subnav
+        const sections = ['introduzione','categorie','pattern','punteggio','penalita','regolamento','eventi'];
+        const links = document.querySelectorAll('.subnav a');
+        if(links.length > 0) {
+          let current = sections[0];
+          sections.forEach(id => {
+            const el = document.getElementById(id);
+            if (el && el.getBoundingClientRect().top <= 300) current = id;
+          });
+          links.forEach(a => {
+            a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+          });
+        }
+      });
+
+      // Smooth scroll subnav items
+      const subnavLinks = document.querySelectorAll('.subnav a');
+      subnavLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          const targetId = link.getAttribute('href').substring(1);
+          const target = document.getElementById(targetId);
+          if (target) {
+            window.scrollTo({
+              top: target.offsetTop - 260,
+              behavior: 'smooth'
+            });
+          }
+        });
+      });
+
+      // Observer per elementi con animazione "reveal"
+      const obs = new IntersectionObserver(entries => {
+        entries.forEach(e => { 
+          if (e.isIntersecting) { 
+            e.target.classList.add('visible'); 
+            obs.unobserve(e.target); 
+          } 
+        });
+      }, { threshold: 0.08 });
+      
+      document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+    });
+  </script>
+</Layout>

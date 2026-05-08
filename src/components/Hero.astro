@@ -1,0 +1,90 @@
+---
+interface Props {
+  eyebrow: string;
+  bgImage: string;
+}
+
+const { eyebrow, bgImage } = Astro.props;
+---
+<section class="db-hero">
+  <div class="db-hero-bg" style={`background-image: url('${bgImage}');`}></div>
+  <div class="db-hero-overlay"></div>
+  <div class="db-hero-content">
+    <p class="db-eyebrow">{eyebrow}</p>
+    <h1 class="db-title"><slot name="title" /></h1>
+    <p class="db-subtitle"><slot name="subtitle" /></p>
+  </div>
+</section>
+
+<style is:global>
+  .db-hero {
+    position: relative;
+    height: 60vh;
+    min-height: 420px;
+    display: flex;
+    align-items: flex-end;
+    overflow: hidden;
+  }
+  .db-hero-bg {
+    position: absolute; inset: 0;
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    filter: saturate(0.7);
+    transform: scale(1.03);
+  }
+  .db-hero-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(13,11,4,0.3) 0%,
+      rgba(13,11,4,0.5) 40%,
+      rgba(13,11,4,0.95) 100%
+    );
+    z-index: 1;
+  }
+  .db-hero-content {
+    position: relative; z-index: 2;
+    padding: 0 4rem 3.5rem;
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .db-eyebrow {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.72rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--db-gold, #C8973A);
+    margin-bottom: 0.75rem;
+  }
+  .db-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.8rem, 6vw, 5rem);
+    font-weight: 900;
+    line-height: 1;
+    color: var(--db-cream, #F5F0E8);
+    margin-bottom: 0.8rem;
+  }
+  .db-title em {
+    font-style: italic;
+    color: var(--db-gold, #C8973A);
+    display: block;
+  }
+  .db-subtitle {
+    font-family: 'Barlow', sans-serif;
+    font-size: 1rem;
+    font-weight: 300;
+    color: rgba(245,240,232,0.6);
+    max-width: 480px;
+    line-height: 1.7;
+  }
+
+  @media(max-width:1024px){
+    .db-hero-content { padding: 0 2rem 3rem; }
+  }
+  @media(max-width:768px){
+    .db-hero-content { padding: 0 1.5rem 2.5rem; }
+    .db-subtitle { font-size: 0.95rem; }
+  }
+</style>

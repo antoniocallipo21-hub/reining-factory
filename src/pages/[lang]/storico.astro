@@ -1,0 +1,369 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { useTranslations } from '../../i18n/utils';
+import { getCollection } from 'astro:content';
+import storicoData from '../../data/storico.json';
+
+export async function getStaticPaths() {
+  return [
+    { params: { lang: 'it' } },
+    { params: { lang: 'en' } },
+  ];
+}
+
+const { lang } = Astro.params;
+const t = useTranslations(lang);
+const isEn = lang === 'en';
+const langPrefix = '/' + lang;
+
+// Configuration
+const CAT_LABELS = {
+  trfam:  'The Run For A Million',
+  nrha:   'NRHA Futurity',
+  irha:   'IRHA-NRHA Futurity',
+  over230:  'Over 230',
+};
+
+const SUB_LABELS = {
+  open:   'Open',
+  nonpro: 'Non Pro',
+};
+
+// 1. Clean data and determine category order based on appearance
+// Fetch stallions to create clickable links
+const allStallions = await getCollection('stalloni');
+const stallionMap = new Map();
+allStallions.forEach(s => {
+  if (s.data.name) {
+    stallionMap.set(s.data.name.toLowerCase().trim(), s.id);
+  }
+  if (s.data.nickname) {
+    stallionMap.set(s.data.nickname.toLowerCase().trim(), s.id);
+  }
+});
+
+const validRows = storicoData.filter(r => r.Categoria && r.Anno).map(r => {
+  const horseName = (r.Cavallo || '').toLowerCase().trim();
+  let link = r.LinkCavallo || '';
+  
+  if (!link && stallionMap.has(horseName)) {
+    link = `/stalloni/${stallionMap.get(horseName)}`;
+  }
+
+  return { ...r, LinkCavallo: link };
+});
+
+const catOrder = [];
+validRows.forEach(r => {
+  const cat = r.Categoria.toLowerCase().trim();
+  if (!catOrder.includes(cat)) catOrder.push(cat);
+});
+
+// Utilities per Over230
+const over230Rows = validRows.filter(r => r.Categoria.toLowerCase().trim() === 'over230')
+  .sort((a, b) => parseFloat(b.Score) - parseFloat(a.Score));
+
+let primoStorico = null;
+if (over230Rows.length > 0) {
+  primoStorico = over230Rows.reduce((min, r) => parseInt(r.Anno) < parseInt(min.Anno) ? r : min, over230Rows[0]);
+}
+
+// Funzione generica per raggruppare e generare tabelle (Non-Over230)
+function generateTableRows(rows) {
+  const sorted = [...rows].sort((a, b) => parseInt(b.Anno) - parseInt(a.Anno));
+  const anniCount = {};
+  sorted.forEach(r => {
+    const a = r.Anno || '';
+    anniCount[a] = (anniCount[a] || 0) + 1;
+  });
+
+  return sorted.map(r => {
+    return {
+      ...r,
+      isCoChampion: anniCount[r.Anno] > 1
+    };
+  });
+}
+
+function getSubOrder(catRows) {
+  const subOrder = [];
+  catRows.forEach(r => {
+    const sub = (r.Sottocategoria || '').toLowerCase().trim();
+    if (sub && !subOrder.includes(sub)) subOrder.push(sub);
+  });
+  return subOrder;
+}
+---
+
+<Layout title={isEn ? "Historic Reining Champions | Reining Factory" : "Storico Campioni Reining | Reining Factory"}>
+
+  <style>
+    /* PAGE HERO */
+    .page-hero { min-height: 60vh; position: relative; display: flex; align-items: flex-start; overflow: hidden; background: linear-gradient(to bottom, rgba(26,20,8,0.5) 0%, rgba(26,20,8,0.95) 100%), url('/immagini/storico-hero.jpg') center/cover no-repeat; }
+    .page-hero-content { position: relative; z-index: 2; padding: 150px 4rem 3rem; max-width: 900px; }
+    .page-hero-eyebrow { font-family: 'Barlow Condensed', sans-serif; font-size: 0.8rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); margin-bottom: 1.5rem; }
+    .page-hero-title { font-family: 'Playfair Display', serif; font-size: clamp(2.5rem, 6vw, 5rem); font-weight: 900; line-height: 0.95; margin-bottom: 1.2rem; }
+    .page-hero-title em { font-style: italic; color: var(--gold); display: block; }
+    .page-hero-subtitle { font-size: 1.1rem; font-weight: 300; color: rgba(245,240,232,0.7); max-width: 600px; line-height: 1.75; }
+
+    /* CONTENT */
+    .content-wrap { max-width: 1100px; margin: 0 auto; padding: 4rem; }
+
+    /* TABS */
+    .tabs-wrap { margin-bottom: 2.5rem; }
+    .tabs-label { font-family: 'Barlow Condensed', sans-serif; font-size: 0.72rem; letter-spacing: 0.25em; text-transform: uppercase; color: rgba(245,240,232,0.4); margin-bottom: 0.8rem; }
+    .tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tab-btn { font-family: 'Barlow Condensed', sans-serif; font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; background: transparent; border: 1px solid rgba(201,150,58,0.2); color: rgba(245,240,232,0.5); padding: 0.5rem 1.1rem; cursor: pointer; transition: all 0.2s; }
+    .tab-btn:hover { border-color: rgba(201,150,58,0.5); color: var(--cream); }
+    .tab-btn.active { background: var(--gold); color: var(--dark); border-color: var(--gold); font-weight: 700; }
+
+    /* PANELS */
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; animation: fadeIn 0.4s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* PANEL TITLE */
+    .panel-title { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 700; color: var(--cream); margin: 0 0 1.5rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--border); }
+    .panel-title em { font-style: italic; color: var(--gold); }
+
+    /* SOTTOCATEGORIA HEADER */
+    .sub-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; background: rgba(201,150,58,0.1); border-left: 4px solid var(--gold); padding: 0.8rem 1.2rem; margin: 2rem 0 0; }
+    .sub-header-label { font-family: 'Barlow Condensed', sans-serif; font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); font-weight: 700; }
+    .sub-header-link a { display: inline-flex; align-items: center; gap: 6px; font-family: 'Barlow Condensed', sans-serif; font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(245,240,232,0.5); text-decoration: none; border: 1px solid rgba(201,150,58,0.2); padding: 0.3rem 0.8rem; transition: all 0.2s; white-space: nowrap; }
+    .sub-header-link a:hover { color: var(--gold); border-color: var(--gold); }
+
+    /* TABLE */
+    .table-wrap { overflow-x: auto; margin-bottom: 0.5rem; }
+    table { width: 100%; border-collapse: collapse; min-width: 560px; }
+    thead tr { background: rgba(201,150,58,0.06); }
+    th { font-family: 'Barlow Condensed', sans-serif; font-size: 0.72rem; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(245,240,232,0.4); padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid var(--border); }
+    td { padding: 0.85rem 1rem; font-size: 0.92rem; color: rgba(245,240,232,0.7); border-bottom: 1px solid rgba(201,150,58,0.06); }
+    tbody tr:hover td { background: rgba(201,150,58,0.04); }
+    .td-year { font-family: 'Barlow Condensed', sans-serif; font-size: 0.85rem; letter-spacing: 0.1em; color: var(--gold); font-weight: 700; white-space: nowrap; }
+    .td-score { font-family: 'Barlow Condensed', sans-serif; font-size: 0.9rem; font-weight: 700; color: var(--cream); white-space: nowrap; }
+    .td-horse { display: inline-flex; align-items: center; gap: 5px; font-family: 'Barlow Condensed', sans-serif; font-size: 0.78rem; letter-spacing: 0.06em; padding: 0.15rem 0.6rem; border-radius: 2px; transition: all 0.2s; }
+    span.td-horse { color: rgba(245,240,232,0.4); border: 1px solid rgba(255,255,255,0.05); background: rgba(255,255,255,0.02); }
+    a.td-horse { color: var(--gold); border: 1px solid rgba(201,150,58,0.3); background: rgba(201,150,58,0.05); text-decoration: none; font-weight: 500; }
+    a.td-horse:hover { border-color: var(--gold); background: rgba(201,150,58,0.15); color: var(--cream); transform: translateY(-1px); }
+    .co-badge { display: inline-block; font-family: 'Barlow Condensed', sans-serif; font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); border: 1px solid rgba(201,150,58,0.4); padding: 0.1rem 0.5rem; vertical-align: middle; margin-left: 0.5rem; }
+  
+    /* OVER 230 */
+    .over230-wrap { margin-top: 1rem; }
+    .over230-row { display: grid; grid-template-columns: 50px 1fr auto; align-items: center; gap: 2rem; padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border); transition: background 0.2s; }
+    .over230-row:hover { background: rgba(201,150,58,0.03); }
+    .over230-row.record { border-left: 3px solid var(--gold); background: rgba(201,150,58,0.05); padding-left: calc(1.5rem - 3px); }
+    .over230-row.record:hover { background: rgba(201,150,58,0.08); }
+    .over230-pos { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 900; color: rgba(201,150,58,0.2); text-align: center; line-height: 1; }
+    .over230-row.record .over230-pos { color: var(--gold); }
+    .over230-name { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; color: var(--cream); margin-bottom: 0.25rem; }
+    .over230-details { font-family: 'Barlow Condensed', sans-serif; font-size: 0.82rem; letter-spacing: 0.08em; color: rgba(245,240,232,0.45); }
+    .over230-right { text-align: right; }
+    .over230-badge-wrap { font-family: 'Barlow Condensed', sans-serif; font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; }
+    .badge-eu { display: inline-block; padding: 0.2rem 0.6rem; border: 1px solid #6b9fd4; color: #6b9fd4; }
+    .badge-usa { display: inline-block; padding: 0.2rem 0.6rem; border: 1px solid #d46b6b; color: #d46b6b; }
+    .over230-score-right { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 900; color: var(--gold); margin-top: 0.3rem; }
+    .over230-row.record .over230-score-right { font-size: 1.8rem; color: var(--gold-light); }
+
+    .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.7s ease, transform 0.7s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    @media(max-width:1024px){
+      .page-hero-content { padding: 150px 2rem 3rem 2rem; }
+      .content-wrap { padding: 3rem 2rem; }
+    }
+    @media (max-width: 768px) {
+      .page-hero { min-height: 60vh; }
+      .page-hero-content { padding: 140px 1.5rem 1rem; }
+      .page-hero-subtitle { font-size: 0.95rem; }
+      .content-wrap { padding: 2.5rem 1.5rem; }
+    }
+  </style>
+
+  <!-- HERO -->
+  <div class="page-hero">
+    <div class="page-hero-content">
+      <p class="page-hero-eyebrow">{t('storico.hero_eyebrow')}</p>
+      <h1 class="page-hero-title">{isEn ? t('storico.hero_title_em') : t('storico.hero_title')} <em>{isEn ? t('storico.hero_title') : t('storico.hero_title_em')}</em></h1>
+      <p class="page-hero-subtitle">{t('storico.hero_sub')}</p>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content-wrap">
+
+    <div class="tabs-wrap reveal">
+      <div class="tabs-label">{t('storico.tabs_label')}</div>
+      <div class="tabs" id="tabsContainer">
+        {catOrder.map((cat, idx) => {
+          const label = CAT_LABELS[cat] || cat.toUpperCase();
+          return (
+            <button class={`tab-btn ${idx === 0 ? 'active' : ''}`} data-tab={cat}>{label}</button>
+          )
+        })}
+      </div>
+    </div>
+
+    <!-- PANELS -->
+    <div id="panelsContainer" class="reveal">
+      {catOrder.map((cat, idx) => {
+        const catRows = validRows.filter(r => r.Categoria.toLowerCase().trim() === cat);
+        const label = CAT_LABELS[cat] || cat.toUpperCase();
+        const titleParts = label.split(' ');
+        const lastWord = titleParts.pop();
+
+        return (
+          <div class={`tab-panel ${idx === 0 ? 'active' : ''}`} id={`panel-${cat}`}>
+            <h2 class="panel-title">{titleParts.join(' ')} <em>{lastWord}</em></h2>
+
+            {cat === 'over230' && (
+              <div class="over230-wrap">
+                {over230Rows.map((r, i) => {
+                  const luogo = (r.Luogo || '').trim().toUpperCase();
+                  const isRecord = i === 0;
+                  const isPrimo = r.Cavaliere === primoStorico?.Cavaliere && r.Anno === primoStorico?.Anno && r.Cavallo === primoStorico?.Cavallo;
+                  
+                  return (
+                    <div class={`over230-row ${isRecord ? 'record' : ''}`}>
+                      <div class="over230-pos">
+                        {isRecord ? (
+                          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"/><path d="M5 21h14"/></svg>
+                        ) : (i + 1)}
+                      </div>
+                      <div class="over230-info">
+                        <div class="over230-name">{r.Cavaliere}</div>
+                        <div class="over230-details">
+                          {r.LinkCavallo 
+                            ? <a href={langPrefix + r.LinkCavallo} style="color:inherit;text-decoration:none;border-bottom:1px solid rgba(201,150,58,0.4);">{r.Cavallo}</a>
+                            : r.Cavallo
+                          } &nbsp;·&nbsp; {r.Evento || ''} {r.Anno && `(${r.Anno})`}
+                          {isPrimo && <span style="display:inline-block;margin-left:0.5rem;padding:0.15rem 0.6rem;font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;border:1px solid var(--gold-light);color:var(--gold-light);">{t('storico.first_over_230')}</span>}
+                        </div>
+                      </div>
+                      <div class="over230-right">
+                        <div class="over230-badge-wrap">
+                          {luogo === 'EU' && <span class="badge-eu">EU</span>}
+                          {luogo === 'USA' && <span class="badge-usa">USA</span>}
+                        </div>
+                        <div class="over230-score-right">{r.Score}</div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+
+            {cat !== 'over230' && (() => {
+              const subOrder = getSubOrder(catRows);
+              if (subOrder.length === 0) {
+                // Table without sub
+                const rows = generateTableRows(catRows);
+                return (
+                  <div class="table-wrap">
+                    <table>
+                      <thead><tr><th>{t('storico.table_year')}</th><th>{t('storico.table_rider')}</th><th>{t('storico.table_horse')}</th><th>{t('storico.table_score')}</th></tr></thead>
+                      <tbody>
+                        {rows.map(r => (
+                          <tr>
+                            <td class="td-year">{r.Anno || ''}</td>
+                            <td>{r.Cavaliere || ''}{r.isCoChampion && ' <span class="co-badge">Co-Champion</span>'}</td>
+                            <td>
+                              {r.LinkCavallo
+                                ? <a href={langPrefix + r.LinkCavallo} class="td-horse">{r.Cavallo}</a>
+                                : <span class="td-horse">{r.Cavallo}</span>
+                              }
+                            </td>
+                            <td class="td-score">{r.Score || ''}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )
+              } else {
+                // Return tables broken by subOrder
+                return subOrder.map(sub => {
+                  const subRows = catRows.filter(r => (r.Sottocategoria || '').toLowerCase().trim() === sub);
+                  const rowsWithLogic = generateTableRows(subRows);
+                  const linkDoc = subRows.find(r => r.LinkDoc)?.LinkDoc || '';
+
+                  return (
+                    <div class="table-container">
+                      <div class="sub-header">
+                        <span class="sub-header-label">{SUB_LABELS[subRows[0]?.Sottocategoria?.toLowerCase()] || subRows[0]?.Sottocategoria || ''}</span>
+                        <span class="sub-header-link">
+                          {linkDoc && (
+                            <a href={linkDoc} target="_blank" rel="noopener">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/>
+                                <path d="M14 2v5a1 1 0 0 0 1 1h5"/>
+                              </svg> {t('storico.official_doc')}
+                            </a>
+                          )}
+                        </span>
+                      </div>
+                      <div class="table-wrap">
+                        <table>
+                          <thead><tr><th>{t('storico.table_year')}</th><th>{t('storico.table_rider')}</th><th>{t('storico.table_horse')}</th><th>{t('storico.table_score')}</th></tr></thead>
+                          <tbody>
+                            {rowsWithLogic.map(r => (
+                              <tr>
+                                <td class="td-year">{r.Anno || ''}</td>
+                                <td>{r.Cavaliere || ''}{r.isCoChampion ? <span class="co-badge">Co-Champion</span> : null}</td>
+                                <td>
+                                  {r.LinkCavallo
+                                    ? <a href={langPrefix + r.LinkCavallo} class="td-horse">{r.Cavallo}</a>
+                                    : <span class="td-horse">{r.Cavallo}</span>
+                                  }
+                                </td>
+                                <td class="td-score">{r.Score || ''}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )
+                });
+              }
+            })()}
+
+          </div>
+        )
+      })}
+    </div>
+
+  </div>
+
+  <script is:inline>
+    document.addEventListener('astro:page-load', () => {
+      function activateTab(cat) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.getAttribute('data-tab') === cat));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + cat));
+        
+        const offsetTarget = document.getElementById('panelsContainer');
+        if (offsetTarget) {
+          const top = offsetTarget.getBoundingClientRect().top + window.scrollY - 160;
+          window.scrollTo({top: top, behavior: 'smooth'});
+        }
+      }
+
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const cat = e.currentTarget.getAttribute('data-tab');
+          activateTab(cat);
+        });
+      });
+
+      const obs = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+          if(e.isIntersecting) {
+            e.target.classList.add('visible');
+            obs.unobserve(e.target);
+          }
+        });
+      }, {threshold: 0.12});
+      document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+    });
+  </script>
+
+</Layout>

@@ -1,0 +1,259 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { useTranslations } from '../../i18n/utils';
+import eventiData from '../../data/calendario.json';
+
+export async function getStaticPaths() {
+  return [
+    { params: { lang: 'it' } },
+    { params: { lang: 'en' } },
+  ];
+}
+
+const { lang } = Astro.params;
+const t = useTranslations(lang);
+const isEn = lang === 'en';
+const langPrefix = '/' + lang;
+
+// Utility per interpretare GG/MM/YYYY e generare strutture
+function parseDate(str) {
+  if (!str) return null;
+  const p = str.trim().split('/');
+  if (p.length !== 3) return null;
+  return new Date(parseInt(p[2]), parseInt(p[1]) - 1, parseInt(p[0]));
+}
+
+const MESI = Array.from({ length: 12 }, (_, i) => t(`cal.month.${i}`));
+
+function formatRange(ev) {
+  const inizio = parseDate(ev.dataInizio);
+  const fine = parseDate(ev.dataFine) || inizio;
+  if (!inizio) return '';
+  const gi = inizio.getDate(), gf = fine ? fine.getDate() : null;
+  const mi = MESI[inizio.getMonth()].toLowerCase();
+  const mf = fine ? MESI[fine.getMonth()].toLowerCase() : null;
+  const yi = inizio.getFullYear(), yf = fine ? fine.getFullYear() : null;
+  if (!fine || (gi === gf && mi === mf && yi === yf)) return `${gi} ${mi} ${yi}`;
+  if (mi === mf && yi === yf) return `${gi}–${gf} ${mi} ${yi}`;
+  if (yi === yf) return `${gi} ${mi} – ${gf} ${mf} ${yi}`;
+  return `${gi} ${mi} ${yi} – ${gf} ${mf} ${yf}`;
+}
+
+function getMonthsForEvent(ev) {
+  const inizio = parseDate(ev.dataInizio);
+  const fine = parseDate(ev.dataFine) || inizio;
+  if (!inizio) return [];
+  const months = new Set();
+  const cur = new Date(inizio.getFullYear(), inizio.getMonth(), 1);
+  const end = new Date(fine.getFullYear(), fine.getMonth(), 1);
+  while (cur <= end) {
+    months.add(cur.getMonth());
+    cur.setMonth(cur.getMonth() + 1);
+  }
+  return Array.from(months);
+}
+
+function badgeClass(tipo) {
+  const tTipo = (tipo || '').toLowerCase().trim();
+  if (tTipo === 'nazionale' || tTipo === 'national') return 'badge-nazionale';
+  if (tTipo === 'europeo' || tTipo === 'european') return 'badge-europeo';
+  if (tTipo === 'major') return 'badge-major';
+  if (tTipo === 'usa') return 'badge-usa';
+  return 'badge-altro';
+}
+
+const eventiList = eventiData.sort((a, b) => (parseDate(a.dataInizio) || 0) - (parseDate(b.dataInizio) || 0));
+
+const eventsByMonth = Array.from({ length: 12 }, () => []);
+eventiList.forEach(r => {
+  getMonthsForEvent(r).forEach(m => {
+    // Avoid duplicates per month
+    if (!eventsByMonth[m].find(e => e.titolo === r.titolo && e.dataInizio === r.dataInizio)) {
+      eventsByMonth[m].push(r);
+    }
+  });
+});
+---
+
+<Layout title={isEn ? "Reining Event Calendar 2026 | Reining Factory" : "Calendario Eventi Reining 2026 | Reining Factory"}>
+  
+  <style>
+    /* HERO */
+    .hero { min-height: 60vh; position: relative; display: flex; align-items: flex-start; overflow: hidden; }
+    .hero-bg { position: absolute; inset: 0; background: linear-gradient(135deg, rgba(26,20,8,0.88) 40%, rgba(107,76,42,0.35) 100%), url('/immagini/calendario-hero.jpg') center/cover no-repeat; }
+    .hero-bg::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 70% 50%, rgba(201,150,58,0.07) 0%, transparent 70%); }
+    .hero-content { position: relative; z-index: 2; padding: 150px 4rem 3rem; max-width: 900px; }
+    .hero-eyebrow { font-family: 'Barlow Condensed', sans-serif; font-size: 0.8rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); margin-bottom: 1.5rem; }
+    .hero-title { font-family: 'Playfair Display', serif; font-size: clamp(2.5rem, 6vw, 5rem); line-height: 0.95; font-weight: 900; margin-bottom: 1.2rem; }
+    .hero-title em { font-style: italic; color: var(--gold); display: block; }
+    .hero-subtitle { font-size: 1.1rem; font-weight: 300; color: rgba(245,240,232,0.7); max-width: 600px; line-height: 1.75; }
+   
+    /* CONTENT */
+    .content-wrap { max-width: 1100px; margin: 0 auto; padding: 5rem 4rem; }
+
+    /* LINK UTILI */
+    .link-utili { background: rgba(201,150,58,0.06); border: 1px solid var(--border); border-left: 4px solid var(--gold); padding: 1.5rem 2rem; margin-bottom: 2.5rem; display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; }
+    .link-utili-label { font-family: 'Barlow Condensed', sans-serif; font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-right: 0.5rem; flex-shrink: 0; }
+    .link-utili a { font-family: 'Barlow Condensed', sans-serif; font-size: 0.78rem; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(245,240,232,0.6); text-decoration: none; border: 1px solid rgba(201,150,58,0.2); padding: 0.4rem 1rem; transition: all 0.2s; white-space: nowrap; }
+    .link-utili a:hover { color: var(--gold); border-color: var(--gold); }
+
+    /* TABS */
+    .tabs-wrap { margin-bottom: 2rem; }
+    .tabs-label { font-family: 'Barlow Condensed', sans-serif; font-size: 0.72rem; letter-spacing: 0.25em; text-transform: uppercase; color: rgba(245,240,232,0.4); margin-bottom: 0.8rem; }
+    .tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tab-btn { font-family: 'Barlow Condensed', sans-serif; font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; background: transparent; border: 1px solid rgba(201,150,58,0.2); color: rgba(245,240,232,0.5); padding: 0.5rem 1.1rem; cursor: pointer; transition: all 0.2s; }
+    .tab-btn:hover { border-color: rgba(201,150,58,0.5); color: var(--cream); }
+    .tab-btn.active { background: var(--gold); color: var(--dark); border-color: var(--gold); font-weight: 700; }
+
+    /* PANELS */
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; animation: fadeIn 0.4s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* MONTH HEADER */
+    .month-header { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 700; color: var(--cream); margin: 0 0 1.5rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--border); }
+    .month-header em { font-style: italic; color: var(--gold); }
+
+    /* EVENT CARD */
+    .ev-card { border: 1px solid var(--border); padding: 1.4rem 1.8rem; margin-bottom: 1rem; position: relative; transition: all 0.25s; }
+    .ev-card:hover { border-color: rgba(201,150,58,0.4); background: rgba(201,150,58,0.03); }
+    .ev-card-date { font-family: 'Barlow Condensed', sans-serif; font-size: 0.75rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.3rem; }
+    .ev-title-row { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 0.3rem; }
+    .ev-card-title { font-family: 'Playfair Display', serif; font-size: 1.05rem; font-weight: 700; color: var(--cream); margin-bottom: 0; }
+    .ev-card-location { font-size: 0.88rem; color: rgba(245,240,232,0.5); display: flex; align-items: center; gap: 4px; margin-top: 0.3rem; }
+    .ev-card-actions { display: flex; gap: 0.6rem; align-items: center; flex-shrink: 0; }
+    .ev-link { font-family: 'Barlow Condensed', sans-serif; font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--dark); background: var(--gold); padding: 0.3rem 0.8rem; text-decoration: none; transition: background 0.2s; white-space: nowrap; }
+    .ev-link:hover { background: var(--gold-light); }
+    .ev-link-live { background: rgba(201,150,58,0.15); color: var(--gold); border: 1px solid var(--gold); display: inline-flex; align-items: center; gap: 0.4rem; font-family: 'Barlow Condensed', sans-serif; font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.3rem 0.8rem; text-decoration: none; transition: all 0.2s; white-space: nowrap; }
+    .ev-link-live:hover { background: var(--gold); color: var(--dark); }
+    .ev-empty { color: rgba(245,240,232,0.3); font-size: 0.9rem; padding: 1rem 0; font-style: italic; }
+
+    .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.7s ease, transform 0.7s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    @media(max-width:1024px) {
+      .hero-content { padding: 150px 2rem 0 2rem; }
+      .content-wrap { padding: 4rem 2rem; }
+    }
+    @media (max-width: 768px) {
+      .hero-content { padding: 140px 1.5rem 1rem; }
+      .hero-title { font-size: clamp(2.5rem, 10vw, 4rem); }
+      .content-wrap { padding: 2rem 1.5rem; }
+      .tabs-wrap { top: 60px; }
+      .ev-title-row { flex-direction: column; align-items: flex-start; gap: 0.8rem; }
+      .ev-card-actions { width: 100%; justify-content: flex-start; }
+    }
+  </style>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-content">
+      <p class="hero-eyebrow">{t('cal.hero_eyebrow')}</p>
+      <h1 class="hero-title">{t('cal.hero_title')} <em>{t('cal.hero_title_em')}</em></h1>
+      <p class="hero-subtitle">{t('cal.hero_sub')}</p>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content-wrap">
+
+    <!-- LINK UTILI -->
+    <div class="link-utili reveal">
+      <span class="link-utili-label">{t('cal.links_label')}</span>
+      <a href="https://www.showmanager.info/Home.aspx" target="_blank" style="margin-left:auto;">ShowManager &rarr;</a>
+      <a href="https://www.irha.it/it/campionato/stagione-2026/show-2026/calendario-irha-2026.html" target="_blank">IRHA Calendar &rarr;</a>
+      <a href="https://bonagacommunication.tv/it" target="_blank">Bonaga TV &rarr;</a>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs-wrap reveal">
+      <div class="tabs-label">{t('cal.tabs_label')}</div>
+      <div class="tabs" id="tabsContainer">
+        {MESI.map((nome, index) => (
+          <button class="tab-btn" data-month={index}>{nome}</button>
+        ))}
+      </div>
+    </div>
+
+    <!-- PANELS -->
+    <div id="panelsContainer" class="reveal">
+      {MESI.map((nome, index) => {
+        const evs = eventsByMonth[index];
+        return (
+          <div class="tab-panel" id={`panel-${index}`}>
+            <div class="month-header"><em>{nome}</em></div>
+            {evs.length === 0 ? (
+              <p class="ev-empty">{t('cal.empty')}</p>
+            ) : (
+              evs.map(ev => (
+                <div class="ev-card">
+                  <div class="ev-card-date">{formatRange(ev)}</div>
+                  <div class="ev-title-row">
+                    <div class="ev-card-title">{ev.titolo}</div>
+                    <div class="ev-card-actions">
+                      {ev.linkSchedule && <a href={ev.linkSchedule} target="_blank" class="ev-link">Draw & Schedule &rarr;</a>}
+                      {ev.linkLivestream && (
+                        <a href={ev.linkLivestream} target="_blank" class="ev-link-live">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"/>
+                          </svg>
+                          Livestream
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                  <div class="ev-card-location">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/>
+                      <circle cx="12" cy="10" r="3"/>
+                    </svg>
+                    {ev.luogo || ''}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        );
+      })}
+    </div>
+
+  </div>
+
+  <script is:inline>
+    document.addEventListener('astro:page-load', () => {
+      const currentMonth = new Date().getMonth();
+      const btnCurrent = document.querySelector(`.tab-btn[data-month="${currentMonth}"]`);
+      const panelCurrent = document.getElementById(`panel-${currentMonth}`);
+      if(btnCurrent) btnCurrent.classList.add('active');
+      if(panelCurrent) panelCurrent.classList.add('active');
+
+      function activateTab(monthIndex) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', parseInt(b.getAttribute('data-month')) === monthIndex));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === `panel-${monthIndex}`));
+        
+        const el = document.getElementById('panelsContainer');
+        const top = el.getBoundingClientRect().top + window.scrollY - 160;
+        window.scrollTo({top: top, behavior: 'smooth'});
+      }
+
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const month = parseInt(e.currentTarget.getAttribute('data-month'));
+          activateTab(month);
+        });
+      });
+
+      const obs = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+          if(e.isIntersecting) {
+            e.target.classList.add('visible');
+            obs.unobserve(e.target);
+          }
+        });
+      }, {threshold: 0.12});
+      document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+    });
+  </script>
+
+</Layout>

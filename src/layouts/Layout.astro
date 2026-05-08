@@ -1,23 +1,551 @@
-<!doctype html>
-<html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro Basics</title>
-	</head>
-	<body>
-		<slot />
-	</body>
+---
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = "Reining Factory — La Risorsa completa sul Reining",
+  description = "Linee di sangue, stalloni, fattrici, eventi e storia del reining. La risorsa italiana più completa su questo sport.",
+} = Astro.props;
+
+import { ClientRouter } from 'astro:transitions';
+import { getLangFromUrl, useTranslations } from '../i18n/utils';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const isEn = lang === 'en';
+const langPrefix = '/' + lang;
+---
+
+<!DOCTYPE html>
+<html lang={lang}>
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{title}</title>
+  <meta name="description" content={description}/>
+  <link rel="icon" type="image/png" href="/immagini/favicon.png"/>
+  <link rel="apple-touch-icon" href="/immagini/favicon-180.png"/>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Barlow+Condensed:wght@300;400;600;700&family=Barlow:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <!-- Iubenda Cookie & Privacy -->
+  <link rel="preload" as="script" href="https://cdn.iubenda.com/cs/iubenda_cs.js"/>
+  <link rel="preload" as="script" href="https://cdn.iubenda.com/cs/tcf/stub-v2.js"/>
+  <script src="https://cdn.iubenda.com/cs/tcf/stub-v2.js"></script>
+  <script>
+    (_iub=self._iub||[]).csConfiguration={
+      cookiePolicyId: 23923272,
+      siteId: 4453049,
+      timeoutLoadConfiguration: 30000,
+      lang: '{lang}',
+      enableTcf: true,
+      tcfVersion: 2,
+      tcfPurposes: {
+        "2":"consent_only","3":"consent_only","4":"consent_only",
+        "5":"consent_only","6":"consent_only","7":"consent_only",
+        "8":"consent_only","9":"consent_only","10":"consent_only"
+      },
+      invalidateConsentWithoutLog: true,
+      googleAdditionalConsentMode: true,
+      consentOnContinuedBrowsing: false,
+      banner: {
+        position: "top",
+        acceptButtonDisplay: true,
+        customizeButtonDisplay: true,
+        closeButtonDisplay: true,
+        closeButtonRejects: true,
+        fontSizeBody: "14px",
+      },
+    }
+  </script>
+  <script async src="https://cdn.iubenda.com/cs/iubenda_cs.js"></script>
+  <ClientRouter />
+</head>
+<body data-astro-transition-scope="header">
+  <script is:inline>
+    // Istantanea classe scrolled per evitare "vibrazioni" al caricamento
+    function checkScroll() {
+       if (window.scrollY > 60) {
+          document.documentElement.classList.add('is-scrolled');
+       } else {
+          document.documentElement.classList.remove('is-scrolled');
+       }
+    }
+    checkScroll();
+    window.addEventListener('scroll', checkScroll);
+    document.addEventListener('astro:after-swap', checkScroll);
+  </script>
+
+  <!-- MOBILE NAV -->
+  <div class="mobile-nav" id="mobileNav">
+    <button class="mobile-close" onclick="closeNav()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+    <a href={langPrefix + "/"} onclick="closeNav()">{t('nav.home')}</a>
+    <a href={langPrefix + "/reining"} onclick="closeNav()">{t('nav.reining')}</a>
+    <span class="mobile-label">{t('nav.cavalli')}</span>
+    <div class="mobile-sub">
+      <a href={langPrefix + "/stalloni"} onclick="closeNav()">{t('nav.stalloni')}</a>
+      <a href={langPrefix + "/fattrici"} onclick="closeNav()">{t('nav.fattrici')}</a>
+    </div>
+    <span class="mobile-label">{t('nav.leggende')}</span>
+    <div class="mobile-sub">
+      <a href={langPrefix + "/hall-of-fame"} onclick="closeNav()">Hall of Fame</a>
+      <a href={langPrefix + "/million-dollar-earners"} onclick="closeNav()">Million Dollar Earners</a>
+    </div>
+    <a href={langPrefix + "/calendario"} onclick="closeNav()">{t('nav.calendario')}</a>
+    <a href={langPrefix + "/storico"} onclick="closeNav()">{t('nav.storico')}</a>
+    <a href={langPrefix + "/contatti"} onclick="closeNav()">{t('nav.contatti')}</a>
+    
+    <div class="mobile-lang-switcher" style="margin-top: 2rem;">
+       {() => {
+         const segments = Astro.url.pathname.split('/');
+         const targetLang = isEn ? 'it' : 'en';
+         if (segments.length >= 2 && (segments[1] === 'it' || segments[1] === 'en')) {
+           segments[1] = targetLang;
+         }
+         const toggleUrl = segments.join('/');
+         return (
+           <a href={toggleUrl} class="lang-toggle-mobile" style="font-size: 1rem; color: var(--gold); text-decoration: none; border: 1px solid var(--gold); padding: 0.5rem 1rem;">
+             {isEn ? 'SITO IN ITALIANO' : 'ENGLISH WEBSITE'}
+           </a>
+         )
+       }}
+    </div>
+  </div>
+
+  <!-- NAVBAR -->
+  <nav id="navbar">
+    <a href={langPrefix + "/"} class="nav-logo">
+      <img src="/immagini/logo.png" alt="Reining Factory" class="logo-img"/>
+    </a>
+    <ul class="nav-links">
+      <li><a href={langPrefix + "/"}>{t('nav.home')}</a></li>
+      <li><a href={langPrefix + "/reining"}>{t('nav.reining')}</a></li>
+      <li>
+        <a href="#">{t('nav.cavalli')} <span class="arr">▼</span></a>
+        <div class="dropdown">
+          <a href={langPrefix + "/stalloni"}>{t('nav.stalloni')}</a>
+          <a href={langPrefix + "/fattrici"}>{t('nav.fattrici')}</a>
+        </div>
+      </li>
+      <li>
+        <a href="#">{t('nav.leggende')} <span class="arr">▼</span></a>
+        <div class="dropdown">
+          <a href={langPrefix + "/hall-of-fame"}>Hall of Fame</a>
+          <a href={langPrefix + "/million-dollar-earners"}>Million Dollar Earners</a>
+        </div>
+      </li>
+      <li><a href={langPrefix + "/calendario"}>{t('nav.calendario')}</a></li>
+      <li><a href={langPrefix + "/storico"}>{t('nav.storico')}</a></li>
+      <li><a href={langPrefix + "/contatti"}>{t('nav.contatti')}</a></li>
+    </ul>
+    <div class="nav-socials">
+      <a href="https://www.instagram.com/reiningfactory" target="_blank" class="nav-social" aria-label="Instagram">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" stroke="none"/></svg>
+      </a>
+      <a href="https://www.facebook.com/reiningfactory" target="_blank" class="nav-social" aria-label="Facebook">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+      </a>
+      <a href="https://www.tiktok.com/@reiningfactory" target="_blank" class="nav-social" aria-label="TikTok">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+          <g transform="scale(0.8) translate(3,3)">
+            <path d="M12.53.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 2.22-1.15 4.31-2.92 5.56-1.74 1.25-4.04 1.65-6.07 1.07-2.11-.58-3.9-2.07-4.82-4.05-1.01-2.04-1-4.49.02-6.53 1.02-2.06 2.9-3.57 5.09-4.14.36-.1.73-.17 1.11-.21v4.06c-1.37.14-2.61.9-3.32 2.06-.7 1.15-.79 2.62-.23 3.84.55 1.22 1.71 2.06 3.01 2.22 1.34.17 2.69-.37 3.55-1.41.86-1.02 1.29-2.36 1.29-3.69-.02-5.74-.01-11.49-.01-17.23z"/>
+          </g>
+        </svg>
+      </a>
+
+      <!-- LANGUAGE SWITCHER -->
+      <div class="lang-switcher">
+        {() => {
+          const segments = Astro.url.pathname.split('/');
+          const targetLang = isEn ? 'it' : 'en';
+          if (segments.length >= 2 && (segments[1] === 'it' || segments[1] === 'en')) {
+            segments[1] = targetLang;
+          }
+          const toggleUrl = segments.join('/');
+          return (
+            <a href={toggleUrl} class="lang-toggle">
+              {isEn ? 'IT' : 'EN'}
+            </a>
+          )
+        }}
+      </div>
+    </div>
+    <div class="hamburger" id="hamburger" onclick="toggleNav()">
+      <span></span><span></span><span></span>
+    </div>
+  </nav>
+
+  <!-- CONTENUTO PAGINA -->
+  <slot />
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-top">
+      <div class="footer-brand">
+        <a href="/" class="nav-logo" style="margin-bottom:1rem;display:inline-flex;">
+          <img src="/immagini/logo.png" alt="Reining Factory" class="logo-img"/>
+        </a>
+        <p>{isEn ? "The most complete resource on the reining world. Stallions, bloodlines, events, and the history of an extraordinary sport." : "La risorsa più completa sul mondo del reining. Stalloni, linee di sangue, eventi e storia di uno sport straordinario."}</p>
+        <div class="footer-socials">
+          <a href="https://www.instagram.com/reiningfactory" target="_blank" class="footer-social" aria-label="Instagram">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" stroke="none"/></svg>
+            <span>@reiningfactory</span>
+          </a>
+          <a href="https://www.facebook.com/reiningfactory" target="_blank" class="footer-social" aria-label="Facebook">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+            <span>@reiningfactory</span>
+          </a>
+          <a href="https://www.tiktok.com/@reiningfactory" target="_blank" class="footer-social" aria-label="TikTok">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+              <g transform="scale(0.8) translate(3,3)">
+                <path d="M12.53.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 2.22-1.15 4.31-2.92 5.56-1.74 1.25-4.04 1.65-6.07 1.07-2.11-.58-3.9-2.07-4.82-4.05-1.01-2.04-1-4.49.02-6.53 1.02-2.06 2.9-3.57 5.09-4.14.36-.1.73-.17 1.11-.21v4.06c-1.37.14-2.61.9-3.32 2.06-.7 1.15-.79 2.62-.23 3.84.55 1.22 1.71 2.06 3.01 2.22 1.34.17 2.69-.37 3.55-1.41.86-1.02 1.29-2.36 1.29-3.69-.02-5.74-.01-11.49-.01-17.23z"/>
+              </g>
+            </svg>
+            <span>@reiningfactory</span>
+          </a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>{t('nav.chi_siamo')}</h4>
+        <ul>
+          <li><a href={langPrefix + "/reining"}>{t('nav.reining')}</a></li>
+          <li><a href={langPrefix + "/storico"}>{t('nav.storico')}</a></li>
+          <li><a href={langPrefix + "/calendario"}>{t('nav.calendario')}</a></li>
+          <li><a href={langPrefix + "/contatti"}>{t('nav.contatti')}</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>{t('nav.cavalli')}</h4>
+        <ul>
+          <li><a href={langPrefix + "/stalloni"}>{t('nav.stalloni')}</a></li>
+          <li><a href={langPrefix + "/fattrici"}>{t('nav.fattrici')}</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>{t('nav.leggende')}</h4>
+        <ul>
+          <li><a href={langPrefix + "/hall-of-fame"}>Hall of Fame</a></li>
+          <li><a href={langPrefix + "/million-dollar-earners"}>Million Dollar Earners</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 ReiningFactory.com — {isEn ? 'All rights reserved' : 'Tutti i diritti riservati'}</p>
+      <div class="footer-legal">
+        <a href="https://www.iubenda.com/privacy-policy/23923272" rel="noreferrer nofollow" target="_blank">Privacy Policy</a>
+        <a href="https://www.iubenda.com/privacy-policy/23923272/cookie-policy" rel="noreferrer nofollow" target="_blank">Cookie Policy</a>
+        <a href="#" role="button" class="iubenda-advertising-preferences-link">{isEn ? 'Advertising preferences' : 'Preferenze pubblicità'}</a>
+      </div>
+      <p class="footer-credits">
+        Photo credits: web / social — {isEn ? 'Images featured on this site are sourced online and are considered to be in the public domain. ' : 'Le immagini presenti su questo sito sono state reperite online e sono da considerarsi di pubblico dominio. '}
+        {isEn ? 'If any image is copyrighted, you can request its removal via the ' : 'Qualora un\'immagine risultasse protetta da copyright, è possibile richiederne la rimozione tramite la '}
+        <a href={langPrefix + "/contatti"}>{isEn ? 'contacts section' : 'sezione contatti'}</a> {isEn ? 'or by emailing ' : 'o scrivendo a '}
+        <a href="mailto:reiningfactory.info@gmail.com">reiningfactory.info@gmail.com</a> {isEn ? '— it will be removed promptly.' : '— sarà rimossa tempestivamente.'}
+      </p>
+    </div>
+  </footer>
+
+  <button class="back-top" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Torna su">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="12" y1="19" x2="12" y2="5"/>
+      <polyline points="5 12 12 5 19 12"/>
+    </svg>
+  </button>
+
+  <script>
+    window.toggleNav = function() {
+      const nav = document.getElementById('mobileNav');
+      const burger = document.getElementById('hamburger');
+      nav.classList.toggle('open');
+      burger.classList.toggle('open');
+      document.body.style.overflow = nav.classList.contains('open') ? 'hidden' : '';
+    }
+    window.closeNav = function() {
+      document.getElementById('mobileNav').classList.remove('open');
+      document.getElementById('hamburger').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+    window.addEventListener('scroll', () => {
+      document.getElementById('backTop').classList.toggle('visible', window.scrollY > 400);
+    });
+
+    // Handle Navbar scrolled state
+    document.addEventListener('astro:page-load', () => {
+      const nav = document.getElementById('navbar');
+      const checkNav = () => {
+        if (window.scrollY > 60) nav?.classList.add('scrolled');
+        else nav?.classList.remove('scrolled');
+      };
+      window.addEventListener('scroll', checkNav);
+      checkNav();
+    });
+
+    // Global Reveal Animation
+    document.addEventListener('astro:page-load', () => {
+      const observerOptions = { threshold: 0.01, rootMargin: '0px 0px 50px 0px' };
+      const revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            revealObserver.unobserve(entry.target);
+          }
+        });
+      }, observerOptions);
+
+      document.querySelectorAll('.reveal, .reveal-left, .reveal-right').forEach(el => revealObserver.observe(el));
+
+      // Gestione Dropdown su Tablet/Touch
+      const dropdownLinks = document.querySelectorAll('.nav-links > li > a[href="#"]');
+      dropdownLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+          if (window.innerWidth > 768) { // Solo su desktop/tablet nav
+            e.preventDefault();
+            e.stopPropagation();
+            const li = link.parentElement;
+            const isOpen = li.classList.contains('is-open');
+            
+            // Chiudi tutti gli altri
+            document.querySelectorAll('.nav-links > li').forEach(item => item.classList.remove('is-open'));
+            
+            // Toggle quello corrente
+            if (!isOpen) li.classList.add('is-open');
+          }
+        });
+      });
+
+      // Chiudi se clicchi fuori
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('.nav-links > li')) {
+          document.querySelectorAll('.nav-links > li').forEach(item => item.classList.remove('is-open'));
+        }
+      });
+    });
+  </script>
+
+</body>
 </html>
 
-<style>
-	html,
-	body {
-		margin: 0;
-		width: 100%;
-		height: 100%;
-	}
+<style is:global>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --cream: #f5f0e8;
+    --dark: #1a1408;
+    --gold: #c9963a;
+    --gold-light: #e8b85a;
+    --sand: #d4b896;
+    --bg2: #110e06;
+    --card: #221a0a;
+    --border: rgba(201,150,58,0.15);
+  }
+  html { 
+  }
+  body {
+    background: var(--dark);
+    color: var(--cream);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 300;
+  }
+
+  /* NAVBAR */
+  #navbar {
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 1000;
+    padding: 1.5rem 4rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.4s ease, padding 0.4s ease, border-color 0.4s ease;
+  }
+  #navbar.scrolled,
+  :root.is-scrolled #navbar {
+    background: rgba(26,20,8,0.97);
+    backdrop-filter: blur(12px);
+    padding: 1rem 4rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo { text-decoration: none; display: flex; align-items: center; color: inherit; } /* Forza colore per evitare link blu */
+  .logo-img { height: 120px; width: auto; display: block; }
+  #navbar.scrolled .logo-img { height: 108px; transition: height 0.4s ease; }
+  .nav-links { display: flex; list-style: none; align-items: center; }
+  .nav-links > li { position: relative; }
+  .nav-links > li > a {
+    color: rgba(245,240,232,0.7);
+    text-decoration: none;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.82rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    transition: color 0.3s;
+    padding: 0.5rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  .nav-links > li > a:hover,
+  .nav-links > li > a.active { color: var(--gold); }
+  .nav-links > li > a .arr { font-size: 0.55rem; opacity: 0.6; transition: transform 0.3s; pointer-events: none; }
+  .nav-links > li:hover > a .arr,
+  .nav-links > li.is-open > a .arr { transform: rotate(180deg); }
+  .dropdown {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-8px);
+    background: rgba(17,14,6,0.98);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--border);
+    min-width: 210px;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s ease;
+    padding-top: 0.6rem;
+  }
+  .nav-links > li { padding-bottom: 0.6rem; margin-bottom: -0.6rem; }
+  .nav-links > li:hover .dropdown,
+  .nav-links > li.is-open .dropdown { 
+    opacity: 1; 
+    pointer-events: all; 
+    transform: translateX(-50%) translateY(0); 
+  }
+  .dropdown a {
+    display: block;
+    padding: 0.85rem 1.5rem;
+    color: rgba(245,240,232,0.6);
+    text-decoration: none;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.8rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    border-bottom: 1px solid rgba(201,150,58,0.07);
+    transition: all 0.2s;
+  }
+  .dropdown a:last-child { border-bottom: none; }
+  .dropdown a:hover { color: var(--gold); background: rgba(201,150,58,0.05); padding-left: 2rem; }
+  .nav-socials { display: flex; align-items: center; gap: 0.8rem; margin-left: 0.5rem; }
+  .nav-social { color: rgba(245,240,232,0.6); display: flex; align-items: center; transition: color 0.3s; }
+  .nav-social:hover { color: var(--gold); }
+  .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; z-index: 1100; }
+  .hamburger span { display: block; width: 26px; height: 2px; background: var(--cream); transition: all 0.35s ease; transform-origin: center; }
+  .hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .hamburger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+  .hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+  .mobile-close { position: absolute; top: 2rem; right: 2rem; background: none; border: 1px solid rgba(201,150,58,0.3); color: var(--cream); cursor: pointer; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; transition: all 0.3s; }
+  .mobile-close:hover { border-color: var(--gold); color: var(--gold); }
+  .mobile-close svg { width: 22px; height: 22px; }
+  .mobile-nav { display: none; position: fixed; inset: 0; background: rgba(26,20,8,0.99); z-index: 1050; flex-direction: column; justify-content: center; align-items: center; gap: 0; opacity: 0; pointer-events: none; transition: opacity 0.4s ease; }
+  .mobile-nav.open { opacity: 1; pointer-events: all; }
+  .mobile-nav > a { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 700; color: var(--cream); text-decoration: none; padding: 0.5rem 0; transition: color 0.3s; }
+  .mobile-nav > a:hover { color: var(--gold); }
+  .mobile-label { font-family: 'Barlow Condensed', sans-serif; font-size: 0.68rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); margin-top: 0.8rem; }
+  .mobile-sub { display: flex; flex-direction: column; align-items: center; border-left: 1px solid var(--border); margin: 0.2rem 0 0.2rem 1rem; padding-left: 1.5rem; }
+  .mobile-sub a { font-family: 'Barlow Condensed', sans-serif; font-size: 0.95rem; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(245,240,232,0.5); text-decoration: none; padding: 0.25rem 0; transition: color 0.3s; }
+  .mobile-sub a:hover { color: var(--gold); }
+
+  /* LANG SWITCHER */
+  .lang-switcher {
+    margin-left: 1.5rem;
+    padding-left: 1.5rem;
+    border-left: 1px solid rgba(255,255,255,0.1);
+  }
+  .lang-toggle {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--gold); /* Cambiato da crema a oro per visibilità */
+    text-decoration: none;
+    border: 1px solid rgba(200,151,58,0.3);
+    padding: 0.2rem 0.6rem;
+    transition: all 0.3s;
+  }
+  .lang-toggle:visited { color: var(--gold); } /* Forza colore per evitare blu */
+  .lang-toggle:hover {
+    color: var(--gold);
+    border-color: var(--gold);
+    background: rgba(200,151,58,0.05);
+  }
+
+  /* HELPERS GLOBALI */
+  .section-label { font-family: 'Barlow Condensed', sans-serif; font-size: 0.72rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.75rem; }
+  .section-title { font-family: 'Playfair Display', serif; font-size: clamp(2rem,4vw,3.2rem); font-weight: 700; line-height: 1.1; margin-bottom: 1.5rem; }
+  .section-title em { font-style: italic; color: var(--gold); }
+  .btn-primary { background: var(--gold); color: var(--dark); padding: 1rem 2.5rem; font-family: 'Barlow Condensed', sans-serif; font-size: 0.88rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; text-decoration: none; transition: all 0.3s ease; clip-path: polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,12px 100%,0 calc(100% - 12px)); }
+  .btn-primary:hover { background: var(--gold-light); transform: translateY(-2px); box-shadow: 0 8px 30px rgba(201,150,58,0.3); }
+  .btn-ghost { color: var(--cream); text-decoration: none; font-family: 'Barlow Condensed', sans-serif; font-size: 0.82rem; letter-spacing: 0.15em; text-transform: uppercase; display: flex; align-items: center; gap: 0.5rem; transition: color 0.3s; }
+  .btn-ghost:hover { color: var(--gold); }
+  .btn-ghost::after { content: '→'; }
+
+  /* ANIMAZIONI GLOBALI */
+  @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+  @keyframes scrollPulse { 0%,100%{opacity:0.4} 50%{opacity:1} }
+  @keyframes shimmer { 0%,100%{opacity:0.4} 50%{opacity:0.8} }
+  .reveal { opacity: 0; transform: translateY(36px); transition: opacity 0.8s ease, transform 0.8s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  .reveal-left { opacity: 0; transform: translateX(-36px); transition: opacity 0.8s ease, transform 0.8s ease; }
+  .reveal-left.visible { opacity: 1; transform: translateX(0); }
+  .reveal-right { opacity: 0; transform: translateX(36px); transition: opacity 0.8s ease, transform 0.8s ease; }
+  .reveal-right.visible { opacity: 1; transform: translateX(0); }
+  .d1 { transition-delay: 0.1s; }
+  .d2 { transition-delay: 0.2s; }
+  .d3 { transition-delay: 0.3s; }
+  .d4 { transition-delay: 0.4s; }
+
+  /* FOOTER */
+  footer { background: #0d0b04; padding: 4rem 4rem 2rem; border-top: 1px solid var(--border); }
+  .footer-top { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 4rem; margin-bottom: 3rem; align-items: start; }
+  .footer-brand p { font-size: 0.88rem; color: rgba(245,240,232,0.4); line-height: 1.75; max-width: 260px; margin-bottom: 1rem; }
+  .footer-col { padding-top: 45px; }
+  .footer-socials { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 1.5rem; }
+  .footer-social { display: inline-flex; align-items: center; gap: 0.5rem; color: rgba(245,240,232,0.4); text-decoration: none; font-size: 0.82rem; font-family: 'Barlow Condensed', sans-serif; transition: color 0.3s; }
+  .footer-social:visited { color: rgba(245,240,232,0.4); }
+  .footer-social:hover { color: var(--gold); }
+  .footer-col h4 { font-family: 'Barlow Condensed', sans-serif; font-size: 0.72rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); margin-bottom: 1.1rem; }
+  .footer-col ul { list-style: none; }
+  .footer-col ul li { margin-bottom: 0.55rem; }
+  .footer-col ul a { color: rgba(245,240,232,0.4); text-decoration: none; font-size: 0.88rem; transition: color 0.3s; }
+  .footer-col ul a:visited { color: rgba(245,240,232,0.4); } /* Previene link blu */
+  .footer-col ul a:hover { color: var(--gold); }
+  .footer-bottom { border-top: 1px solid rgba(201,150,58,0.04); padding-top: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.8rem; }
+  .footer-bottom p { font-size: 0.78rem; color: rgba(245,240,232,0.4); }
+  .footer-legal { display: flex; gap: 1.5rem; }
+  .footer-legal a { font-size: 0.78rem; color: rgba(245,240,232,0.4); text-decoration: none; transition: color 0.3s; }
+  .footer-legal a:hover { color: var(--gold); }
+  .footer-credits { width: 100%; padding-top: 0.8rem; border-top: 1px solid rgba(201,150,58,0.05); font-size: 0.72rem; color: rgba(245,240,232,0.55); line-height: 1.6; }
+  .footer-credits a { color: rgba(245,240,232,0.75); text-decoration: none; }
+  .footer-credits a:hover { color: var(--gold); }
+
+  /* BACK TO TOP */
+  .back-top { position: fixed; bottom: 2rem; right: 2rem; z-index: 999; width: 48px; height: 48px; background: transparent; border: 1px solid var(--gold); color: var(--gold); display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0; pointer-events: none; transition: all 0.4s ease; }
+  .back-top::before { content: ''; position: absolute; inset: 0; background: var(--gold); transform: scaleY(0); transform-origin: bottom; transition: transform 0.3s ease; z-index: -1; }
+  .back-top:hover::before { transform: scaleY(1); }
+  .back-top:hover { color: var(--dark); }
+  .back-top.visible { opacity: 1; pointer-events: all; }
+  .back-top svg { width: 20px; height: 20px; transition: transform 0.3s ease; }
+  .back-top:hover svg { transform: translateY(-3px); }
+
+  /* RESPONSIVE LAYOUT */
+  @media (max-width: 1024px) {
+    #navbar, #navbar.scrolled { padding-left: 2rem; padding-right: 2rem; }
+    footer { padding: 3rem 2rem 1.5rem; }
+    .footer-top { grid-template-columns: 1fr 1fr; gap: 2.5rem; }
+    .footer-col { padding-top: 0; }
+  }
+  @media (max-width: 768px) {
+    #navbar { padding: 1rem 1.5rem; }
+    #navbar.scrolled { padding: 0.8rem 1.5rem; }
+    .nav-links { display: none; }
+    .lang-switcher { display: none; } /* Lingua solo nell'hamburger */
+    .hamburger { display: flex; }
+    .mobile-nav { display: flex; }
+    footer { padding: 3rem 1.5rem 1.5rem; }
+    .footer-top { grid-template-columns: 1fr; gap: 2rem; }
+    .footer-col { padding-top: 0; }
+    .footer-bottom { flex-direction: column; gap: 0.5rem; text-align: center; }
+    .nav-logo { margin-left: 0; }
+    .footer-brand .nav-logo { margin-left: 0; }
+  }
 </style>

@@ -1,0 +1,1486 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../../../layouts/Layout.astro';
+
+export async function getStaticPaths() {
+  const stalloniEntries = await getCollection('stalloni');
+  const locales = ['it', 'en'];
+
+  return locales.flatMap((lang) => {
+    return stalloniEntries
+      .filter(entry => !entry.id.startsWith('_'))
+      .map(entry => ({
+        params: { lang, slug: entry.id },
+        props: { entry, lang },
+      }));
+  });
+}
+
+const { entry, lang } = Astro.props;
+const horse = entry.data;
+
+import { useTranslations } from '../../../i18n/utils';
+const t = useTranslations(lang);
+const isEn = lang === 'en';
+const langPrefix = '/' + lang;
+
+// Mappatura nomi-slug per pedigree (Stalloni + Fattrici)
+const allStalloni = await getCollection('stalloni');
+const allFattrici = await getCollection('fattrici');
+const allHorses = [...allStalloni, ...allFattrici];
+
+const horseMap = new Map(allHorses.map(h => [h.data.name?.toUpperCase().trim(), { id: h.id, collection: h.collection }]));
+
+function toTitleCase(str) {
+  if (!str) return "";
+  return str.toLowerCase().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+}
+
+function renderHorseName(name) {
+  if (!name) return "-";
+  const cleanName = name.toUpperCase().trim();
+  const found = horseMap.get(cleanName);
+  if (found) return `<a href="${langPrefix}/${found.collection === 'stalloni' ? 'stalloni' : 'fattrici'}/${found.id}">${name}</a>`;
+  return name;
+}
+
+// LOGICA AUTOMAZIONE OFFSPRING
+const currentHorseName = horse.name?.toUpperCase().trim();
+const foundOffspring = allHorses
+  .filter(h => h.data.pedigree?.sire?.toUpperCase().trim() === currentHorseName)
+  .map(h => ({
+    name: toTitleCase(h.data.name),
+    earnings: h.data.stats?.earnings || "N/A",
+    slug: h.id,
+    collection: h.collection
+  }));
+
+// Unione con lista manuale (evitando duplicati)
+const manualOffspring = (horse.offspring || []).map(off => ({
+  ...off,
+  name: toTitleCase(off.name),
+  manual: true
+}));
+
+const combinedOffspring = [...foundOffspring];
+manualOffspring.forEach(mon => {
+    const isDuplicate = combinedOffspring.some(a => a.name?.toUpperCase().trim() === mon.name?.toUpperCase().trim());
+    if (!isDuplicate) {
+        combinedOffspring.push(mon);
+    }
+});
+
+// Funzione di formattazione guadagni per figli
+function formatOffspringEarnings(earnStr) {
+  if (!earnStr) return "N/D";
+  if (earnStr.toLowerCase() === 'counting' || earnStr.toLowerCase().includes('progressione')) return "Counting";
+  let clean = earnStr.trim();
+  if (clean && !clean.endsWith('+') && clean.includes('$')) clean += '+';
+  return clean;
+}
+
+// Funzione estrazione numero per sorting
+function getEarningsValue(earnStr) {
+  if (!earnStr || earnStr.toLowerCase() === 'counting' || earnStr.toLowerCase() === 'n/a' || earnStr.toLowerCase() === 'n/d') return 0;
+  return parseInt(earnStr.replace(/[^0-9]/g, ''), 10) || 0;
+}
+
+// Applica formattazione a tutti i figli
+combinedOffspring.forEach(off => {
+  off.earnings = formatOffspringEarnings(off.earnings);
+});
+
+// Sorting decrescente per vincite (e poi alfabetico per parità)
+combinedOffspring.sort((a, b) => {
+  const valA = getEarningsValue(a.earnings);
+  const valB = getEarningsValue(b.earnings);
+  if (valA !== valB) return valB - valA;
+  return (a.name || "").localeCompare(b.name || "");
+});
+
+// Split nome hero
+const originalParts = (horse.name || "").toUpperCase().trim().split(' ');
+const needsBr = originalParts.length >= 3;
+const lastWord  = originalParts.length > 1 ? originalParts.pop() : "";
+const firstPart = originalParts.join(' ');
+
+
+// Video embed (YouTube & Facebook)
+function getVideoEmbed(url) {
+  if (!url) return null;
+  
+  // YouTube (Standard o No-Cookie)
+  const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|embed\/|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+  if (ytMatch) return `https://www.youtube-nocookie.com/embed/${ytMatch[1]}`;
+  
+  // Facebook
+  if (url.includes('facebook.com')) {
+    return `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(url)}&show_text=0&width=560`;
+  }
+  
+  return url;
+}
+const embedUrl = getVideoEmbed(horse.videoUrl);
+
+// LOGICA AUTOMAZIONE SIBLINGS (Fratelli Pieni)
+const currentSire = horse.pedigree?.sire?.toUpperCase().trim();
+const currentDam = horse.pedigree?.dam?.toUpperCase().trim();
+
+const foundSiblings = (currentSire && currentDam) 
+  ? allHorses
+      .filter(h => 
+        h.id !== entry.id && 
+        h.data.pedigree?.sire?.toUpperCase().trim() === currentSire &&
+        h.data.pedigree?.dam?.toUpperCase().trim() === currentDam
+      )
+      .map(h => ({
+        name: toTitleCase(h.data.name),
+        slug: h.id,
+        collection: h.collection
+      }))
+  : [];
+
+const manualSiblings = (horse.siblings || []).map(sib => ({
+  name: typeof sib === 'string' ? toTitleCase(sib) : toTitleCase(sib.name),
+  manual: true
+}));
+
+const combinedSiblings = [...foundSiblings];
+manualSiblings.forEach(ms => {
+  if (!combinedSiblings.some(s => s.name.toUpperCase().trim() === ms.name.toUpperCase().trim())) {
+    combinedSiblings.push(ms);
+  }
+});
+
+// Calcolo numero Panel Genetici
+const geneticEntries = horse.geneticTest ? Object.entries(horse.geneticTest).filter(([_, val]) => val && val !== "") : [];
+const panelCount = geneticEntries.length;
+---
+
+<Layout 
+  title={`${horse.name} – Reining Factory`}
+  description={isEn ? (horse.description_en || horse.description_it) : horse.description_it}
+>
+  <style is:global>
+    :root {
+      --warm-gray: #9A9188;
+    }
+    /* CSS ORIGINALE INTEGRALE ORA SCOPED CON STALLONE-WRAP */
+    .stallone-wrap {
+      background: #F5F0E8;
+      color: #1A1610;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      overflow-x: hidden;
+    }
+
+    .hero {
+      position: relative;
+      height: 100vh;
+      min-height: 600px;
+      overflow: hidden;
+      display: flex;
+      align-items: flex-end;
+      width: 100vw;
+      margin-left: calc(50% - 50vw);
+      margin-right: calc(50% - 50vw);
+    }
+
+    .hero-gallery {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 3px;
+    }
+
+    .hero-gallery > div {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .hero-gallery .main-img {
+      grid-column: 1 / 3;
+      grid-row: 1 / 3;
+    }
+
+    .hero-gallery img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: saturate(0.85);
+    }
+
+    .gallery-strip {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 1.5rem;
+    }
+
+    .gallery-thumb {
+      width: 80px;
+      height: 60px;
+      object-fit: cover;
+      cursor: pointer;
+      opacity: 0.75;
+      transition: opacity 0.2s, transform 0.2s;
+      border: 1px solid var(--border);
+    }
+
+    .gallery-thumb:hover { opacity: 1; transform: scale(1.05); }
+
+    .lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.92);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .lightbox.active { display: flex; }
+
+    .lightbox img {
+      max-width: 90vw;
+      max-height: 80vh;
+      object-fit: contain;
+      border: 1px solid rgba(200,151,58,0.3);
+    }
+
+    .lightbox-close {
+      position: absolute;
+      top: 1.5rem;
+      right: 2rem;
+      color: white;
+      font-size: 2rem;
+      cursor: pointer;
+      opacity: 0.7;
+      background: none;
+      border: none;
+      line-height: 1;
+    }
+
+    .lightbox-close:hover { opacity: 1; }
+
+    .lightbox-nav {
+      display: flex;
+      gap: 2rem;
+    }
+
+    .lightbox-nav button {
+      background: none;
+      border: 1px solid rgba(200,151,58,0.4);
+      color: var(--gold);
+      padding: 0.5rem 1.5rem;
+      font-size: 0.72rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .lightbox-nav button:hover { background: rgba(200,151,58,0.15); }
+
+    .social-buttons {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .btn-social {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1.2rem;
+      font-size: 0.68rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      text-decoration: none;
+      border: 1px solid var(--border);
+      color: var(--dark);
+      background: white;
+      transition: border-color 0.2s, background 0.2s, color 0.2s;
+    }
+
+    .btn-social:hover {
+      border-color: var(--gold);
+      background: var(--gold);
+      color: white;
+    }
+
+    .btn-social svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+    .hero-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to top,
+        rgba(26,22,16,0.92) 0%,
+        rgba(26,22,16,0.4) 50%,
+        transparent 100%
+      );
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      padding: 3rem 4rem;
+      width: 100%;
+    }
+
+    .hero-badges-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--gold);
+      border: 1px solid var(--gold);
+      padding: 0.35rem 0.9rem;
+    }
+
+    .status-green {
+      color: #2e7d32 !important; /* Verde bosco profondo */
+    }
+    .status-red {
+      color: #c53030 !important; /* Rosso rubino profondo */
+      font-weight: 700;
+    }
+
+    .hero-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(3.5rem, 8vw, 7rem);
+      color: white;
+      line-height: 0.9;
+      letter-spacing: 0.03em;
+      margin-bottom: 0.5rem;
+      overflow-wrap: anywhere;
+      word-wrap: break-word;
+    }
+
+    .hero-name span {
+      color: var(--gold);
+    }
+
+    .hero-subtitle {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 1.1rem;
+      color: rgba(255,255,255,0.6);
+      margin-bottom: 2rem;
+    }
+
+    .hero-stats {
+      display: flex;
+      gap: 3rem;
+    }
+
+    .hero-stat-value {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.8rem;
+      color: var(--gold-light);
+      line-height: 1;
+    }
+
+    .hero-stat-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.45);
+      margin-top: 0.2rem;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+
+    .achievements {
+      background: var(--dark);
+      padding: 4rem 0;
+    }
+
+    .achievements-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+
+    .section-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .achievements-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 0;
+      border: 1px solid rgba(200,151,58,0.2);
+    }
+
+    .achievement-item {
+      padding: 1.5rem 2rem;
+      border-right: 1px solid rgba(200,151,58,0.15);
+      border-bottom: 1px solid rgba(200,151,58,0.15);
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    .achievement-item:last-child { border-right: none; }
+
+    .achievement-year {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.4rem;
+      color: var(--gold);
+      min-width: 50px;
+      line-height: 1;
+    }
+
+    .achievement-text {
+      font-size: 0.82rem;
+      color: rgba(255,255,255,0.7);
+      line-height: 1.5;
+      font-weight: 300;
+    }
+
+    .info-section {
+      padding: 5rem 0;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.4fr;
+      gap: 4rem;
+      align-items: start;
+    }
+
+    .passport-card {
+      background: white;
+      border: 1px solid var(--border);
+      padding: 2.5rem;
+      position: relative;
+    }
+
+    .gallery-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 2rem;
+    }
+
+    .gallery-logo {
+      width: 100%;
+      max-width: 500px;
+      height: auto;
+      max-height: 250px;
+      object-fit: contain;
+      opacity: 1;
+      margin-bottom: 2rem;
+    }
+
+    .passport-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--gold);
+    }
+
+    .passport-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.4rem;
+      letter-spacing: 0.1em;
+      color: var(--dark);
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .passport-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 0.65rem 0;
+      border-bottom: 1px solid rgba(107,76,42,0.08);
+    }
+
+    .passport-row:last-child { border-bottom: none; }
+
+    .passport-key {
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--warm-gray);
+    }
+
+    .passport-value {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--dark);
+      text-align: right;
+      overflow-wrap: break-word;
+      word-break: break-word;
+    }
+
+    .passport-grid-rows {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      column-gap: 5rem;
+    }
+
+    @media (max-width: 992px) {
+      .passport-grid-rows { grid-template-columns: 1fr; }
+    }
+
+    /* Versione Mobile-Only vs Desktop-Only */
+    .desktop-only { display: block; }
+    .mobile-only { display: none; }
+
+    @media (max-width: 1023px) {
+      .desktop-only { display: none !important; }
+      .mobile-only { display: block !important; }
+    }
+
+    .panel-section {
+      margin-top: 2rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .panel-title {
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--warm-gray);
+      margin-bottom: 1rem;
+    }
+
+    .panel-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+    }
+
+    .panel-item {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.78rem;
+      padding: 0.3rem 0;
+    }
+
+    .genetic-link {
+      display: inline-block;
+      margin-top: 1.5rem;
+      font-size: 0.68rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold);
+      text-decoration: none;
+      border-bottom: 1px solid var(--gold);
+      padding-bottom: 2px;
+      transition: opacity 0.2s;
+    }
+
+    .genetic-link:hover { opacity: 0.6; }
+
+    .panel-gene { color: var(--warm-gray); }
+    .panel-result { color: #2E7D32; font-weight: 500; }
+
+    .pedigree-section {
+      min-width: 0; /* Fondamentale per impedire l'overflow della griglia su mobile */
+    }
+
+    .pedigree-section h3 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.4rem;
+      letter-spacing: 0.1em;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .ped-overflow {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .ped-grid {
+      display: grid;
+      grid-template-columns: 1.4fr 36px 1.3fr 1.6fr;
+      min-width: 620px;
+      min-height: 280px;
+      align-items: center;
+      background: var(--dark);
+      padding: 2.5rem 2rem;
+      text-transform: uppercase;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .ped-horse {
+      text-align: center;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.1rem;
+      letter-spacing: 0.08em;
+      color: var(--gold);
+      padding-right: 10px;
+      line-height: 1.3;
+    }
+
+    .ped-bracket {
+      width: 14px;
+      height: 175px;
+      border: 2px solid rgba(200,151,58,0.4);
+      border-right: none;
+      margin: auto;
+    }
+
+    .ped-parents {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 205px;
+      padding-left: 12px;
+    }
+
+    .ped-parent {
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: white;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      letter-spacing: 0.04em;
+    }
+
+    .ped-parent a {
+      color: white !important;
+      text-decoration: none;
+      border-bottom: 1px solid rgba(200,151,58,0.3);
+      padding-bottom: 1px;
+      transition: all 0.2s;
+    }
+
+    .ped-parent a:hover {
+      color: var(--gold) !important;
+      border-bottom-color: var(--gold);
+    }
+
+    .ped-ancestors {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 230px;
+      padding-left: 16px;
+    }
+
+    .ped-grandunit {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .ped-small-bracket {
+      width: 10px;
+      height: 52px;
+      border: 2px solid rgba(200,151,58,0.25);
+      border-right: none;
+      flex-shrink: 0;
+    }
+
+    .ped-grandnames {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 66px;
+    }
+
+    .ped-grand {
+      font-size: 0.68rem;
+      color: var(--warm-gray);
+      white-space: nowrap;
+      letter-spacing: 0.03em;
+    }
+
+    .ped-grand a {
+      color: var(--warm-gray) !important;
+      text-decoration: none;
+      border-bottom: 1px solid rgba(200,151,58,0.3);
+      padding-bottom: 1px;
+      transition: all 0.2s;
+    }
+
+    .ped-grand a:hover {
+      color: var(--gold) !important;
+      border-bottom-color: var(--gold);
+    }
+
+    /* Supporto link in ped-grand se dinamico */
+    .footer-col ul a { color: rgba(245,240,232,0.4); text-decoration: none; font-size: 0.88rem; transition: color 0.3s; }
+   .footer-col ul a:visited { color: rgba(245,240,232,0.4); } /* Previene link blu */
+   .footer-col ul a:hover { color: var(--gold); }
+
+    .ped-fulllink {
+      display: inline-block;
+      margin-top: 1.5rem;
+      font-size: 0.68rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold);
+      text-decoration: none;
+      border-bottom: 1px solid var(--gold);
+      padding-bottom: 2px;
+      transition: opacity 0.2s;
+    }
+
+    .ped-fulllink:hover { opacity: 0.6; }
+
+    .video-section {
+      background: var(--dark);
+      padding: 5rem 0;
+    }
+
+    .video-wrapper {
+      position: relative;
+      padding-bottom: 56.25%;
+      height: 0;
+      overflow: hidden;
+      border: 1px solid rgba(200,151,58,0.2);
+    }
+
+    .video-wrapper iframe {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+    }
+
+    .video-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 2rem;
+    }
+
+    .video-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem;
+      color: white;
+      letter-spacing: 0.05em;
+    }
+
+    .offspring-section {
+      padding: 5rem 0;
+      background: white;
+    }
+
+    .offspring-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 3rem;
+    }
+
+    .offspring-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem;
+      letter-spacing: 0.05em;
+    }
+
+    .offspring-count {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      color: var(--warm-gray);
+      font-size: 0.9rem;
+    }
+
+    .offspring-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+
+    .offspring-item {
+      background: white;
+      padding: 1.2rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background 0.2s;
+    }
+
+    .offspring-item:hover { background: var(--cream); }
+
+    .offspring-name {
+      font-size: 0.82rem;
+      font-weight: 500;
+      letter-spacing: 0.03em;
+    }
+    
+    .offspring-name a {
+      color: var(--dark);
+      text-decoration: none;
+      border-bottom: 1px solid rgba(200,151,58,0.5);
+      padding-bottom: 1px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    
+    .offspring-name a:hover {
+      color: var(--gold);
+      border-color: var(--gold);
+    }
+
+    .offspring-earnings {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1rem;
+      color: var(--gold);
+      letter-spacing: 0.05em;
+    }
+
+    .offspring-link {
+      display: block;
+      text-align: right;
+      margin-top: 2rem;
+      font-size: 0.72rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--gold);
+      text-decoration: none;
+      border-bottom: 1px solid var(--gold);
+      padding-bottom: 2px;
+      display: inline-block;
+    }
+
+    .breeding-section {
+      padding: 5rem 0;
+      background: var(--cream);
+    }
+
+    .breeding-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+
+    .breeding-card {
+      border: 1px solid var(--border);
+      padding: 2rem;
+      background: white;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .breeding-card:hover {
+      border-color: var(--gold);
+      transform: translateY(-2px);
+    }
+
+    .breeding-card-label {
+      font-size: 0.62rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--warm-gray);
+      margin-bottom: 0.5rem;
+    }
+
+    .breeding-card-value {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.8rem;
+      color: var(--dark);
+      letter-spacing: 0.05em;
+    }
+
+    .breeding-card-sub {
+      font-size: 0.78rem;
+      color: var(--warm-gray);
+      margin-top: 0.3rem;
+    }
+
+    .breeding-links {
+      margin-top: 3rem;
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary {
+      display: inline-block;
+      padding: 0.9rem 2rem;
+      background: var(--dark);
+      color: var(--gold);
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      text-decoration: none;
+      border: 1px solid var(--dark);
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .btn-primary:hover {
+      background: var(--gold);
+      color: var(--dark);
+      border-color: var(--gold);
+    }
+
+    .btn-outline {
+      display: inline-block;
+      padding: 0.9rem 2rem;
+      background: transparent;
+      color: var(--dark);
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      text-decoration: none;
+      border: 1px solid var(--dark);
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .btn-outline:hover {
+      background: var(--dark);
+      color: white;
+    }
+
+    @media (max-width: 768px) {
+       .hero { height: 85vh; min-height: 500px; }
+       .hero-content { padding: 140px 1.5rem 1rem 1.5rem; } /* Ottimizzato padding */
+      .hero-name { 
+        font-size: clamp(2rem, 11vw, 3.2rem); 
+        overflow-wrap: anywhere; 
+        word-wrap: break-word; 
+      }
+      .hero-subtitle { font-size: 0.9rem; }
+      .hero-stats { gap: 1.2rem; }
+      .hero-stat-value { font-size: 1.4rem; }
+      .hero-stat-label { font-size: 0.6rem; }
+      .hero-badge { font-size: 0.6rem; }
+
+      .hero-gallery { grid-template-columns: 1fr; grid-template-rows: 1fr; }
+      .hero-gallery .main-img { grid-column: 1; grid-row: 1; }
+      .hero-gallery img:not(.main-img img) { display: none; }
+
+      .achievements { padding: 2.5rem 0; }
+      .achievements-grid { grid-template-columns: 1fr; }
+      .achievement-item { border-right: none; }
+
+      .gallery-thumb { width: 70px; height: 55px; }
+
+      .info-section { padding: 3rem 0; }
+      .info-grid { grid-template-columns: 1fr; gap: 2.5rem; }      /* Fix Passaporto Tagliato */
+      .passport-card { padding: 1.2rem; width: 100%; max-width: 100%; box-sizing: border-box; }
+      .passport-title { font-size: 1.2rem; margin-bottom: 1.5rem; }
+
+      .social-buttons { flex-direction: column; }
+      .btn-social { justify-content: center; }
+
+      /* Ripristino dello Scroll Orizzontale Forzato per il Pedigree */
+      .pedigree-section .container { padding: 0 1rem; max-width: 100vw; overflow: visible; }
+      .pedigree-section h3 { padding: 0; }
+      .ped-overflow { 
+        width: 100%; 
+        display: block;
+        overflow-x: auto; 
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch; 
+        padding: 0 0 1.5rem 0; 
+        margin: 0;
+      }
+      .ped-overflow::-webkit-scrollbar {
+        height: 6px;
+      }
+      .ped-overflow::-webkit-scrollbar-thumb {
+        background: rgba(200,151,58,0.5);
+        border-radius: 4px;
+      }
+      .ped-grid { 
+        min-width: 600px; 
+        padding: 1.5rem 1.5rem; 
+        /* Reset alle colonne predefinite non ristrette */
+        grid-template-columns: 1.4fr 36px 1.3fr 1.6fr;
+      }
+      .ped-horse { font-size: 1rem; white-space: normal; }
+      .ped-parent { font-size: 0.78rem; white-space: nowrap; }
+      .ped-grand { font-size: 0.68rem; white-space: nowrap; }
+
+      .video-section { padding: 3rem 0; }
+      .video-header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+
+      .offspring-section { padding: 3rem 0; }
+      .offspring-header { flex-direction: column; align-items: flex-start; gap: 0.3rem; }
+      .offspring-list { grid-template-columns: 1fr; }
+
+      .breeding-section { padding: 3rem 0; }
+      .breeding-grid { grid-template-columns: 1fr 1fr; gap: 1rem; }
+      .breeding-links { flex-direction: column; }
+      .btn-primary, .btn-outline { text-align: center; }
+      
+      /* Genetic tests status colors */
+      .panel-result.status-green {
+        color: #4ade80 !important;
+      }
+      .panel-result.status-red {
+        color: #f87171 !important;
+        font-weight: 700;
+      }
+
+      .container { padding: 0 1.2rem; }
+      .achievements-inner { padding: 0 1.2rem; }
+    }
+
+
+    .siblings-disclaimer {
+      margin-top: 1.5rem;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.8rem;
+      letter-spacing: 0.1em;
+      color: rgba(154,145,136,0.8);
+      text-transform: uppercase;
+    }
+    .siblings-label {
+      color: var(--db-gold);
+      font-weight: 600;
+      margin-right: 0.5rem;
+    }
+    .sibling-link {
+      color: var(--db-gold);
+      text-decoration: none;
+      transition: opacity 0.2s;
+    }
+    .sibling-link:hover {
+      opacity: 0.7;
+    }
+    .sibling-text {
+      color: var(--db-gold);
+    }
+  </style>
+
+  <div class="stallone-wrap">
+    <!-- HERO -->
+    <section class="hero">
+    <div class="hero-gallery">
+      <div class="main-img">
+        <img src={horse.mainImage} alt={horse.name}>
+      </div>
+      {horse.heroImages?.[0] && <div class="side-img"><img src={horse.heroImages[0]} alt=""></div>}
+      {horse.heroImages?.[1] && <div class="side-img"><img src={horse.heroImages[1]} alt=""></div>}
+    </div>
+    <div class="hero-overlay"></div>
+
+    <div class="hero-content">
+      {(() => {
+        const bHero = isEn ? (horse.badge_hero_en || horse.badge_hero || horse.badge_en) : (horse.badge_hero || horse.badge);
+        if (!bHero) return null;
+        // Mostriamo tutti i titoli nell'header hero, separati da '·'
+        return (
+          <div class="hero-badges-wrap">
+            {bHero.split('·').map(b => (
+              <div class="hero-badge">{b.trim().toUpperCase()}</div>
+            ))}
+          </div>
+        );
+      })()}
+      <h1 class="hero-name">
+        {firstPart}
+        {needsBr ? <br /> : (lastWord ? ' ' : '')}
+        {lastWord && <span>{lastWord}</span>}
+      </h1>
+      <p class="hero-subtitle">
+        {(isEn && horse.nickname_en) ? `"${horse.nickname_en}" · ` : (horse.nickname ? `"${horse.nickname}" · ` : '')}
+        {horse.yearOfBirth}{horse.yearOfDeath ? ` – ${horse.yearOfDeath}` : ''} · {isEn ? (horse.color_en || horse.color) : horse.color} · {horse.breed}
+      </p>
+      <div class="hero-stats">
+        {horse.stats?.earnings && (
+          <div>
+            <div class="hero-stat-value">
+              {horse.stats.earnings.endsWith('+') ? horse.stats.earnings : `${horse.stats.earnings}+`}
+            </div>
+            <div class="hero-stat-label">NRHA Lifetime Earnings</div>
+          </div>
+        )}
+        {(horse.stats?.offspringEarnings || horse.stats?.sireRecord) && (
+          <div>
+            <div class="hero-stat-value">
+              {horse.stats.offspringEarnings 
+                ? horse.stats.offspringEarnings 
+                : (horse.stats.sireRecord.toLowerCase() === 'counting' 
+                   ? (isEn ? 'Counting' : 'In progressione') 
+                   : horse.stats.sireRecord)}
+            </div>
+            <div class="hero-stat-label">Sire Record</div>
+          </div>
+        )}
+        <div>
+          <div class="hero-stat-value">{horse.yearOfBirth}</div>
+          <div class="hero-stat-label">{t('horse.born')}</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ACHIEVEMENTS -->
+  {horse.achievements && horse.achievements.length > 0 && (
+    <section class="achievements">
+      <div class="achievements-inner">
+        <div class="section-label">{t('horse.achievements')}</div>
+        <div class="achievements-grid">
+          {horse.achievements.sort((a, b) => parseInt(a.year) - parseInt(b.year)).map((item) => (
+            <div class="achievement-item">
+              <div class="achievement-year">{item.year}</div>
+              <div class="achievement-text">{item.title}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- GALLERY & LOGO -->
+  {(horse.gallery?.length > 0 || horse.logo) && (
+    <section style="background: var(--cream); padding: 5rem 0 2rem;">
+      <div class="container">
+        <div class="section-label" style="margin-bottom: 2rem;">{t('horse.gallery')}</div>
+        <div class="info-grid" style="align-items: center;">
+          <div>
+            {horse.gallery && horse.gallery.length > 0 && (
+              <div class="gallery-strip" style="margin-top: 0; justify-content: flex-start;">
+                {horse.gallery.map((img, index) => (
+                  <img class="gallery-thumb" src={img} alt="" onclick={`window.openLightbox(${index})`}>
+                ))}
+              </div>
+            )}
+          </div>
+          <div style="display: flex; justify-content: center; align-items: center; width: 100%;">
+            {horse.logo && <img src={horse.logo} alt={`Logo ${horse.name}`} class="gallery-logo" style="margin-bottom: 0;" />}
+          </div>
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- LIGHTBOX -->
+  <div class="lightbox" id="lightbox" onclick="window.closeLightbox(event)">
+    <button class="lightbox-close" onclick="window.closeLightbox()">×</button>
+    <img id="lightbox-img" src="" alt="">
+    <div class="lightbox-nav">
+      <button onclick="window.changeLightbox(-1); event.stopPropagation()">← Prev</button>
+      <button onclick="window.changeLightbox(1); event.stopPropagation()">Next →</button>
+    </div>
+  </div>
+
+  <!-- VERSIONE DESKTOP (ORIGINALE) -->
+  <section class="info-section desktop-only">
+    <div class="container">
+      <div class="info-grid">
+        <!-- PASSPORT -->
+        <div style="min-width: 0;">
+          <div class="passport-card">
+            <div class="passport-title">Stallion Passport</div>
+            <div class="passport-row"><span class="passport-key">{t('horse.name')}</span><span class="passport-value">{horse.name}</span></div>
+            <div class="passport-row"><span class="passport-key">{t('horse.breed')}</span><span class="passport-value">{horse.breed}</span></div>
+            <div class="passport-row"><span class="passport-key">{t('horse.color')}</span><span class="passport-value">{horse.color}</span></div>
+            <div class="passport-row">
+              <span class="passport-key">{t('horse.born')}</span>
+              <span class="passport-value">{horse.yearOfBirth}{horse.yearOfDeath ? ` – ${horse.yearOfDeath}` : ''}</span>
+            </div>
+            <div class="passport-row"><span class="passport-key">{t('horse.height')}</span><span class="passport-value">{isEn ? (horse.height_en || horse.height) : horse.height}</span></div>
+            <div class="passport-row"><span class="passport-key">{t('horse.owner')}</span><span class="passport-value">{horse.owner}</span></div>
+            <div class="passport-row"><span class="passport-key">{t('horse.location')}</span><span class="passport-value">{horse.location}</span></div>
+            {horse.geneticTest && (
+              <div class="panel-section">
+                <div class="panel-title">{panelCount} Panel Genetic Test</div>
+                <div class="panel-grid">
+                  {Object.entries(horse.geneticTest).map(([gene, res]) => (
+                    <div class="panel-item">
+                      <span class="panel-gene">{gene.toUpperCase()}</span>
+                      <span class={`panel-result ${res === 'N/N' ? 'status-green' : (res === 'N/D' ? '' : 'status-red')}`}>
+                        {res}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                {horse.whitePattern && (
+                  <div style="margin-top: 1.5rem; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 1rem;">
+                    <div class="panel-title">White Pattern Panel</div>
+                    <div style="font-size: 0.9rem; font-weight: 500; color: var(--dark);">{horse.whitePattern}</div>
+                  </div>
+                )}
+                {(horse.colorpanel || entry.data.colorpanel) && (
+                  <div style="margin-top: 1.5rem; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 1rem;">
+                    <div class="panel-title">Color Panel</div>
+                    <div style="font-size: 0.9rem; font-weight: 500; color: var(--dark);">{horse.colorpanel || entry.data.colorpanel}</div>
+                  </div>
+                )}
+                {horse.geneticCertificateUrl && (
+                  <a href={horse.geneticCertificateUrl} target="_blank" class="genetic-link">CERTIFICATO GENETICO →</a>
+                )}
+              </div>
+            )}
+            <div class="social-buttons">
+              {horse.social?.instagram && (<a href={horse.social.instagram} target="_blank" class="btn-social"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>Instagram</a>)}
+              {horse.social?.facebook && (<a href={horse.social.facebook} target="_blank" class="btn-social"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>Facebook</a>)}
+              {horse.social?.tiktok && (<a href={horse.social.tiktok} target="_blank" class="btn-social"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><g transform="scale(0.8) translate(3,3)"><path d="M12.53.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 2.22-1.15 4.31-2.92 5.56-1.74 1.25-4.04 1.65-6.07 1.07-2.11-.58-3.9-2.07-4.82-4.05-1.01-2.04-1-4.49.02-6.53 1.02-2.06 2.9-3.57 5.09-4.14.36-.1.73-.17 1.11-.21v4.06c-1.37.14-2.61.9-3.32 2.06-.7 1.15-.79 2.62-.23 3.84.55 1.22 1.71 2.06 3.01 2.22 1.34.17 2.69-.37 3.55-1.41.86-1.02 1.29-2.36 1.29-3.69-.02-5.74-.01-11.49-.01-17.23z"/></g></svg>TikTok</a>)}
+              {horse.social?.website && (<a href={horse.social.website} target="_blank" class="btn-social"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>Sito ufficiale</a>)}
+            </div>
+          </div>
+        </div>
+        <!-- PEDIGREE -->
+        <div class="pedigree-section">
+          <h3>Pedigree</h3>
+          <div class="ped-overflow">
+            <div class="ped-grid">
+              <div class="ped-horse">{horse.name}</div>
+              <div class="ped-bracket"></div>
+              <div class="ped-parents">
+                <div class="ped-parent" set:html={renderHorseName(horse.pedigree?.sire)}></div>
+                <div class="ped-parent" set:html={renderHorseName(horse.pedigree?.dam)}></div>
+              </div>
+              <div class="ped-ancestors">
+                <div class="ped-grandunit"><div class="ped-small-bracket"></div><div class="ped-grandnames"><div class="ped-grand" set:html={renderHorseName(horse.pedigree?.grandsire_sire)}></div><div class="ped-grand" set:html={renderHorseName(horse.pedigree?.granddam_sire)}></div></div></div>
+                <div class="ped-grandunit"><div class="ped-small-bracket"></div><div class="ped-grandnames"><div class="ped-grand" set:html={renderHorseName(horse.pedigree?.grandsire_dam)}></div><div class="ped-grand" set:html={renderHorseName(horse.pedigree?.granddam_dam)}></div></div></div>
+              </div>
+            </div>
+          </div>
+          {horse.pedigreeUrl && <a href={horse.pedigreeUrl} target="_blank" class="ped-fulllink">{isEn ? 'Full Pedigree' : 'Pedigree completo'} →</a>}
+          
+          {combinedSiblings.length > 0 && (
+            <div class="siblings-disclaimer">
+              <span class="siblings-label">{isEn ? 'Full Siblings:' : 'Fratelli Pieni:'}</span>
+              {combinedSiblings.map((sib, index) => (
+                <>
+                  {sib.slug ? (
+                    <a href={`/${lang}/${sib.collection === 'stalloni' ? 'stalloni' : 'fattrici'}/${sib.slug}`} class="sibling-link">
+                      {sib.name}
+                    </a>
+                  ) : (
+                    <span class="sibling-text">{sib.name}</span>
+                  )}
+                  {index < combinedSiblings.length - 1 && <span style="margin: 0 4px; color: rgba(200,151,58,0.5);">·</span>}
+                </>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VERSIONE MOBILE (BLOCCHI SEPARATI) -->
+  <section class="info-section mobile-only" style="padding-bottom: 0;">
+    <div class="container">
+      <div class="passport-card">
+        <div class="passport-title">Stallion Passport</div>
+        <div class="passport-row"><span class="passport-key">{t('horse.name')}</span><span class="passport-value">{horse.name}</span></div>
+        <div class="passport-row"><span class="passport-key">{t('horse.breed')}</span><span class="passport-value">{horse.breed}</span></div>
+        <div class="passport-row"><span class="passport-key">{t('horse.color')}</span><span class="passport-value">{isEn ? (horse.color_en || horse.color) : horse.color}</span></div>
+        <div class="passport-row">
+          <span class="passport-key">{t('horse.born')}</span>
+          <span class="passport-value">{horse.yearOfBirth}{horse.yearOfDeath ? ` – ${horse.yearOfDeath}` : ''}</span>
+        </div>
+        <div class="passport-row"><span class="passport-key">{t('horse.height')}</span><span class="passport-value">{isEn ? (horse.height_en || horse.height) : horse.height}</span></div>
+        <div class="passport-row"><span class="passport-key">{t('horse.owner')}</span><span class="passport-value">{horse.owner}</span></div>
+        <div class="passport-row"><span class="passport-key">{t('horse.location')}</span><span class="passport-value">{horse.location}</span></div>
+        
+        {horse.geneticTest && (
+          <div class="panel-section">
+            <div class="panel-title">{panelCount} Panel Genetic Test</div>
+            <div class="panel-grid">
+              {Object.entries(horse.geneticTest).map(([gene, res]) => (
+                <div class="panel-item"><span class="panel-gene">{gene.toUpperCase()}</span><span class="panel-result">{res}</span></div>
+              ))}
+            </div>
+            {horse.whitePattern && (
+              <div style="margin-top: 1.5rem; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 1rem;">
+                <div class="panel-title">White Pattern Panel</div>
+                <div style="font-size: 0.9rem; font-weight: 500; color: var(--dark);">{horse.whitePattern}</div>
+              </div>
+            )}
+            {(horse.colorpanel || entry.data.colorpanel) && (
+              <div style="margin-top: 1.5rem; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 1rem;">
+                <div class="panel-title">Color Panel</div>
+                <div style="font-size: 0.9rem; font-weight: 500; color: var(--dark);">{horse.colorpanel || entry.data.colorpanel}</div>
+              </div>
+            )}
+            {horse.geneticCertificateUrl && (
+              <a href={horse.geneticCertificateUrl} target="_blank" class="genetic-link">CERTIFICATO GENETICO →</a>
+            )}
+          </div>
+        )}
+        <div class="social-buttons">
+          {horse.social?.instagram && (<a href={horse.social.instagram} target="_blank" class="btn-social"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>Instagram</a>)}
+          {horse.social?.facebook && (<a href={horse.social.facebook} target="_blank" class="btn-social"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>Facebook</a>)}
+          {horse.social?.tiktok && (<a href={horse.social.tiktok} target="_blank" class="btn-social"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><g transform="scale(0.8) translate(3,3)"><path d="M12.53.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 2.22-1.15 4.31-2.92 5.56-1.74 1.25-4.04 1.65-6.07 1.07-2.11-.58-3.9-2.07-4.82-4.05-1.01-2.04-1-4.49.02-6.53 1.02-2.06 2.9-3.57 5.09-4.14.36-.1.73-.17 1.11-.21v4.06c-1.37.14-2.61.9-3.32 2.06-.7 1.15-.79 2.62-.23 3.84.55 1.22 1.71 2.06 3.01 2.22 1.34.17 2.69-.37 3.55-1.41.86-1.02 1.29-2.36 1.29-3.69-.02-5.74-.01-11.49-.01-17.23z"/></g></svg>TikTok</a>)}
+          {horse.social?.website && (<a href={horse.social.website} target="_blank" class="btn-social"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>Sito ufficiale</a>)}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pedigree-section mobile-only" style="padding: 2rem 0 5rem;">
+    <div class="container">
+      <div class="section-label">Pedigree</div>
+      <div class="ped-overflow">
+        <div class="ped-grid">
+          <div class="ped-horse">{horse.name}</div>
+          <div class="ped-bracket"></div>
+          <div class="ped-parents">
+            <div class="ped-parent" set:html={renderHorseName(horse.pedigree?.sire)}></div>
+            <div class="ped-parent" set:html={renderHorseName(horse.pedigree?.dam)}></div>
+          </div>
+          <div class="ped-ancestors">
+            <div class="ped-grandunit"><div class="ped-small-bracket"></div><div class="ped-grandnames"><div class="ped-grand" set:html={renderHorseName(horse.pedigree?.grandsire_sire)}></div><div class="ped-grand" set:html={renderHorseName(horse.pedigree?.granddam_sire)}></div></div></div>
+            <div class="ped-grandunit"><div class="ped-small-bracket"></div><div class="ped-grandnames"><div class="ped-grand" set:html={renderHorseName(horse.pedigree?.grandsire_dam)}></div><div class="ped-grand" set:html={renderHorseName(horse.pedigree?.granddam_dam)}></div></div></div>
+          </div>
+        </div>
+      </div>
+      {horse.pedigreeUrl && <a href={horse.pedigreeUrl} target="_blank" class="ped-fulllink">{isEn ? 'Full Pedigree' : 'Pedigree completo'} →</a>}
+      
+      {combinedSiblings.length > 0 && (
+        <div class="siblings-disclaimer" style="margin-top: 1.5rem; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 1rem;">
+          <span class="siblings-label">{isEn ? 'Full Siblings:' : 'Fratelli Pieni:'}</span>
+          {combinedSiblings.map((sib, index) => (
+            <>
+              {sib.slug ? (
+                <a href={`/${lang}/${sib.collection === 'stalloni' ? 'stalloni' : 'fattrici'}/${sib.slug}`} class="sibling-link">
+                  {sib.name}
+                </a>
+              ) : (
+                <span class="sibling-text">{sib.name}</span>
+              )}
+              {index < combinedSiblings.length - 1 && <span style="margin: 0 4px; color: rgba(200,151,58,0.5);">·</span>}
+            </>
+          ))}
+        </div>
+      )}
+    </div>
+  </section>
+
+  <!-- DESCRIPTION SECTION -->
+  {(horse.description_it || horse.description_en) && (
+    <section class="description-section" id="description" style="padding: 5rem 0; background: white;">
+      <div class="container">
+        <div class="section-label">{t('horse.desc_title')}</div>
+        <div class="description-content" style="max-width: 800px; line-height: 1.8; color: var(--dark); font-size: 1.1rem;">
+          {isEn ? (horse.description_en || horse.description_it) : (horse.description_it || horse.description_en)}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- VIDEO -->
+  {embedUrl && (
+    <section class="video-section">
+      <div class="container">
+        <div class="video-header"><div class="section-label" style="color:rgba(200,151,58,0.6); margin:0;">Video</div><div class="video-title" style="color:white;">{t('horse.in_arena')}</div></div>
+        <div class="video-wrapper"><iframe src={embedUrl} title={horse.name} frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>
+      </div>
+    </section>
+  )}
+
+  <!-- OFFSPRING -->
+  {combinedOffspring.length > 0 && (
+    <section class="offspring-section">
+      <div class="container">
+        <div class="offspring-header">
+          <div class="offspring-title">{t('horse.offspring')}</div>
+          {(horse.stats?.offspringEarnings || horse.stats?.sireRecord) && (
+            <div class="offspring-count">
+              Sire record: {horse.stats.offspringEarnings ? horse.stats.offspringEarnings : horse.stats.sireRecord}
+            </div>
+          )}
+        </div>
+        <div class="offspring-list">
+          {combinedOffspring.map(off => (
+            <div class="offspring-item">
+              <span class="offspring-name">
+                {off.slug ? (
+                  <a href={`${langPrefix}/${off.collection === 'stalloni' ? 'stalloni' : 'fattrici'}/${off.slug}`}>
+                    {off.name}
+                  </a>
+                ) : (
+                  <span>{off.name}</span>
+                )}
+                {off.achievements && (
+                  <div style="font-size: 0.7rem; color: var(--warm-gray); margin-top: 2px; font-weight: 300;">{off.achievements}</div>
+                )}
+              </span>
+              <span class="offspring-earnings">{off.earnings}</span>
+            </div>
+          ))}
+        </div>
+        <a href={horse.offspringUrl || horse.pedigreeUrl || "#"} target="_blank" class="offspring-link">{isEn ? 'All offspring' : 'Tutti gli offspring'} →</a>
+      </div>
+    </section>
+  )}
+
+  <!-- BREEDING -->
+  <section class="breeding-section">
+    <div class="container">
+      <div class="section-label">Breeding Info</div>
+      <div class="breeding-grid">
+        <div class="breeding-card"><div class="breeding-card-label">{t('horse.fee')}</div><div class="breeding-card-value">{isEn ? (horse.breeding?.fee_en || horse.breeding?.fee) : horse.breeding?.fee}</div><div class="breeding-card-sub">{isEn ? 'Per breeding' : 'Per monta'}</div></div>
+        <div class="breeding-card"><div class="breeding-card-label">{t('horse.semen')}</div><div class="breeding-card-value">{isEn ? (horse.breeding?.semenType_en || horse.breeding?.semenType) : horse.breeding?.semenType}</div><div class="breeding-card-sub">{isEn ? (horse.breeding?.semenNotes_en || horse.breeding?.semenNotes) : horse.breeding?.semenNotes}</div></div>
+        <div class="breeding-card"><div class="breeding-card-label">{t('horse.status')}</div><div class="breeding-card-value">{(isEn && horse.breeding?.status_en) ? horse.breeding.status_en : horse.breeding?.status}</div><div class="breeding-card-sub">{isEn ? (horse.breeding?.statusNotes_en || horse.breeding?.statusNotes) : horse.breeding?.statusNotes}</div></div>
+      </div>
+      <p style="font-size: 0.75rem; color: var(--warm-gray); margin-top: 1rem; text-align: left; font-style: italic;">
+        {isEn ? '* The breeding fee is indicative and may vary based on the period, availability, or chosen facility. Please refer to the official links below for precise costs and contracts.' : '* Il prezzo della monta è indicativo e può subire variazioni in base al periodo, alla disponibilità o alla struttura scelta. Consulta i link ufficiali qui sotto per i costi e i contratti aggiornati.'}
+      </p>
+      <div class="breeding-links">
+        {horse.breedingLinks?.map(l => (
+          <a href={l.url} target="_blank" class={l.primary ? "btn-primary" : "btn-outline"}>{l.label} →</a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <script is:inline define:vars={{ galleryImages: horse.gallery || [] }}>
+    let currentIndex = 0;
+    window.openLightbox = (index) => {
+      currentIndex = index;
+      document.getElementById('lightbox-img').src = galleryImages[index];
+      document.getElementById('lightbox').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    };
+    window.closeLightbox = (e) => {
+      if (!e || e.target.id === 'lightbox' || e.target.classList.contains('lightbox-close')) {
+        document.getElementById('lightbox').classList.remove('active');
+        document.body.style.overflow = '';
+      }
+    };
+    window.changeLightbox = (dir) => {
+      currentIndex = (currentIndex + dir + galleryImages.length) % galleryImages.length;
+      document.getElementById('lightbox-img').src = galleryImages[currentIndex];
+    };
+  </script>
+  </div>
+</Layout>

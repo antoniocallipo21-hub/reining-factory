@@ -1,0 +1,661 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import { useTranslations } from '../../../i18n/utils';
+import { getCollection, render } from 'astro:content';
+
+export async function getStaticPaths() {
+  const fattrici = await getCollection('fattrici');
+  const paths = [];
+  
+  ['it', 'en'].forEach(lang => {
+    fattrici.forEach(f => {
+      paths.push({
+        params: { lang, slug: f.id },
+        props: { f, lang }
+      });
+    });
+  });
+  
+  return paths;
+}
+
+const { f, lang } = Astro.props;
+const { Content } = await render(f);
+const t = useTranslations(lang);
+const h = f.data;
+const isEn = lang === 'en';
+
+// Format Earnings
+const formatPrice = (val) => {
+  if (!val) return 'N/D';
+  return val;
+};
+
+// Pedigree Helper
+const ped = h.pedigree || {};
+
+// Social Links Helper
+const hasSocial = h.social && (h.social.instagram || h.social.facebook || h.social.web);
+
+// Badges Logic
+let badges = [];
+if (isEn && h.badge_en) {
+  badges = h.badge_en.split('·').map(b => ({ type: 'custom', label: b.trim() }));
+} else if (h.badge) {
+  badges = h.badge.split('·').map(b => ({ type: 'custom', label: b.trim() }));
+} else {
+  if (h.tags?.includes('hall-of-fame')) badges.push({ type: 'hof', label: 'Hall of Fame' });
+  if (h.tags?.includes('million-dollar-dam')) badges.push({ type: 'mde', label: 'Million Dollar Dam' });
+}
+
+// Mappatura nomi-slug per link automatici figli -> stalloni
+const allStalloni = await getCollection('stalloni');
+const allFattrici = await getCollection('fattrici');
+const allHorses = [...allStalloni, ...allFattrici];
+const horseMap = new Map(allStalloni.map(s => [s.data.name?.toUpperCase().trim(), s.id]));
+const langPrefix = '/' + lang;
+
+// YouTube embed Helper
+function getYoutubeEmbed(url) {
+  if (!url) return null;
+  const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]+)/);
+  return match ? `https://www.youtube.com/embed/${match[1]}` : url;
+}
+const embedUrl = getYoutubeEmbed(h.videoUrl);
+
+function renderHorseLink(name) {
+  if (!name) return "-";
+  const cleanName = name.toUpperCase().trim();
+  const slug = horseMap.get(cleanName);
+  if (slug) return `<a href="${langPrefix}/stalloni/${slug}" class="off-link">${name}</a>`;
+  return name;
+}
+// Funzione di formattazione guadagni per figli
+function formatOffspringEarnings(earnStr) {
+  if (!earnStr) return "N/D";
+  if (earnStr.toLowerCase() === 'counting' || earnStr.toLowerCase().includes('progressione')) return "Counting";
+  let clean = earnStr.trim();
+  if (clean && !clean.endsWith('+') && clean.includes('$')) clean += '+';
+  return clean;
+}
+
+function getEarningsValue(earnStr) {
+  if (!earnStr || earnStr.toLowerCase() === 'counting' || earnStr.toLowerCase() === 'n/a' || earnStr.toLowerCase() === 'n/d') return 0;
+  return parseInt(earnStr.replace(/[^0-9]/g, ''), 10) || 0;
+}
+
+const currentDamName = h.name?.toUpperCase().trim();
+
+// 1. Trovo automaticamente i figli nel database
+const foundOffspring = allHorses
+  .filter(horse => horse.data.pedigree?.dam?.toUpperCase().trim() === currentDamName)
+  .map(horse => ({
+    name: horse.data.name,
+    earnings: horse.data.stats?.earnings || "N/D",
+    sire: horse.data.pedigree?.sire || null,
+    slug: horse.id,
+    collection: horse.collection
+  }));
+
+// 2. Prendo i figli inseriti manualmente nel file markdown
+const manualOffspring = (h.offspring || []).map(off => ({
+  ...off,
+  manual: true
+}));
+
+// 3. Unisco le liste evitando i duplicati (vince il database automatico)
+const mergedOffspring = [...foundOffspring];
+manualOffspring.forEach(mon => {
+    const isDuplicate = mergedOffspring.some(a => a.name?.toUpperCase().trim() === mon.name?.toUpperCase().trim());
+    if (!isDuplicate) {
+        mergedOffspring.push(mon);
+    }
+});
+
+// 4. Formatto i guadagni
+const combinedOffspring = mergedOffspring.map(off => ({
+  ...off,
+  earnings: formatOffspringEarnings(off.earnings)
+}));
+
+combinedOffspring.sort((a, b) => {
+  const valA = getEarningsValue(a.earnings);
+  const valB = getEarningsValue(b.earnings);
+  if (valA !== valB) return valB - valA;
+  return (a.name || "").localeCompare(b.name || "");
+});
+
+// Split nome hero
+const originalParts = (h.name || "").toUpperCase().trim().split(' ');
+const needsBr = originalParts.length >= 3;
+const lastWord  = originalParts.length > 1 ? originalParts.pop() : "";
+const firstPart = originalParts.join(' ');
+
+---
+
+<Layout 
+  title={`${h.name} | Reining Factory Legacy`}
+  description={isEn ? h.description_en : h.description_it}
+>
+  <style is:global>
+    :root {
+      --warm-gray: #9A9188;
+    }
+    .fattrice-wrap {
+      background: #F5F0E8;
+      color: #1A1610;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      overflow-x: hidden;
+    }
+
+    /* HERO */
+    .hero {
+      position: relative;
+      height: 90vh;
+      min-height: 600px;
+      display: flex;
+      align-items: flex-end;
+      overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      z-index: 1;
+    }
+    .hero-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(26,22,16,0.92) 0%, rgba(26,22,16,0.4) 50%, transparent 100%);
+      z-index: 2;
+    }
+    .hero-content {
+      position: relative;
+      z-index: 3;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+      padding: 0 4rem 4rem;
+    }
+    .hero-badge-wrap { display: flex; gap: 0.8rem; margin-bottom: 1.5rem; }
+    .hero-badge { 
+      padding: 0.4rem 1rem; 
+      font-family: 'DM Sans', sans-serif; 
+      font-size: 11px; 
+      font-weight: 500; 
+      letter-spacing: 0.25em; 
+      text-transform: uppercase; 
+      color: var(--gold); 
+      border: 1px solid var(--gold);
+    }
+    .hero-name { 
+      font-family: 'Bebas Neue', sans-serif; 
+      font-size: clamp(3.5rem, 8vw, 7rem); 
+      font-weight: 900; 
+      line-height: 0.95; 
+      color: #fff;
+      margin-bottom: 0.5rem; 
+    }
+    .hero-nickname { 
+      font-family: 'Playfair Display', serif; 
+      font-style: italic; 
+      font-size: 1.8rem; 
+      color: var(--gold); 
+      margin-bottom: 2rem; 
+    }
+    
+    .hero-stats { display: flex; gap: 3rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 2rem; }
+    .hero-stat { display: flex; flex-direction: column; gap: 5px; }
+    .hero-stat-label { font-family: 'Barlow Condensed', sans-serif; font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(255,255,255,0.4); }
+    .hero-stat-value { font-family: 'Bebas Neue', cursive; font-size: 2.2rem; line-height: 1; color: #fff; }
+    .hero-stat-value.gold { color: var(--gold); }
+
+    .off-link { color: inherit; text-decoration: none; border-bottom: 1px solid rgba(200,151,58,0.3); transition: all 0.2s; padding-bottom: 1px; }
+    .off-link:hover { color: var(--gold); border-bottom-color: var(--gold); }
+
+    /* LAYOUT CONTAINER */
+    .detail-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 4rem;
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 5rem;
+    }
+
+    /* PASSPORT STYLE INFO */
+    .passport-card {
+      background: white;
+      padding: 2rem;
+      border: 1px solid var(--border);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.03);
+    }
+    .passport-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.8rem 0;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+    .passport-row:last-child { border-bottom: none; }
+    .passport-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--warm-gray); }
+    .passport-val { font-size: 0.95rem; font-weight: 500; color: var(--dark); }
+
+    /* SECTIONS */
+    .content-section { margin-bottom: 5rem; }
+    .section-label {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 2rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(200,151,58,0.2);
+    }
+    .description { line-height: 1.8; color: #444; font-size: 1.1rem; }
+    
+    /* HORIZONTAL DESCRIPTION SECTION */
+    .horizontal-description {
+      background: white;
+      padding: 6rem 4rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .description-inner {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .description { line-height: 1.9; color: #444; font-size: 1.15rem; }
+
+    /* GALLERY STRIP */
+    .gallery-strip {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: -2rem; /* Sovrappone leggermente alla hero per effetto design */
+      margin-bottom: 4rem;
+      padding: 0 4rem;
+      z-index: 10;
+      position: relative;
+    }
+    .gallery-thumb {
+      width: 140px;
+      aspect-ratio: 3/2;
+      object-fit: cover;
+      cursor: pointer;
+      border: 1px solid white;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      transition: all 0.3s;
+    }
+    .gallery-thumb:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0,0,0,0.15); border-color: var(--gold); }
+
+    /* LIGHTBOX STYLE (From Stalloni) */
+    .lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.95);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+    .lightbox.active { display: flex; }
+    .lightbox img { max-width: 90vw; max-height: 80vh; object-fit: contain; }
+    .lightbox-close { position: absolute; top: 2rem; right: 2rem; color: white; font-size: 2.5rem; cursor: pointer; opacity: 0.7; }
+    .lightbox-nav { display: flex; gap: 2rem; margin-top: 2rem; }
+    .lightbox-nav button { background: none; border: 1px solid var(--gold); color: var(--gold); padding: 0.5rem 1.5rem; cursor: pointer; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.1em; }
+    
+    /* OFFSPRING HIGHLIGHT (LEGACY) */
+    .legacy-section {
+      background: var(--cream);
+      padding: 6rem 4rem;
+      border-top: 1px solid var(--border);
+    }
+    .legacy-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 3rem;
+    }
+    .off-card {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.5rem;
+      background: #FDFBF8;
+      border-left: 3px solid var(--gold);
+      border: 1px solid rgba(200,151,58,0.1);
+    }
+    .off-name { font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; letter-spacing: 0.05em; }
+    .off-link { color: inherit; text-decoration: none; border-bottom: 1px solid rgba(200,151,58,0.3); transition: all 0.3s; }
+    .off-link:hover { color: var(--gold); border-color: var(--gold); }
+    .off-earn { color: var(--gold); font-weight: 700; font-size: 1.1rem; }
+
+    .offspring-link {
+      display: inline-block;
+      margin-top: 2rem;
+      font-size: 0.72rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--gold);
+      text-decoration: none;
+      border-bottom: 1px solid var(--gold);
+      padding-bottom: 2px;
+      transition: opacity 0.2s;
+    }
+    .offspring-link:hover { opacity: 0.6; }
+
+    /* PEDIGREE (Bracket Style) */
+    .ped-overflow {
+      width: 100%; overflow-x: auto; margin-top: 1rem;
+    }
+    .ped-grid {
+      display: grid;
+      grid-template-columns: 1.4fr 36px 1.3fr 1.6fr;
+      min-width: 700px;
+      min-height: 300px;
+      align-items: center;
+      background: white;
+      padding: 3rem;
+      border: 1px solid var(--border);
+    }
+    .ped-horse { text-align: center; color: var(--gold); font-family: 'Bebas Neue', sans-serif; font-size: 1.2rem; }
+    .ped-bracket { width: 14px; height: 180px; border: 2px solid rgba(200,151,58,0.3); border-right: none; margin: auto; }
+    .ped-parents { display: flex; flex-direction: column; justify-content: space-between; height: 210px; padding-left: 12px; }
+    .ped-parent { font-size: 0.85rem; font-weight: 500; height: 30px; display: flex; align-items: center; }
+    .ped-ancestors { display: flex; flex-direction: column; justify-content: space-between; height: 240px; padding-left: 16px; }
+    .ped-grandunit { display: flex; align-items: center; gap: 10px; }
+    .ped-small-bracket { width: 10px; height: 60px; border: 2px solid rgba(200,151,58,0.15); border-right: none; }
+    .ped-grandnames { display: flex; flex-direction: column; justify-content: space-between; height: 74px; }
+    .ped-grand { font-size: 0.75rem; color: var(--warm-gray); white-space: nowrap; }
+
+    .ped-parent a, .ped-grand a {
+      color: inherit;
+      text-decoration: none;
+      border-bottom: 1px solid rgba(200,151,58,0.3);
+      padding-bottom: 1px;
+      transition: all 0.2s;
+    }
+    
+    .ped-parent a:hover, .ped-grand a:hover {
+      color: var(--gold) !important;
+      border-bottom-color: var(--gold);
+    }
+    .ped-fulllink {
+      display: inline-block;
+      margin-top: 1.5rem;
+      font-size: 0.68rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold);
+      text-decoration: none;
+      border-bottom: 1px solid var(--gold);
+      padding-bottom: 2px;
+      transition: opacity 0.2s;
+    }
+    .ped-fulllink:hover { opacity: 0.6; }
+
+    /* VIDEO SECTION */
+    .video-section {
+      background: white;
+      padding: 6rem 4rem;
+      border-top: 1px solid var(--border);
+    }
+    .video-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 2rem;
+    }
+    .video-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem;
+      color: var(--dark);
+      letter-spacing: 0.05em;
+    }
+    .video-wrapper {
+      position: relative;
+      padding-bottom: 56.25%;
+      height: 0;
+      overflow: hidden;
+      max-width: 1000px;
+      margin: 0 auto;
+      border: 1px solid rgba(200,151,58,0.2);
+    }
+    .video-wrapper iframe {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+    }
+
+    /* ADDITIONAL SECTIONS */
+    .technical-section {
+      background: var(--cream);
+      padding: 6rem 0;
+      border-top: 1px solid var(--border);
+    }
+    .pedigree-full-section {
+      background: white;
+      padding: 6rem 0;
+      border-top: 1px solid var(--border);
+    }
+
+    @media (max-width: 1024px) {
+      .detail-container { grid-template-columns: 1fr; padding: 2rem; gap: 3rem; }
+      .legacy-grid { grid-template-columns: 1fr; gap: 1rem; }
+      .hero { height: 80vh; }
+      .hero-content { padding: 0 2rem 2rem; }
+      .gallery-strip { padding: 0 2rem; }
+    }
+  </style>
+
+  <div class="fattrice-wrap">
+    
+    <!-- LIGHTBOX (Common Component Style) -->
+    <div id="lightbox" class="lightbox" onclick="closeLightbox(event)">
+      <span class="lightbox-close">&times;</span>
+      <img id="lightbox-img" src="" alt="Lightbox image" />
+      {h.gallery && h.gallery.length > 1 && (
+        <div class="lightbox-nav">
+          <button onclick="changeLightbox(-1)">&larr; Prev</button>
+          <button onclick="changeLightbox(1)">Next &rarr;</button>
+        </div>
+      )}
+    </div>
+
+    <!-- HERO SECTION -->
+    <section class="hero">
+      <div class="hero-bg" style={`background-image: url('${h.mainImage}')`}></div>
+      <div class="hero-overlay"></div>
+      
+      <div class="hero-content">
+        {badges.length > 0 && (
+          <div class="hero-badge" style="margin-bottom: 1.5rem; width: fit-content;">
+            {badges.map(b => b.label).join(' · ')}
+          </div>
+        )}
+        <h1 class="hero-name">
+          {firstPart} <span style="color: var(--gold)">{lastWord}</span>
+        </h1>
+        {h.nickname && <p class="hero-nickname">"{h.nickname}"</p>}
+        
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <span class="hero-stat-label">LTE earnings</span>
+            <span class="hero-stat-value gold">{formatPrice(h.stats?.earnings)}</span>
+          </div>
+          <div class="hero-stat">
+            <span class="hero-stat-label">{isEn ? 'Offspring Earnings' : 'Vincite Prole'}</span>
+            <span class="hero-stat-value">{formatPrice(h.stats?.offspringEarnings)}</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- GALLERY STRIP -->
+    {h.gallery && h.gallery.length > 0 && (
+      <div class="gallery-strip">
+        {h.gallery.map((img, idx) => (
+          <img src={img} class="gallery-thumb" onclick={`openLightbox(${idx})`} alt={`${h.name} detail ${idx + 1}`} />
+        ))}
+      </div>
+    )}
+
+    <section class="horizontal-description reveal">
+      <div class="description-inner">
+        <div class="section-label">{t('horse.desc_title')}</div>
+        <div class="description">
+          <p>{isEn ? h.description_en : h.description_it}</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. TECHNICAL & PASSPORT SECTION (Cream) -->
+    <section class="technical-section">
+      <div class="detail-container reveal">
+        <div class="detail-main">
+          <!-- ACHIEVEMENTS -->
+          {h.achievements && h.achievements.length > 0 && (
+            <div class="content-section">
+              <div class="section-label">{t('horse.achievements')}</div>
+              <div style="display:flex; flex-direction:column; gap:1rem;">
+                {h.achievements.map(ach => (
+                  <div style="display:grid; grid-template-columns: 60px 1fr; gap:1rem; padding-bottom:0.8rem; border-bottom:1px solid rgba(0,0,0,0.05)">
+                    <strong style="color:var(--gold)">{ach.year}</strong>
+                    <span>{ach.title}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <!-- SIDEBAR (PASSPORT) -->
+        <aside class="detail-sidebar">
+          <div class="passport-card">
+            <div class="passport-row">
+              <span class="passport-label">{t('horse.born')}</span>
+              <span class="passport-val">{h.yearOfBirth}{h.yearOfDeath ? ` – ${h.yearOfDeath}` : ''}</span>
+            </div>
+            <div class="passport-row"><span class="passport-label">{t('horse.breed')}</span><span class="passport-val">{h.breed}</span></div>
+            <div class="passport-row"><span class="passport-label">{t('horse.color')}</span><span class="passport-val">{h.color}</span></div>
+            <div class="passport-row"><span class="passport-label">{isEn ? 'Origin' : 'Origine'}</span><span class="passport-val">{h.origine}</span></div>
+            <div style="margin-top:1.5rem; padding-top:1rem; border-top:1px solid rgba(0,0,0,0.05)">
+              <span class="passport-label">{t('horse.owner')}</span>
+              <div style="font-size:0.95rem; font-weight:500; margin-top:4px;">{h.owner || 'N/D'}</div>
+              <div style="font-size:0.75rem; color:var(--warm-gray);">{h.location}</div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- 4. PEDIGREE SECTION (White) -->
+    <section class="pedigree-full-section reveal">
+      <div style="max-width:1200px; margin: 0 auto; padding: 0 4rem;">
+        <div class="section-label">Pedigree</div>
+        <div class="ped-overflow">
+          <div class="ped-grid">
+            <div class="ped-horse"><strong>{h.name}</strong></div>
+            <div class="ped-bracket-col"><div class="ped-bracket"></div></div>
+            <div class="ped-parents">
+              <div class="ped-parent" set:html={renderHorseLink(ped.sire)} />
+              <div class="ped-parent" set:html={renderHorseLink(ped.dam)} />
+            </div>
+            <div class="ped-ancestors">
+              <div class="ped-grandunit">
+                <div class="ped-small-bracket"></div>
+                <div class="ped-grandnames">
+                  <div class="ped-grand" set:html={renderHorseLink(ped.grandsire_sire)} />
+                  <div class="ped-grand" set:html={renderHorseLink(ped.granddam_sire)} />
+                </div>
+              </div>
+              <div class="ped-grandunit">
+                <div class="ped-small-bracket"></div>
+                <div class="ped-grandnames">
+                  <div class="ped-grand" set:html={renderHorseLink(ped.grandsire_dam)} />
+                  <div class="ped-grand" set:html={renderHorseLink(ped.granddam_dam)} />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {h.pedigreeUrl && <a href={h.pedigreeUrl} target="_blank" class="ped-fulllink">{isEn ? 'Full Pedigree' : 'Pedigree completo'} →</a>}
+      </div>
+    </section>
+
+    <!-- 5. LEGACY SECTION (OFFSPRING) (Cream) -->
+    {combinedOffspring.length > 0 && (
+      <section class="legacy-section">
+        <div style="max-width:1200px; margin: 0 auto;">
+          <div class="section-label">{t('horse.offspring')}</div>
+          <div class="legacy-grid">
+            {combinedOffspring.map(off => (
+              <div class="off-card reveal">
+                <div style="display: flex; flex-direction: column; gap: 0.15rem;">
+                  <span class="off-name" set:html={renderHorseLink(off.name)} />
+                  {off.sire && <span style="font-size: 0.75rem; color: var(--warm-gray); letter-spacing: 0.05em; font-weight: 500; text-transform: uppercase;" set:html={`by ${renderHorseLink(off.sire)}`} />}
+                </div>
+                <span class="off-earn">{off.earnings}</span>
+              </div>
+            ))}
+          </div>
+          {h.offspringUrl && (
+            <div style="text-align: right; margin-top: 1rem;">
+              <a href={h.offspringUrl} target="_blank" class="offspring-link">
+                {isEn ? 'All offspring' : 'Tutti gli offspring'} →
+              </a>
+            </div>
+          )}
+        </div>
+      </section>
+    )}
+
+    <!-- 6. VIDEO SECTION (White) -->
+    {embedUrl && (
+      <section class="video-section">
+        <div style="max-width:1200px; margin: 0 auto;">
+          <div class="video-header">
+            <div class="section-label" style="color:rgba(200,151,58,0.6); margin:0;">Video</div>
+            <div class="video-title">In Arena</div>
+          </div>
+          <div class="video-wrapper">
+            <iframe src={embedUrl} title={h.name} frameborder="0" allowfullscreen></iframe>
+          </div>
+        </div>
+      </section>
+    )}
+
+    <!-- CLIENT SCRIPT (Lightbox) -->
+    <script is:inline define:vars={{ galleryImages: h.gallery || [] }}>
+      let currentIndex = 0;
+      window.openLightbox = (index) => {
+        currentIndex = index;
+        const img = document.getElementById('lightbox-img');
+        if (img) img.src = galleryImages[index];
+        document.getElementById('lightbox').classList.add('active');
+        document.body.style.overflow = 'hidden';
+      };
+      window.closeLightbox = (e) => {
+        if (!e || e.target.id === 'lightbox' || e.target.classList.contains('lightbox-close')) {
+          document.getElementById('lightbox').classList.remove('active');
+          document.body.style.overflow = '';
+        }
+      };
+      window.changeLightbox = (dir) => {
+        currentIndex = (currentIndex + dir + galleryImages.length) % galleryImages.length;
+        document.getElementById('lightbox-img').src = galleryImages[currentIndex];
+      };
+    </script>
+
+  </div>
+</Layout>

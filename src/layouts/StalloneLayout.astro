@@ -1,0 +1,55 @@
+---
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description } = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{title}</title>
+  <meta name="description" content={description}>
+  
+  <style is:global>
+    /* RESET E VARIABILI ORIGINALI */
+    :root {
+      --cream: #F5F0E8;
+      --dark: #1A1610;
+      --brown: #6B4C2A;
+      --gold: #C8973A;
+      --gold-light: #E8C068;
+      --rust: #8B3A1A;
+      --warm-gray: #9A9188;
+      --border: rgba(107,76,42,0.2);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--cream);
+      color: var(--dark);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      overflow-x: hidden;
+    }
+
+    /* FIX FULL WIDTH INDICATO DALL'UTENTE */
+    .entry-content.is-layout-constrained > *,
+    .entry-content.is-layout-constrained {
+      max-width: 100% !important;
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+    }
+  </style>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <slot />
+</body>
+</html>

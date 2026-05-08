@@ -1,0 +1,579 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import { useTranslations } from '../../i18n/utils';
+
+export async function getStaticPaths() {
+  return [
+    { params: { lang: 'it' } },
+    { params: { lang: 'en' } },
+  ];
+}
+
+const { lang } = Astro.params;
+const t = useTranslations(lang);
+const isEn = lang === 'en';
+const langPrefix = '/' + lang;
+
+// Recupera tutti gli stalloni ignorando i file template (che iniziano con _)
+const allStalloniRaw = await getCollection('stalloni');
+const allStalloni = allStalloniRaw.filter(s => !s.id.startsWith('_'));
+
+// Ordina per nome
+allStalloni.sort((a, b) => a.data.name.localeCompare(b.data.name));
+
+// Estrai valori univoci per i filtri
+const uniqueColors = [...new Set(
+  allStalloni.map(s => isEn ? (s.data.color_en || s.data.color) : s.data.color).filter(Boolean)
+)].sort();
+
+const uniqueSemen = [...new Set(
+  allStalloni.map(s => {
+    const raw = isEn ? (s.data.breeding?.semenType_en || s.data.breeding?.semenType) : s.data.breeding?.semenType;
+    if (!raw) return [];
+    // Splitta per "/" o "," e pulisce gli spazi
+    return raw.split(/[\/\,]+/).map(item => item.trim());
+  }).flat().filter(Boolean)
+)].sort();
+
+// Helper: determina badge presenti
+// Helper: determina badge presenti (MOSTRA SIA Million Dollar CHE Hall of Fame)
+function getBadges(tags, bCard, bHero) {
+  const combined = [];
+  
+  if (bCard) {
+    combined.push(...bCard.split('·').map(s => s.trim()));
+  } else if (bHero) {
+    combined.push(...bHero.split('·').map(s => s.trim()));
+  }
+  
+  if (tags) combined.push(...(tags || []));
+
+  const found = [];
+  let hasMds = false;
+  let hasHof = false;
+
+  for (const t of combined) {
+    const low = t.toLowerCase();
+    
+    // Milioni
+    if (!hasMds && low.includes('million dollar')) {
+      found.push({ type: 'mds', label: t.toUpperCase() });
+      hasMds = true;
+    }
+    // Hall of Fame
+    if (!hasHof && low.includes('hall of fame')) {
+      found.push({ type: 'hof', label: t.toUpperCase() });
+      hasHof = true;
+    }
+  }
+
+  return found;
+}
+
+// Helper: slug pedigree per link
+function pedLink(name, allSt) {
+  if (!name) return null;
+  const found = allSt.find(s => s.data.name.toLowerCase() === name.toLowerCase());
+  if (!found) return null;
+  return `${langPrefix}/stalloni/${found.id}`;
+}
+---
+<Layout
+  title={isEn ? "Stallion Database — Reining Factory" : "Database Stalloni Reining — Reining Factory"}
+  description={isEn ? "The complete reining stallion database. Pedigrees, earnings and breeding info." : "Il database completo degli stalloni da reining. Pedigree, earnings e informazioni di monta."}
+>
+
+<!-- HERO -->
+<section class="db-hero">
+  <div class="db-hero-bg"></div>
+  <div class="db-hero-content">
+    <p class="db-eyebrow">{t('stalloni.db')}</p>
+    <h1 class="db-title">
+      <span>{t('stalloni.hero_title')} <em>{t('stalloni.hero_title_em')}</em></span>
+    </h1>
+    <p class="db-subtitle">{t('stalloni.hero_sub')}</p>
+  </div>
+</section>
+
+<!-- FILTRI -->
+<div class="db-filters-wrap" id="filtersWrap">
+  <button class="db-mobile-filter-toggle" id="mobileFilterToggle">
+    {t('stalloni.filter_search')}
+    <svg class="db-mobile-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polyline points="6 9 12 15 18 9"></polyline>
+    </svg>
+  </button>
+
+  <div class="db-filters-content" id="mobileFiltersContent">
+    <div class="db-filters">
+    <!-- RICERCA -->
+    <div class="db-search-box">
+      <svg class="db-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input
+        type="text"
+        id="searchInput"
+        class="db-search-input"
+        placeholder={t('stalloni.search_placeholder')}
+        autocomplete="off"
+      />
+    </div>
+    <!-- ORIGINE -->
+    <div class="db-filter-group">
+      <span class="db-filter-label">{t('stalloni.filter_origin')}</span>
+      <div class="db-toggle-group">
+        <button class="db-toggle active" data-origin="all">{t('stalloni.filter_all')}</button>
+        <button class="db-toggle" data-origin="USA">USA</button>
+        <button class="db-toggle" data-origin="EU">EU</button>
+      </div>
+    </div>
+    <!-- ELITE -->
+    <div class="db-filter-group">
+      <span class="db-filter-label">Elite</span>
+      <div class="db-toggle-group">
+        <button class="db-elite" data-elite="hof" title="NRHA Hall of Fame">
+          Hall of Fame
+        </button>
+        <button class="db-elite" data-elite="mds" title="Million Dollar Sire">
+          Million Dollar Sire
+        </button>
+      </div>
+    </div>
+    <!-- FILTRI AVANZATI TOGGLE -->
+    <button class="db-advanced-btn" id="advancedBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/>
+      </svg>
+      {t('stalloni.filter_advanced')}
+      <span class="db-advanced-arrow" id="advancedArrow">▼</span>
+    </button>
+  </div>
+  <!-- PANNELLO AVANZATO -->
+  <div class="db-advanced-panel" id="advancedPanel">
+    <div class="db-advanced-inner">
+      <div class="db-adv-group">
+        <label class="db-adv-label">{t('horse.earnings')}</label>
+        <select class="db-adv-select" id="earningsSelect">
+          <option value="">{t('stalloni.earning_all')}</option>
+          <option value="<100k">&lt; $100.000</option>
+          <option value=">100k">&gt; $100.000</option>
+          <option value=">200k">&gt; $200.000</option>
+          <option value=">300k">&gt; $300.000</option>
+          <option value=">400k">&gt; $400.000</option>
+          <option value=">500k">&gt; $500.000</option>
+          <option value=">1m">&gt; $1.000.000</option>
+        </select>
+      </div>
+      <div class="db-adv-group">
+        <label class="db-adv-label">{isEn ? 'Coat Color' : 'Mantello'}</label>
+        <select class="db-adv-select" id="colorSelect">
+          <option value="">{t('stalloni.color_all')}</option>
+          {uniqueColors.map(c => <option value={c}>{c}</option>)}
+        </select>
+      </div>
+      <div class="db-adv-group">
+        <label class="db-adv-label">{t('horse.semen')}</label>
+        <select class="db-adv-select" id="semenSelect">
+          <option value="">{t('stalloni.semen_all')}</option>
+          {uniqueSemen.map(s => <option value={s}>{s}</option>)}
+        </select>
+      </div>
+      <div class="db-adv-group">
+        <label class="db-adv-label">{isEn ? 'Breeding Fee ($)' : 'Prezzo Seme ($)'}</label>
+        <div class="db-range-wrap">
+          <input type="number" class="db-adv-input" id="priceFrom" placeholder={isEn ? "From" : "Da"} />
+          <span class="db-range-sep">—</span>
+          <input type="number" class="db-adv-input" id="priceTo" placeholder={isEn ? "To" : "A"} />
+        </div>
+      </div>
+      <div class="db-adv-group">
+        <label class="db-adv-label">{isEn ? 'Birth Year' : 'Anno nascita'}</label>
+        <div class="db-range-wrap">
+          <input type="number" class="db-adv-input" id="yearFrom" placeholder={isEn ? "From" : "Dal"} min="1970" max="2025" />
+          <span class="db-range-sep">—</span>
+          <input type="number" class="db-adv-input" id="yearTo" placeholder={isEn ? "To" : "Al"} min="1970" max="2025" />
+        </div>
+      </div>
+      <button class="db-reset-btn" id="resetBtn">
+        {t('stalloni.reset_filters')}
+      </button>
+    </div>
+  </div>
+  </div>
+  <!-- CONTATORE E VIEW TOGGLE -->
+  <div class="db-results-bar">
+    <span id="resultsCount" class="db-results-count"></span>
+    <div class="db-view-toggle">
+      <button class="db-view-btn active" data-view="grid" title="Grid View">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+      </button>
+      <button class="db-view-btn" data-view="list" title="List View">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- GRIGLIA -->
+<div class="db-grid-wrap">
+  <div class="db-grid" id="stalloniGrid">
+    {allStalloni.map((stallone, index) => {
+      const h = stallone.data;
+      const badges = getBadges(
+        h.tags, 
+        isEn ? (h.badge_card_en || h.badge_card) : h.badge_card, 
+        isEn ? (h.badge_hero_en || h.badge_hero || h.badge_en) : (h.badge_hero || h.badge)
+      );
+      const semenStr = isEn ? (h.breeding?.semenType_en || h.breeding?.semenType || '') : (h.breeding?.semenType || '');
+      const fee = typeof h.breeding?.fee === 'string' ? parseInt(h.breeding.fee.replace(/[^0-9]/g, '')) : (h.breeding?.fee || 0);
+      const earningsRaw = h.stats?.earnings || '';
+      let earningsNum = 0;
+      const matchObj = earningsRaw.match(/[\d,.]+/);
+      if (matchObj) {
+        let n = parseFloat(matchObj[0].replace(/,/g, ''));
+        const l = earningsRaw.toLowerCase();
+        if (l.includes('k')) n *= 1000;
+        if (l.includes('m') || l.includes('million')) n *= 1000000;
+        earningsNum = n;
+      }
+      return (
+        <a
+          href={`${langPrefix}/stalloni/${stallone.id}`}
+          class="db-card"
+          style={`animation-delay: ${(index % 20) * 0.04}s`}
+          data-name={(h.name || '').toLowerCase()}
+          data-origin={(h.origine || '').toUpperCase()}
+          data-color={((isEn ? (h.color_en || h.color) : h.color) || '').toLowerCase()}
+          data-semen={semenStr.toLowerCase()}
+          data-year={h.yearOfBirth || ''}
+          data-price={fee}
+          data-earnings={earningsNum}
+          data-badges={badges.map(b => b.type).join(',')}
+        >
+          <div class="db-card-media">
+            {(h.cardImage || h.mainImage)
+              ? <img src={h.cardImage || h.mainImage} alt={h.name} loading="lazy" />
+              : <div class="db-card-placeholder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>
+            }
+            <div class="db-badges-container">
+              {badges.map(badge => (<div class={`db-badge db-badge-${badge.type}`}>{badge.label}</div>))}
+            </div>
+            {h.origine && <div class={`db-origin-tag db-origin-${(h.origine || '').toLowerCase()}`}>{h.origine}</div>}
+          </div>
+          <div class="db-card-body">
+            <h3 class="db-card-name">{h.name}</h3>
+            {(h.pedigree?.sire || h.pedigree?.dam) && (
+              <p class="db-card-pedigree">
+                {h.pedigree?.sire && <span class="db-ped-sire">{h.pedigree.sire}</span>}
+                {h.pedigree?.sire && h.pedigree?.dam && <span class="db-ped-sep"> × </span>}
+                {h.pedigree?.dam && <span class="db-ped-dam">{h.pedigree.dam}</span>}
+              </p>
+            )}
+            <div class="db-card-footer">
+              {h.yearOfBirth && (
+                <div class="db-card-stat">
+                  <span class="db-stat-label">{t('horse.born')}</span>
+                  <span class="db-stat-value">{h.yearOfBirth}</span>
+                </div>
+              )}
+              {h.stats?.earnings && (
+                <div class="db-card-stat">
+                  <span class="db-stat-label">LTE</span>
+                  <span class="db-stat-value db-stat-gold">
+                    {h.stats.earnings.endsWith('+') ? h.stats.earnings : `${h.stats.earnings}+`}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        </a>
+      );
+    })}
+  </div>
+  <div class="db-empty" id="emptyState" style="display:none;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+    <p class="db-empty-title">{t('stalloni.no_results')}</p>
+    <p class="db-empty-sub">{t('stalloni.adjust_filters')}</p>
+    <button class="db-reset-btn" id="emptyResetBtn">{t('stalloni.reset_filters')}</button>
+  </div>
+</div>
+
+<script is:inline define:vars={{ isEn }}>
+  // Scripts logic migrated from OLD.astro
+  const mobileToggle = document.getElementById('mobileFilterToggle');
+  const mobileContent = document.getElementById('mobileFiltersContent');
+  if (mobileToggle && mobileContent) {
+    mobileToggle.addEventListener('click', () => {
+      mobileToggle.classList.toggle('open');
+      mobileContent.classList.toggle('open');
+    });
+  }
+
+  const state = {
+    search: '', origin: 'all', elite: null, color: '', semen: '', earnings: '',
+    yearFrom: '', yearTo: '', priceFrom: '', priceTo: '',
+  };
+
+  const searchInput = document.getElementById('searchInput');
+  const originBtns = document.querySelectorAll('[data-origin]');
+  const eliteBtns = document.querySelectorAll('[data-elite]');
+  const colorSelect = document.getElementById('colorSelect');
+  const semenSelect = document.getElementById('semenSelect');
+  const earningsSelect = document.getElementById('earningsSelect');
+  const yearFrom = document.getElementById('yearFrom');
+  const yearTo = document.getElementById('yearTo');
+  const priceFrom = document.getElementById('priceFrom');
+  const priceTo = document.getElementById('priceTo');
+  const resetBtn = document.getElementById('resetBtn');
+  const emptyResetBtn = document.getElementById('emptyResetBtn');
+  const advancedBtn = document.getElementById('advancedBtn');
+  const advancedPanel = document.getElementById('advancedPanel');
+  const advancedArrow = document.getElementById('advancedArrow');
+  const grid = document.getElementById('stalloniGrid');
+  const emptyState = document.getElementById('emptyState');
+  const resultsCount = document.getElementById('resultsCount');
+  const cards = Array.from(grid.querySelectorAll('.db-card'));
+
+  advancedBtn.addEventListener('click', () => {
+    const open = advancedPanel.classList.toggle('open');
+    advancedArrow.textContent = open ? '▲' : '▼';
+  });
+
+  function applyFilters() {
+    let visible = 0;
+    cards.forEach(card => {
+      const name = card.dataset.name || '';
+      const origin = card.dataset.origin || '';
+      const color = card.dataset.color || '';
+      const semen = card.dataset.semen || '';
+      const year = parseInt(card.dataset.year) || 0;
+      const price = parseInt(card.dataset.price) || 0;
+      const banners = card.dataset.badges ? card.dataset.badges.split(',') : [];
+      const cardText = card.textContent.toLowerCase();
+      
+      const searchOk = !state.search || cardText.includes(state.search);
+      const originOk = state.origin === 'all' || origin === state.origin;
+      const eliteOk = !state.elite || banners.includes(state.elite);
+      const colorOk = !state.color || color === state.color.toLowerCase();
+      const semenOk = !state.semen || semen.includes(state.semen.toLowerCase());
+      
+      const cardEarnings = parseInt(card.dataset.earnings) || 0;
+      let earningsOk = true;
+      if (state.earnings === '<100k') earningsOk = cardEarnings > 0 && cardEarnings < 100000;
+      else if (state.earnings === '>100k') earningsOk = cardEarnings > 100000;
+      else if (state.earnings === '>200k') earningsOk = cardEarnings > 200000;
+      else if (state.earnings === '>300k') earningsOk = cardEarnings > 300000;
+      else if (state.earnings === '>400k') earningsOk = cardEarnings > 400000;
+      else if (state.earnings === '>500k') earningsOk = cardEarnings > 500000;
+      else if (state.earnings === '>1m') earningsOk = cardEarnings > 1000000;
+
+      const yfOk = !state.yearFrom || year >= parseInt(state.yearFrom);
+      const ytOk = !state.yearTo || year <= parseInt(state.yearTo);
+      const pfOk = !state.priceFrom || price >= parseInt(state.priceFrom);
+      const ptOk = !state.priceTo || (price > 0 && price <= parseInt(state.priceTo));
+
+      if (searchOk && originOk && eliteOk && colorOk && semenOk && earningsOk && yfOk && ytOk && pfOk && ptOk) {
+        card.style.display = ''; visible++;
+      } else {
+        card.style.display = 'none';
+      }
+    });
+
+    resultsCount.textContent = isEn 
+      ? `${visible} stallion${visible !== 1 ? 's' : ''} found`
+      : `${visible} stallon${visible !== 1 ? 'i' : 'e'} trovat${visible !== 1 ? 'i' : 'o'}`;
+    emptyState.style.display = visible === 0 ? 'flex' : 'none';
+  }
+
+  function resetAllFilters() {
+    state.search = ''; state.origin = 'all'; state.elite = null; state.color = ''; state.semen = '';
+    state.earnings = ''; state.yearFrom = ''; state.yearTo = ''; state.priceFrom = ''; state.priceTo = '';
+    
+    [searchInput, colorSelect, semenSelect, earningsSelect, yearFrom, yearTo, priceFrom, priceTo].forEach(el => { if(el) el.value = ''; });
+    originBtns.forEach(b => b.classList.toggle('active', b.dataset.origin === 'all'));
+    eliteBtns.forEach(b => b.classList.remove('active'));
+    applyFilters();
+  }
+
+  searchInput.addEventListener('input', e => { state.search = e.target.value.toLowerCase().trim(); applyFilters(); });
+  originBtns.forEach(btn => btn.addEventListener('click', () => { originBtns.forEach(b => b.classList.remove('active')); btn.classList.add('active'); state.origin = btn.dataset.origin; applyFilters(); }));
+  eliteBtns.forEach(btn => btn.addEventListener('click', () => { const active = btn.classList.toggle('active'); eliteBtns.forEach(b => { if(b !== btn) b.classList.remove('active'); }); state.elite = active ? btn.dataset.elite : null; applyFilters(); }));
+  colorSelect.addEventListener('change', e => { state.color = e.target.value; applyFilters(); });
+  semenSelect.addEventListener('change', e => { state.semen = e.target.value; applyFilters(); });
+  if (earningsSelect) earningsSelect.addEventListener('change', e => { state.earnings = e.target.value; applyFilters(); });
+  [yearFrom, yearTo, priceFrom, priceTo].forEach(el => el.addEventListener('input', e => { state[el.id] = e.target.value; applyFilters(); }));
+  applyFilters();
+</script>
+
+<script is:inline>
+  const viewBtns = document.querySelectorAll('.db-view-btn');
+  const stalloniGrid = document.getElementById('stalloniGrid');
+  const savedViewPref = localStorage.getItem('stalloniViewPref') || 'grid';
+  
+  if (savedViewPref === 'list' && stalloniGrid) {
+    stalloniGrid.classList.add('view-list');
+    const listBtn = document.querySelector('.db-view-btn[data-view="list"]');
+    const gridBtn = document.querySelector('.db-view-btn[data-view="grid"]');
+    if (listBtn) listBtn.classList.add('active');
+    if (gridBtn) gridBtn.classList.remove('active');
+  }
+
+  viewBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      viewBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      if (btn.dataset.view === 'list') {
+        if(stalloniGrid) stalloniGrid.classList.add('view-list');
+        localStorage.setItem('stalloniViewPref', 'list');
+      } else {
+        if(stalloniGrid) stalloniGrid.classList.remove('view-list');
+        localStorage.setItem('stalloniViewPref', 'grid');
+      }
+    });
+  });
+
+</script>
+</Layout>
+
+<style is:global>
+  /* CSS styles migrated from OLD.astro */
+  :root {
+    --db-gold: #C8973A; --db-gold-lt: #E8C068; --db-dark: #0D0B04; --db-dark2: #1A1610; 
+    --db-dark3: #221A0A; --db-warm-gray: #9A9188; --db-border: rgba(200,151,58,0.18); --db-cream: #F5F0E8;
+  }
+  .db-hero { position: relative; min-height: 60vh; display: flex; align-items: flex-start; overflow: hidden; }
+  .db-hero-bg { position: absolute; inset: 0; background: linear-gradient(135deg, rgba(13,11,4,0.88) 40%, rgba(107,76,42,0.35) 100%), url('/immagini/stalloni-hero.webp') center/cover no-repeat; }
+  .db-hero-bg::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 70% 50%, rgba(200,151,58,0.07) 0%, transparent 70%); }
+  .db-hero-content { position: relative; z-index: 2; padding: 150px 4rem 3rem; max-width: 900px; }
+  .db-eyebrow { font-family: 'Barlow Condensed', sans-serif; font-size: 0.8rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--db-gold); margin-bottom: 1.5rem; }
+  .db-title { font-family: 'Playfair Display', serif; font-size: clamp(2.5rem, 6vw, 5rem); font-weight: 900; line-height: 0.95; color: var(--db-cream); margin-bottom: 1.2rem; }
+  .db-title em { font-style: italic; color: var(--db-gold); display: block; }
+  .db-subtitle { font-size: 1.1rem; font-weight: 300; color: rgba(245,240,232,0.7); max-width: 600px; line-height: 1.75; }
+
+  .db-filters-wrap { position: relative; z-index: 10; margin: 2rem 2rem 0; border-radius: 8px; background: rgba(26,22,10,0.92); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--db-border); box-shadow: 0 24px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(200,151,58,0.06); overflow: hidden; }
+  .db-mobile-filter-toggle { display: none; }
+  .db-filters { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; padding: 1.2rem 1.8rem; flex-wrap: wrap; }
+  .db-search-box { position: relative; width: 100%; max-width: 380px; min-width: 250px; }
+  .db-search-icon { position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--db-warm-gray); pointer-events: none; }
+  .db-search-input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(200,151,58,0.2); border-radius: 4px; color: var(--db-cream); font-family: 'Barlow', sans-serif; font-size: 0.85rem; padding: 0.65rem 0.9rem 0.65rem 2.5rem; outline: none; transition: border-color 0.2s; }
+  .db-search-input::placeholder { color: rgba(154,145,136,0.5); }
+  .db-filter-group { display: flex; align-items: center; gap: 0.6rem; flex-shrink: 0; }
+  .db-filter-label { font-family: 'Barlow Condensed', sans-serif; font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--db-warm-gray); white-space: nowrap; }
+  .db-toggle-group { display: flex; gap: 4px; }
+  .db-toggle { background: transparent; border: 1px solid rgba(200,151,58,0.2); color: rgba(245,240,232,0.5); font-family: 'Barlow Condensed', sans-serif; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; padding: 0.4rem 0.9rem; border-radius: 3px; cursor: pointer; transition: all 0.2s; }
+  .db-toggle.active { background: var(--db-gold); border-color: var(--db-gold); color: var(--db-dark); font-weight: 700; }
+  .db-elite { display: inline-flex; align-items: center; gap: 0.4rem; background: transparent; border: 1px solid rgba(200,151,58,0.2); color: rgba(245,240,232,0.5); font-family: 'Barlow Condensed', sans-serif; font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.4rem 0.9rem; border-radius: 3px; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+  .db-elite.active { background: rgba(200,151,58,0.15); border-color: var(--db-gold); color: var(--db-gold); }
+  .db-advanced-btn { display: inline-flex; align-items: center; gap: 0.4rem; background: transparent; border: none; color: rgba(245,240,232,0.4); font-family: 'Barlow Condensed', sans-serif; font-size: 0.72rem; letter-spacing: 0.15em; text-transform: uppercase; cursor: pointer; padding: 0.4rem 0; transition: color 0.2s; white-space: nowrap; }
+  .db-advanced-arrow { font-size: 0.55rem; transition: transform 0.3s; }
+  .db-advanced-panel { max-height: 0; overflow: hidden; transition: max-height 0.35s ease; border-top: 0px solid var(--db-border); }
+  .db-advanced-panel.open { max-height: 350px; border-top-width: 1px; }
+  .db-advanced-inner { display: flex; align-items: flex-end; gap: 1.5rem; padding: 1.2rem 1.8rem; flex-wrap: wrap; }
+  .db-adv-group { display: flex; flex-direction: column; gap: 0.4rem; }
+  .db-adv-label { font-family: 'Barlow Condensed', sans-serif; font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--db-warm-gray); }
+  .db-adv-select, .db-adv-input { background: rgba(255,255,255,0.05); border: 1px solid rgba(200,151,58,0.2); border-radius: 3px; color: var(--db-cream); font-family: 'Barlow', sans-serif; font-size: 0.82rem; padding: 0.5rem 0.8rem; outline: none; transition: border-color 0.2s; min-width: 160px; }
+  .db-range-wrap { display: flex; align-items: center; gap: 0.5rem; }
+  .db-range-sep { color: var(--db-warm-gray); font-size: 0.8rem; }
+  .db-reset-btn { display: inline-flex; align-items: center; gap: 0.4rem; background: transparent; border: 1px solid rgba(200,151,58,0.2); color: rgba(245,240,232,0.4); font-family: 'Barlow Condensed', sans-serif; font-size: 0.68rem; letter-spacing: 0.15em; text-transform: uppercase; padding: 0.5rem 1rem; border-radius: 3px; cursor: pointer; transition: all 0.2s; }
+  
+  .db-results-bar { padding: 0.5rem 1.8rem 0.8rem; border-top: 1px solid rgba(200,151,58,0.06); display: flex; justify-content: space-between; align-items: center; }
+  .db-results-count { font-family: 'Barlow Condensed', sans-serif; font-size: 0.68rem; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(154,145,136,0.6); }
+  .db-view-toggle { display: flex; gap: 0.4rem; }
+  .db-view-btn { background: transparent; border: 1px solid transparent; color: rgba(245,240,232,0.3); padding: 0.35rem; border-radius: 4px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+  .db-view-btn svg { width: 16px; height: 16px; }
+  .db-view-btn:hover { color: var(--db-gold); }
+  .db-view-btn.active { color: var(--db-gold); border-color: rgba(200,151,58,0.3); background: rgba(200,151,58,0.05); }
+
+  .db-grid-wrap { padding: 3rem 2rem 6rem; background: var(--db-dark); min-height: 40vh; }
+  .db-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; max-width: 1400px; margin: 0 auto; }
+
+  .db-card { display: flex; flex-direction: column; background: var(--db-dark2); border: 1px solid rgba(200,151,58,0.1); text-decoration: none; color: inherit; transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s; opacity: 0; animation: dbCardIn 0.5s ease forwards; cursor: pointer; }
+  .db-card:hover { border-color: var(--db-gold); transform: translateY(-4px); box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 0 1px rgba(200,151,58,0.2); }
+  .db-card-media { position: relative; aspect-ratio: 4 / 5; overflow: hidden; background: var(--db-dark3); }
+  .db-card-media img { width: 100%; height: 100%; object-fit: cover; filter: saturate(0.85); transition: transform 0.5s ease, filter 0.3s ease; }
+  .db-card:hover .db-card-media img { transform: scale(1.08); filter: saturate(1); }
+  .db-badges-container { position: absolute; top: 0.75rem; left: 0.75rem; display: flex; flex-direction: column; gap: 0.5rem; z-index: 5; }
+  .db-badge { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.35rem 0.7rem; font-family: 'Barlow Condensed', sans-serif; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; border-radius: 2px; backdrop-filter: blur(8px); width: fit-content; position: relative; }
+  .db-badge-hof { background: rgba(200,151,58,0.9); color: #0D0B04; }
+  .db-badge-mds { background: rgba(13,11,4,0.85); color: var(--db-gold-lt); border: 1px solid rgba(200,151,58,0.5); }
+  .db-origin-tag { position: absolute; bottom: 0.6rem; right: 0.6rem; font-family: 'Barlow Condensed', sans-serif; font-size: 0.58rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; padding: 0.2rem 0.5rem; backdrop-filter: blur(6px); border-radius: 2px; }
+  .db-origin-tag.db-origin-usa { background: rgba(220,53,69,0.15); color: #ed7b86; border: 1px solid rgba(220,53,69,0.3); }
+  .db-origin-tag.db-origin-eu { background: rgba(13,110,253,0.15); color: #8bb9fe; border: 1px solid rgba(13,110,253,0.3); }
+
+  .db-card-body { padding: 0.8rem 1.1rem 1.1rem; display: flex; flex-direction: column; gap: 0.2rem; flex: 1; }
+  .db-card-name { font-family: 'Bebas Neue', sans-serif; font-size: clamp(1.4rem, 1.8vw, 1.8rem); font-weight: 400; color: var(--db-cream); line-height: 0.95; min-height: 2em; display: flex; align-items: flex-start; text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 0.1rem; }
+  .db-card-pedigree { font-family: 'Barlow Condensed', sans-serif; font-size: 0.72rem; letter-spacing: 0.05em; color: rgba(154,145,136,0.7); line-height: 1.4; }
+  .db-ped-sire { color: rgba(200,151,58,0.7); }
+  .db-ped-sep { color: rgba(154,145,136,0.4); margin: 0 1px; }
+  .db-ped-dam { color: rgba(154,145,136,0.6); }
+  .db-card-footer { display: flex; gap: 1.2rem; margin-top: auto; padding-top: 0.6rem; border-top: 1px solid rgba(200,151,58,0.08); }
+  .db-card-stat { display: flex; flex-direction: column; gap: 1px; }
+  .db-stat-label { font-family: 'Barlow Condensed', sans-serif; font-size: 0.62rem; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(154,145,136,0.6); }
+  .db-stat-value { font-family: 'Barlow Condensed', sans-serif; font-size: 0.95rem; font-weight: 600; letter-spacing: 0.04em; color: var(--db-cream); }
+  .db-stat-gold { color: var(--db-gold); }
+
+  .db-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; padding: 6rem 2rem; text-align: center; }
+  .db-empty svg { width: 56px; height: 56px; color: rgba(200,151,58,0.2); }
+  .db-empty-title { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; color: var(--db-cream); }
+  .db-empty-sub { font-family: 'Barlow', sans-serif; font-size: 0.88rem; color: var(--db-warm-gray); }
+
+  @keyframes dbCardIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* LIST VIEW MODIFIERS */
+  .db-grid.view-list { grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+  .db-grid.view-list .db-card { flex-direction: row; align-items: center; padding: 0.8rem; gap: 1rem; min-height: 85px; }
+  .db-grid.view-list .db-card-media { width: 64px; height: 64px; flex-shrink: 0; border-radius: 50%; border: 1px solid rgba(200,151,58,0.2); }
+  .db-grid.view-list .db-badges-container,
+  .db-grid.view-list .db-origin-tag { display: none; }
+  .db-grid.view-list .db-card-body { padding: 0; gap: 0.2rem; }
+  .db-grid.view-list .db-card-name { font-size: 1.3rem; min-height: auto; margin: 0; display: block; }
+  .db-grid.view-list .db-card-pedigree { font-size: 0.65rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+  .db-grid.view-list .db-card-footer { border: none; padding-top: 0; margin-top: 0; display: flex; align-items: center; gap: 0.8rem; }
+  .db-grid.view-list .db-card-stat { flex-direction: row; gap: 0.3rem; align-items: baseline; }
+  .db-grid.view-list .db-stat-label { font-size: 0.55rem; }
+  .db-grid.view-list .db-stat-value { font-size: 0.85rem; }
+
+  @media (max-width: 1280px) { .db-grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 1024px) { .db-hero-content { padding: 150px 2rem 2.5rem; } .db-filters-wrap { margin: 2rem 1rem 0; } .db-grid-wrap { padding: 2.5rem 1rem 5rem; } }
+   @media (max-width: 768px) {
+    .db-mobile-filter-toggle { display: flex; width: 100%; padding: 1.2rem 1.5rem; background: transparent; border: none; color: rgba(245,240,232,0.9); font-family: 'Barlow Condensed', sans-serif; font-size: 1.1rem; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(245,240,232,0.05); }
+    .db-mobile-arrow { width: 20px; height: 20px; transition: transform 0.3s ease; color: var(--gold); }
+    .db-mobile-filter-toggle.open .db-mobile-arrow { transform: rotate(180deg); }
+    .db-filters-content { display: none; }
+    .db-filters-content.open { display: block; }
+    .db-hero { min-height: 60vh; } 
+    .db-hero-content { padding: 140px 1.5rem 1rem; }
+    .db-filters { gap: 0.8rem; padding: 1rem 1.2rem; } 
+    .db-filters-wrap { margin: 0 0.75rem 0; }
+    .db-grid { grid-template-columns: repeat(2, 1fr); gap: 0.8rem; } 
+    .db-grid-wrap { padding: 2rem 0.75rem 4rem; } 
+    .db-advanced-panel.open { max-height: 800px; }
+    .db-advanced-inner { 
+      display: grid; 
+      grid-template-columns: 1fr 1fr; 
+      gap: 1rem; 
+      padding: 1.2rem 1rem; 
+      align-items: start;
+    }
+    .db-adv-group { width: 100%; }
+    /* Gli elementi principali prendono 2 colonne */
+    .db-adv-group:nth-child(1), /* Guadagni */
+    .db-adv-group:nth-child(4), /* Range Prezzo */
+    .db-adv-group:nth-child(5)  /* Range Anni */
+    { 
+      grid-column: span 2; 
+    }
+    .db-reset-btn { grid-column: span 2; margin-top: 0.5rem; }
+
+    /* LIST VIEW MOBILE */
+    .db-grid.view-list { grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
+    .db-grid.view-list .db-card { padding: 0.5rem; gap: 0.6rem; min-height: 60px; flex-direction: row; align-items: center; }
+    .db-grid.view-list .db-card-media { width: 42px; height: 42px; }
+    .db-grid.view-list .db-card-name { font-size: 0.95rem; text-align: left; }
+    .db-grid.view-list .db-card-pedigree { display: none; }
+    .db-grid.view-list .db-card-footer { display: none; }
+  }
+  @media (max-width: 480px) { .db-grid { grid-template-columns: 1fr; } .db-grid.view-list { grid-template-columns: 1fr; } .db-card-name { font-size: 1.1rem; } }
+</style>

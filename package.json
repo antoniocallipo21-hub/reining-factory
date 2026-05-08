@@ -6,7 +6,8 @@
     "node": ">=22.12.0"
   },
   "scripts": {
-    "dev": "astro dev",
+    "dev": "astro dev --host",
+    "tunnel": "npx -y localtunnel --port 4321 --subdomain reining-factory",
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro"
