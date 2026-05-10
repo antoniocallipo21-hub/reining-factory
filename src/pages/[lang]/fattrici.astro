@@ -165,29 +165,43 @@ function getBadges(tags, customBadge) {
   </div>
 
 <script is:inline>
-  const viewBtns = document.querySelectorAll('.db-view-btn');
-  const grid = document.getElementById('fattriciGrid');
-  const savedView = localStorage.getItem('stalloniViewPref') || 'grid'; // Usa la stessa preferenza
-  
-  if (savedView === 'list') {
-    grid.classList.add('view-list');
-    document.querySelector('.db-view-btn[data-view="list"]').classList.add('active');
-    document.querySelector('.db-view-btn[data-view="grid"]').classList.remove('active');
+  function initView() {
+    const viewBtns = document.querySelectorAll('.db-view-btn');
+    const grid = document.getElementById('fattriciGrid');
+    const savedView = localStorage.getItem('stalloniViewPref') || 'grid';
+    
+    if (savedView === 'list' && grid) {
+      grid.classList.add('view-list');
+      const listBtn = document.querySelector('.db-view-btn[data-view="list"]');
+      const gridBtn = document.querySelector('.db-view-btn[data-view="grid"]');
+      if (listBtn) listBtn.classList.add('active');
+      if (gridBtn) gridBtn.classList.remove('active');
+    } else if (grid) {
+      grid.classList.remove('view-list');
+      const listBtn = document.querySelector('.db-view-btn[data-view="list"]');
+      const gridBtn = document.querySelector('.db-view-btn[data-view="grid"]');
+      if (listBtn) listBtn.classList.remove('active');
+      if (gridBtn) gridBtn.classList.add('active');
+    }
+
+    viewBtns.forEach(btn => {
+      const newBtn = btn.cloneNode(true);
+      btn.parentNode.replaceChild(newBtn, btn);
+      newBtn.addEventListener('click', () => {
+        document.querySelectorAll('.db-view-btn').forEach(b => b.classList.remove('active'));
+        newBtn.classList.add('active');
+        if (newBtn.dataset.view === 'list') {
+          if (grid) grid.classList.add('view-list');
+          localStorage.setItem('stalloniViewPref', 'list');
+        } else {
+          if (grid) grid.classList.remove('view-list');
+          localStorage.setItem('stalloniViewPref', 'grid');
+        }
+      });
+    });
   }
 
-  viewBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      viewBtns.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      if (btn.dataset.view === 'list') {
-        grid.classList.add('view-list');
-        localStorage.setItem('stalloniViewPref', 'list');
-      } else {
-        grid.classList.remove('view-list');
-        localStorage.setItem('stalloniViewPref', 'grid');
-      }
-    });
-  });
+  document.addEventListener('astro:page-load', initView);
 </script>
 
 <style is:global>

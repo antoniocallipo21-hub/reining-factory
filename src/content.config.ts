@@ -34,6 +34,7 @@ const horseSchema = z.object({
   whitePattern: z.string().optional(),
   colorpanel: z.string().optional(),
   geneticCertificateUrl: z.string().optional(),
+  colorCertificateUrl: z.string().optional(),
 
   pedigree: z.object({
     sire: z.string().optional(),

@@ -1128,14 +1128,14 @@ const panelCount = geneticEntries.length;
             <div class="hero-stat-label">NRHA Lifetime Earnings</div>
           </div>
         )}
-        {(horse.stats?.offspringEarnings || horse.stats?.sireRecord) && (
+        {(horse.stats?.sireRecord || horse.stats?.offspringEarnings) && (
           <div>
             <div class="hero-stat-value">
-              {horse.stats.offspringEarnings 
-                ? horse.stats.offspringEarnings 
-                : (horse.stats.sireRecord.toLowerCase() === 'counting' 
+              {horse.stats.sireRecord 
+                ? (horse.stats.sireRecord.toLowerCase() === 'counting' 
                    ? (isEn ? 'Counting' : 'In progressione') 
-                   : horse.stats.sireRecord)}
+                   : horse.stats.sireRecord)
+                : horse.stats.offspringEarnings}
             </div>
             <div class="hero-stat-label">Sire Record</div>
           </div>
@@ -1229,20 +1229,24 @@ const panelCount = geneticEntries.length;
                     </div>
                   ))}
                 </div>
-                {horse.whitePattern && (
+                {horse.whitePattern && horse.whitePattern !== 'N/D' && horse.whitePattern !== 'N/A' && (
                   <div style="margin-top: 1.5rem; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 1rem;">
                     <div class="panel-title">White Pattern Panel</div>
                     <div style="font-size: 0.9rem; font-weight: 500; color: var(--dark);">{horse.whitePattern}</div>
                   </div>
                 )}
-                {(horse.colorpanel || entry.data.colorpanel) && (
+                {(horse.colorpanel || entry.data.colorpanel) && 
+                 (horse.colorpanel !== 'N/D' && horse.colorpanel !== 'N/A' && entry.data.colorpanel !== 'N/D') && (
                   <div style="margin-top: 1.5rem; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 1rem;">
                     <div class="panel-title">Color Panel</div>
                     <div style="font-size: 0.9rem; font-weight: 500; color: var(--dark);">{horse.colorpanel || entry.data.colorpanel}</div>
                   </div>
                 )}
                 {horse.geneticCertificateUrl && (
-                  <a href={horse.geneticCertificateUrl} target="_blank" class="genetic-link">CERTIFICATO GENETICO →</a>
+                  <a href={horse.geneticCertificateUrl} target="_blank" class="genetic-link">{t('horse.genetic_cert')} →</a>
+                )}
+                {horse.colorCertificateUrl && (
+                  <a href={horse.colorCertificateUrl} target="_blank" class="genetic-link" style="margin-top: 0.5rem;">{t('horse.color_cert')} →</a>
                 )}
               </div>
             )}
@@ -1332,7 +1336,10 @@ const panelCount = geneticEntries.length;
               </div>
             )}
             {horse.geneticCertificateUrl && (
-              <a href={horse.geneticCertificateUrl} target="_blank" class="genetic-link">CERTIFICATO GENETICO →</a>
+              <a href={horse.geneticCertificateUrl} target="_blank" class="genetic-link">{t('horse.genetic_cert')} →</a>
+            )}
+            {horse.colorCertificateUrl && (
+              <a href={horse.colorCertificateUrl} target="_blank" class="genetic-link" style="margin-top: 0.5rem;">{t('horse.color_cert')} →</a>
             )}
           </div>
         )}
@@ -1413,9 +1420,9 @@ const panelCount = geneticEntries.length;
       <div class="container">
         <div class="offspring-header">
           <div class="offspring-title">{t('horse.offspring')}</div>
-          {(horse.stats?.offspringEarnings || horse.stats?.sireRecord) && (
+          {(horse.stats?.sireRecord || horse.stats?.offspringEarnings) && (
             <div class="offspring-count">
-              Sire record: {horse.stats.offspringEarnings ? horse.stats.offspringEarnings : horse.stats.sireRecord}
+              Sire record: {horse.stats.sireRecord ? horse.stats.sireRecord : horse.stats.offspringEarnings}
             </div>
           )}
         </div>

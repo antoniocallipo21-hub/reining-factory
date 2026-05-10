@@ -36,7 +36,8 @@ geneticTest:
   MYHM: "N/N"
   IMM: "N/N"
 whitePattern: "Splash White 1 & 2"
-geneticCertificateUrl: "https://foals-r-us.com/wp-content/uploads/2021/04/Tricked-Out-Spook-Hair-Color-Results.jpeg"
+geneticCertificateUrl: ""
+colorCertificateUrl: "https://foals-r-us.com/wp-content/uploads/2021/04/Tricked-Out-Spook-Hair-Color-Results.jpeg"
 
 # SOCIAL
 social:

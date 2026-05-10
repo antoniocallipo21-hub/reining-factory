@@ -94,21 +94,21 @@ breeding:
   fee_en: "$11,000"
   semenType: "ICSI"
   semenType_en: "ICSI Only"
-  semenNotes: "Solo seme congelato"
-  semenNotes_en: "Frozen semen only"
-  status: "SEME"
-  status_en: "SEMEN"
+  semenNotes: "Disponibile solo tramite ICSI."
+  semenNotes_en: "Available only via ICSI."
+  status: "DECEDUTO"
+  status_en: "DECEASED"
   statusNotes: "Stallone deceduto"
-  statusNotes_en: "Deceased Stallion"
+  statusNotes_en: "Deceased stallion"
 
 breedingLinks:
-  - label: "McQuay Stables"
+  - label: "McQuay Stables (USA)"
     url: "https://www.mcquaystables.com/in-memory-of-gunner"
     primary: true
-  - label: "Orlandini Equine"
+  - label: "Orlandini Equine (EU)"
     url: "https://www.orlandiniequine.com/en/colonels-smoking-gun-gunner/"
     primary: false
-  - label: "Serequine"
+  - label: "Serequine (EU)"
     url: "https://www.serequine.com/colonels-smoking-gun/"
     primary: false
   

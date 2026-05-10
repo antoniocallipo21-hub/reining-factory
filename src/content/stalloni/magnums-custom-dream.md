@@ -33,7 +33,7 @@ geneticTest:
   MH: "N/N"
   IMM / MYHM: "N/N"
   EJSCA: "N/N"
-whitePattern: "LWO N/N"
+whitePattern: "LWO N/N; n/SW2"
 geneticCertificateUrl: "https://foals-r-us.com/pdf/magnums_custom_dream_results.pdf"
 
 # SOCIAL

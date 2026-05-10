@@ -59,6 +59,8 @@ export const ui = {
     'horse.gallery': 'Galleria Fotografica',
     'horse.breeding_links': 'Link e Documenti',
     'horse.in_arena': 'In Arena',
+    'horse.genetic_cert': 'Certificato Genetico',
+    'horse.color_cert': 'Certificato Colore',
 
     // Home
     'home.hero_eyebrow': 'La risorsa completa sul reining',
@@ -295,6 +297,8 @@ export const ui = {
     'horse.gallery': 'Photo Gallery',
     'horse.breeding_links': 'Links & Documents',
     'horse.in_arena': 'In Action',
+    'horse.genetic_cert': 'Genetic Certificate',
+    'horse.color_cert': 'Color Certificate',
 
     // Home
     'home.hero_eyebrow': 'The complete reining resource',

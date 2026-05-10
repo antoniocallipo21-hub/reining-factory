@@ -7,7 +7,7 @@
   {"Categoria": "sires", "Milioni": "13", "Nome": "Spooks Gotta Whiz", "Link": "https://www.reiningfactory.com/stalloni/spooks-gotta-whiz/"},
   {"Categoria": "sires", "Milioni": "9", "Nome": "Smart Spook", "Link": ""},
   {"Categoria": "sires", "Milioni": "8", "Nome": "Gunners Special Nite", "Link": ""},
-  {"Categoria": "sires", "Milioni": "7", "Nome": "Smart Chic Olena", "Link": ""},
+  {"Categoria": "sires", "Milioni": "12", "Nome": "Smart Chic Olena", "Link": ""},
   {"Categoria": "sires", "Milioni": "6", "Nome": "Hollywood Dun It", "Link": ""},
   {"Categoria": "sires", "Milioni": "8", "Nome": "Shiners Voodoo Dr", "Link": ""},
   {"Categoria": "sires", "Milioni": "5", "Nome": "Inferno 66", "Link": ""},
@@ -161,5 +161,6 @@
   {"Categoria": "owners", "Milioni": "1", "Nome": "Kathy Hinton", "Link": ""},
   {"Categoria": "owners", "Milioni": "1", "Nome": "Katarzina Roleska", "Link": ""},
   {"Categoria": "owners", "Milioni": "1", "Nome": "Rick Christein", "Link": ""},
-  {"Categoria": "owners", "Milioni": "1", "Nome": "Janice Laney", "Link": ""}
+  {"Categoria": "owners", "Milioni": "1", "Nome": "Janice Laney", "Link": ""},
+  {"Categoria": "owners", "Milioni": "1", "Nome": "Amy Medows", "Link": ""}
 ]

@@ -56,8 +56,8 @@ function getBadges(tags, bCard, bHero) {
   for (const t of combined) {
     const low = t.toLowerCase();
     
-    // Milioni
-    if (!hasMds && low.includes('million dollar')) {
+    // Milioni (Riconosce "Million Dollar" o il formato "$13M+")
+    if (!hasMds && (low.includes('million dollar') || (low.includes('$') && low.includes('m+')))) {
       found.push({ type: 'mds', label: t.toUpperCase() });
       hasMds = true;
     }
@@ -301,139 +301,183 @@ function pedLink(name, allSt) {
 </div>
 
 <script is:inline define:vars={{ isEn }}>
-  // Scripts logic migrated from OLD.astro
-  const mobileToggle = document.getElementById('mobileFilterToggle');
-  const mobileContent = document.getElementById('mobileFiltersContent');
-  if (mobileToggle && mobileContent) {
-    mobileToggle.addEventListener('click', () => {
-      mobileToggle.classList.toggle('open');
-      mobileContent.classList.toggle('open');
-    });
-  }
+  function initFilters() {
+    const mobileToggle = document.getElementById('mobileFilterToggle');
+    const mobileContent = document.getElementById('mobileFiltersContent');
+    if (mobileToggle && mobileContent) {
+      // Rimuoviamo eventuali listener precedenti per evitare duplicati
+      const newToggle = mobileToggle.cloneNode(true);
+      mobileToggle.parentNode.replaceChild(newToggle, mobileToggle);
+      newToggle.addEventListener('click', () => {
+        newToggle.classList.toggle('open');
+        mobileContent.classList.toggle('open');
+      });
+    }
 
-  const state = {
-    search: '', origin: 'all', elite: null, color: '', semen: '', earnings: '',
-    yearFrom: '', yearTo: '', priceFrom: '', priceTo: '',
-  };
+    const searchInput = document.getElementById('searchInput');
+    const originBtns = document.querySelectorAll('[data-origin]');
+    const eliteBtns = document.querySelectorAll('[data-elite]');
+    const colorSelect = document.getElementById('colorSelect');
+    const semenSelect = document.getElementById('semenSelect');
+    const earningsSelect = document.getElementById('earningsSelect');
+    const yearFrom = document.getElementById('yearFrom');
+    const yearTo = document.getElementById('yearTo');
+    const priceFrom = document.getElementById('priceFrom');
+    const priceTo = document.getElementById('priceTo');
+    const grid = document.getElementById('stalloniGrid');
+    const resultsCount = document.getElementById('resultsCount');
+    const cards = Array.from(grid.querySelectorAll('.db-card'));
+    const emptyState = document.getElementById('emptyState');
 
-  const searchInput = document.getElementById('searchInput');
-  const originBtns = document.querySelectorAll('[data-origin]');
-  const eliteBtns = document.querySelectorAll('[data-elite]');
-  const colorSelect = document.getElementById('colorSelect');
-  const semenSelect = document.getElementById('semenSelect');
-  const earningsSelect = document.getElementById('earningsSelect');
-  const yearFrom = document.getElementById('yearFrom');
-  const yearTo = document.getElementById('yearTo');
-  const priceFrom = document.getElementById('priceFrom');
-  const priceTo = document.getElementById('priceTo');
-  const resetBtn = document.getElementById('resetBtn');
-  const emptyResetBtn = document.getElementById('emptyResetBtn');
-  const advancedBtn = document.getElementById('advancedBtn');
-  const advancedPanel = document.getElementById('advancedPanel');
-  const advancedArrow = document.getElementById('advancedArrow');
-  const grid = document.getElementById('stalloniGrid');
-  const emptyState = document.getElementById('emptyState');
-  const resultsCount = document.getElementById('resultsCount');
-  const cards = Array.from(grid.querySelectorAll('.db-card'));
+    // Sincronizziamo lo stato con i valori reali (importante per il tasto "Back")
+    const state = {
+      search: searchInput?.value.toLowerCase().trim() || '',
+      origin: document.querySelector('[data-origin].active')?.dataset.origin || 'all',
+      elite: document.querySelector('[data-elite].active')?.dataset.elite || null,
+      color: colorSelect?.value || '',
+      semen: semenSelect?.value || '',
+      earnings: earningsSelect?.value || '',
+      yearFrom: yearFrom?.value || '',
+      yearTo: yearTo?.value || '',
+      priceFrom: priceFrom?.value || '',
+      priceTo: priceTo?.value || '',
+    };
 
-  advancedBtn.addEventListener('click', () => {
-    const open = advancedPanel.classList.toggle('open');
-    advancedArrow.textContent = open ? '▲' : '▼';
-  });
+    function applyFilters() {
+      let visible = 0;
+      cards.forEach(card => {
+        const cardText = card.textContent.toLowerCase();
+        const origin = card.dataset.origin || '';
+        const color = card.dataset.color || '';
+        const semen = card.dataset.semen || '';
+        const year = parseInt(card.dataset.year) || 0;
+        const price = parseInt(card.dataset.price) || 0;
+        const banners = card.dataset.badges ? card.dataset.badges.split(',') : [];
+        const cardEarnings = parseInt(card.dataset.earnings) || 0;
 
-  function applyFilters() {
-    let visible = 0;
-    cards.forEach(card => {
-      const name = card.dataset.name || '';
-      const origin = card.dataset.origin || '';
-      const color = card.dataset.color || '';
-      const semen = card.dataset.semen || '';
-      const year = parseInt(card.dataset.year) || 0;
-      const price = parseInt(card.dataset.price) || 0;
-      const banners = card.dataset.badges ? card.dataset.badges.split(',') : [];
-      const cardText = card.textContent.toLowerCase();
-      
-      const searchOk = !state.search || cardText.includes(state.search);
-      const originOk = state.origin === 'all' || origin === state.origin;
-      const eliteOk = !state.elite || banners.includes(state.elite);
-      const colorOk = !state.color || color === state.color.toLowerCase();
-      const semenOk = !state.semen || semen.includes(state.semen.toLowerCase());
-      
-      const cardEarnings = parseInt(card.dataset.earnings) || 0;
-      let earningsOk = true;
-      if (state.earnings === '<100k') earningsOk = cardEarnings > 0 && cardEarnings < 100000;
-      else if (state.earnings === '>100k') earningsOk = cardEarnings > 100000;
-      else if (state.earnings === '>200k') earningsOk = cardEarnings > 200000;
-      else if (state.earnings === '>300k') earningsOk = cardEarnings > 300000;
-      else if (state.earnings === '>400k') earningsOk = cardEarnings > 400000;
-      else if (state.earnings === '>500k') earningsOk = cardEarnings > 500000;
-      else if (state.earnings === '>1m') earningsOk = cardEarnings > 1000000;
+        const searchOk = !state.search || cardText.includes(state.search);
+        const originOk = state.origin === 'all' || origin === state.origin;
+        const eliteOk = !state.elite || banners.includes(state.elite);
+        const colorOk = !state.color || color === state.color.toLowerCase();
+        const semenOk = !state.semen || semen.includes(state.semen.toLowerCase());
+        
+        let earningsOk = true;
+        if (state.earnings === '<100k') earningsOk = cardEarnings > 0 && cardEarnings < 100000;
+        else if (state.earnings === '>100k') earningsOk = cardEarnings > 100000;
+        else if (state.earnings === '>200k') earningsOk = cardEarnings > 200000;
+        else if (state.earnings === '>300k') earningsOk = cardEarnings > 300000;
+        else if (state.earnings === '>400k') earningsOk = cardEarnings > 400000;
+        else if (state.earnings === '>500k') earningsOk = cardEarnings > 500000;
+        else if (state.earnings === '>1m') earningsOk = cardEarnings > 1000000;
 
-      const yfOk = !state.yearFrom || year >= parseInt(state.yearFrom);
-      const ytOk = !state.yearTo || year <= parseInt(state.yearTo);
-      const pfOk = !state.priceFrom || price >= parseInt(state.priceFrom);
-      const ptOk = !state.priceTo || (price > 0 && price <= parseInt(state.priceTo));
+        const yfOk = !state.yearFrom || year >= parseInt(state.yearFrom);
+        const ytOk = !state.yearTo || year <= parseInt(state.yearTo);
+        const pfOk = !state.priceFrom || price >= parseInt(state.priceFrom);
+        const ptOk = !state.priceTo || (price > 0 && price <= parseInt(state.priceTo));
 
-      if (searchOk && originOk && eliteOk && colorOk && semenOk && earningsOk && yfOk && ytOk && pfOk && ptOk) {
-        card.style.display = ''; visible++;
-      } else {
-        card.style.display = 'none';
+        if (searchOk && originOk && eliteOk && colorOk && semenOk && earningsOk && yfOk && ytOk && pfOk && ptOk) {
+          card.style.display = ''; visible++;
+        } else {
+          card.style.display = 'none';
+        }
+      });
+
+      if (resultsCount) {
+        resultsCount.textContent = isEn 
+          ? `${visible} stallion${visible !== 1 ? 's' : ''} found`
+          : `${visible} stallon${visible !== 1 ? 'i' : 'e'} trovat${visible !== 1 ? 'i' : 'o'}`;
       }
+      if (emptyState) emptyState.style.display = visible === 0 ? 'flex' : 'none';
+    }
+
+    // Event Listeners
+    searchInput?.addEventListener('input', e => { state.search = e.target.value.toLowerCase().trim(); applyFilters(); });
+    originBtns.forEach(btn => btn.addEventListener('click', () => {
+      originBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.origin = btn.dataset.origin;
+      applyFilters();
+    }));
+    eliteBtns.forEach(btn => btn.addEventListener('click', () => {
+      const active = btn.classList.toggle('active');
+      eliteBtns.forEach(b => { if(b !== btn) b.classList.remove('active'); });
+      state.elite = active ? btn.dataset.elite : null;
+      applyFilters();
+    }));
+    colorSelect?.addEventListener('change', e => { state.color = e.target.value; applyFilters(); });
+    semenSelect?.addEventListener('change', e => { state.semen = e.target.value; applyFilters(); });
+    earningsSelect?.addEventListener('change', e => { state.earnings = e.target.value; applyFilters(); });
+    [yearFrom, yearTo, priceFrom, priceTo].forEach(el => el?.addEventListener('input', e => { state[el.id] = e.target.value; applyFilters(); }));
+
+    const advancedBtn = document.getElementById('advancedBtn');
+    const advancedPanel = document.getElementById('advancedPanel');
+    const advancedArrow = document.getElementById('advancedArrow');
+    advancedBtn?.addEventListener('click', () => {
+      const open = advancedPanel.classList.toggle('open');
+      if (advancedArrow) advancedArrow.textContent = open ? '▲' : '▼';
     });
 
-    resultsCount.textContent = isEn 
-      ? `${visible} stallion${visible !== 1 ? 's' : ''} found`
-      : `${visible} stallon${visible !== 1 ? 'i' : 'e'} trovat${visible !== 1 ? 'i' : 'o'}`;
-    emptyState.style.display = visible === 0 ? 'flex' : 'none';
-  }
+    const resetBtn = document.getElementById('resetBtn');
+    const emptyResetBtn = document.getElementById('emptyResetBtn');
+    const handleReset = () => {
+      state.search = ''; state.origin = 'all'; state.elite = null; state.color = ''; state.semen = '';
+      state.earnings = ''; state.yearFrom = ''; state.yearTo = ''; state.priceFrom = ''; state.priceTo = '';
+      [searchInput, colorSelect, semenSelect, earningsSelect, yearFrom, yearTo, priceFrom, priceTo].forEach(el => { if(el) el.value = ''; });
+      originBtns.forEach(b => b.classList.toggle('active', b.dataset.origin === 'all'));
+      eliteBtns.forEach(b => b.classList.remove('active'));
+      applyFilters();
+    };
+    resetBtn?.addEventListener('click', handleReset);
+    emptyResetBtn?.addEventListener('click', handleReset);
 
-  function resetAllFilters() {
-    state.search = ''; state.origin = 'all'; state.elite = null; state.color = ''; state.semen = '';
-    state.earnings = ''; state.yearFrom = ''; state.yearTo = ''; state.priceFrom = ''; state.priceTo = '';
-    
-    [searchInput, colorSelect, semenSelect, earningsSelect, yearFrom, yearTo, priceFrom, priceTo].forEach(el => { if(el) el.value = ''; });
-    originBtns.forEach(b => b.classList.toggle('active', b.dataset.origin === 'all'));
-    eliteBtns.forEach(b => b.classList.remove('active'));
+    // Prima esecuzione
     applyFilters();
   }
 
-  searchInput.addEventListener('input', e => { state.search = e.target.value.toLowerCase().trim(); applyFilters(); });
-  originBtns.forEach(btn => btn.addEventListener('click', () => { originBtns.forEach(b => b.classList.remove('active')); btn.classList.add('active'); state.origin = btn.dataset.origin; applyFilters(); }));
-  eliteBtns.forEach(btn => btn.addEventListener('click', () => { const active = btn.classList.toggle('active'); eliteBtns.forEach(b => { if(b !== btn) b.classList.remove('active'); }); state.elite = active ? btn.dataset.elite : null; applyFilters(); }));
-  colorSelect.addEventListener('change', e => { state.color = e.target.value; applyFilters(); });
-  semenSelect.addEventListener('change', e => { state.semen = e.target.value; applyFilters(); });
-  if (earningsSelect) earningsSelect.addEventListener('change', e => { state.earnings = e.target.value; applyFilters(); });
-  [yearFrom, yearTo, priceFrom, priceTo].forEach(el => el.addEventListener('input', e => { state[el.id] = e.target.value; applyFilters(); }));
-  applyFilters();
+  // Esegui all'avvio e ad ogni cambio pagina di Astro (incluso il tasto Back)
+  document.addEventListener('astro:page-load', initFilters);
 </script>
 
 <script is:inline>
-  const viewBtns = document.querySelectorAll('.db-view-btn');
-  const stalloniGrid = document.getElementById('stalloniGrid');
-  const savedViewPref = localStorage.getItem('stalloniViewPref') || 'grid';
-  
-  if (savedViewPref === 'list' && stalloniGrid) {
-    stalloniGrid.classList.add('view-list');
-    const listBtn = document.querySelector('.db-view-btn[data-view="list"]');
-    const gridBtn = document.querySelector('.db-view-btn[data-view="grid"]');
-    if (listBtn) listBtn.classList.add('active');
-    if (gridBtn) gridBtn.classList.remove('active');
+  function initView() {
+    const viewBtns = document.querySelectorAll('.db-view-btn');
+    const stalloniGrid = document.getElementById('stalloniGrid');
+    const savedViewPref = localStorage.getItem('stalloniViewPref') || 'grid';
+    
+    if (savedViewPref === 'list' && stalloniGrid) {
+      stalloniGrid.classList.add('view-list');
+      const listBtn = document.querySelector('.db-view-btn[data-view="list"]');
+      const gridBtn = document.querySelector('.db-view-btn[data-view="grid"]');
+      if (listBtn) listBtn.classList.add('active');
+      if (gridBtn) gridBtn.classList.remove('active');
+    } else if (stalloniGrid) {
+      stalloniGrid.classList.remove('view-list');
+      const listBtn = document.querySelector('.db-view-btn[data-view="list"]');
+      const gridBtn = document.querySelector('.db-view-btn[data-view="grid"]');
+      if (listBtn) listBtn.classList.remove('active');
+      if (gridBtn) gridBtn.classList.add('active');
+    }
+
+    viewBtns.forEach(btn => {
+      // Rimuoviamo listener precedenti se presenti
+      const newBtn = btn.cloneNode(true);
+      btn.parentNode.replaceChild(newBtn, btn);
+      
+      newBtn.addEventListener('click', () => {
+        document.querySelectorAll('.db-view-btn').forEach(b => b.classList.remove('active'));
+        newBtn.classList.add('active');
+        if (newBtn.dataset.view === 'list') {
+          if(stalloniGrid) stalloniGrid.classList.add('view-list');
+          localStorage.setItem('stalloniViewPref', 'list');
+        } else {
+          if(stalloniGrid) stalloniGrid.classList.remove('view-list');
+          localStorage.setItem('stalloniViewPref', 'grid');
+        }
+      });
+    });
   }
 
-  viewBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      viewBtns.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      if (btn.dataset.view === 'list') {
-        if(stalloniGrid) stalloniGrid.classList.add('view-list');
-        localStorage.setItem('stalloniViewPref', 'list');
-      } else {
-        if(stalloniGrid) stalloniGrid.classList.remove('view-list');
-        localStorage.setItem('stalloniViewPref', 'grid');
-      }
-    });
-  });
-
+  document.addEventListener('astro:page-load', initView);
 </script>
 </Layout>
 
