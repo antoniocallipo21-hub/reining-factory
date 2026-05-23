@@ -98,6 +98,6 @@ breedingLinks:
     primary: true
 
 # Campi per filtri
-origine: "ITALY"
+origine: "EU"
 disciplina: "Reining"
 ---
