@@ -25,7 +25,7 @@ description_it: "Spooks Gotta Lime è uno dei figli più promettenti del leggend
 description_en: "Spooks Gotta Lime is one of the most promising sons of the legendary Spooks Gotta Whiz. Characterized by an exceptional athletic structure and a champion mindset, he proved his worth in European arenas by reaching prestigious finals in the IRHA Futurity and Derby. His genetics, combining the power of Spooks Gotta Whiz with the class of Yellow Jersey through the dam ARC Yellow N Lime, make him an excellent choice for breeders looking for soundness, spectacular stops, and great trainability."
 
 stats:
-  earnings: "-"
+  earnings: "$0"
   sireRecord: "Counting"
 
 geneticTest:
@@ -61,6 +61,7 @@ gallery:
   - "/stalloni/spooks-gotta-lime/gallery1.jpg"
   - "/stalloni/spooks-gotta-lime/gallery2.jpg"
   - "/stalloni/spooks-gotta-lime/gallery3.jpg"
+  - "/stalloni/spooks-gotta-lime/gallery4.jpg"
 
 achievements:
   - year: "2019"
@@ -72,15 +73,15 @@ achievements:
 
 breeding:
   fee: "€ 1.500"
-  fee_en: "$ 1,500"
+  fee_en: "$1,500"
   semenType: "FRESCO / CONGELATO"
   semenType_en: "FRESH / FROZEN"
   semenNotes: "Disponibile tramite Infoal Partners"
   semenNotes_en: "Available via Infoal Partners"
-  status: "DISPONIBILE"
-  status_en: "AVAILABLE"
-  statusNotes: "Stallone disponibile"
-  statusNotes_en: "Stallion available"
+  status: "ATTIVO"
+  status_en: "ACTIVE"
+  statusNotes: "Stallone attivo"
+  statusNotes_en: "Active stallion"
 
 breedingLinks:
   - label: "Infoal Partners (EU)"

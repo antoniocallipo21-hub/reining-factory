@@ -96,8 +96,8 @@ offspring:
 breeding:
   fee: "€ 7.000"
   fee_en: "$7,000"
-  semenType: "Fresco / Congelato / ICSI"
-  semenType_en: "Fresh / Frozen / ICSI"
+  semenType: "FRESCO / CONGELATO / ICSI"
+  semenType_en: "FRESH / FROZEN / ICSI"
   semenNotes: "Disponibile fresco e congelato presso Oswood Stallion Station. ICSI disponibile."
   semenNotes_en: "Fresh and frozen available at Oswood Stallion Station. ICSI available."
   status: "ATTIVO"

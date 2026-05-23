@@ -1,5 +1,5 @@
 ---
-name: "HOLLYWOODS TINSELTOWN"
+name: "HOLLYWOODSTINSELTOWN"
 slug: "hollywoods-tinseltown"
 badge_card: "4 MILLION DOLLAR SIRE"
 badge_card_en: "4 MILLION DOLLAR SIRE"
@@ -79,8 +79,8 @@ offspring:
     earnings: "$220,000+"
   - name: "Shining In Town"
     earnings: "$216,000+"
-  - name: "Flexing Guns In Town"
-    earnings: "$115,000+"
+  - name: "FLEXING GUNS N TOWN"
+    earnings: "$614,720+"
   - name: "Smokinghot Hollywood"
     earnings: "$87,000+"
 

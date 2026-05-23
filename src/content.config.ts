@@ -7,6 +7,10 @@ const horseSchema = z.object({
   nickname_en: z.string().optional(),
   badge: z.string().optional(),
   badge_en: z.string().optional(),
+  badge_card: z.string().optional(),
+  badge_card_en: z.string().optional(),
+  badge_hero: z.string().optional(),
+  badge_hero_en: z.string().optional(),
   yearOfBirth: z.union([z.number(), z.string()]).optional().default(0),
   yearOfDeath: z.union([z.number(), z.string()]).optional(),
   breed: z.string().optional().default("AQHA/APHA"),
@@ -26,8 +30,11 @@ const horseSchema = z.object({
   
   stats: z.object({
     earnings: z.string().optional(),
+    earnings_en: z.string().optional(),
     offspringEarnings: z.string().optional(),
+    offspringEarnings_en: z.string().optional(),
     sireRecord: z.string().optional(),
+    sireRecord_en: z.string().optional(),
   }).optional(),
 
   geneticTest: z.record(z.string(), z.string()).optional(),
@@ -61,6 +68,7 @@ const horseSchema = z.object({
 
   breeding: z.object({
     fee: z.string().optional(),
+    fee_en: z.string().optional(),
     semenType: z.string().optional(),
     semenType_en: z.string().optional(),
     semenNotes: z.string().optional(),

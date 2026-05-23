@@ -90,7 +90,7 @@ offspring: []
 
 breeding:
   fee: "€ 3.000"
-  fee_en: "$ 3,000"
+  fee_en: "$3,000"
   semenType: "Congelato"
   semenType_en: "Frozen"
   semenNotes: "Seme congelato disponibile presso Brightstone Ranch (USA) e tramite Infoal Partners (EU)."

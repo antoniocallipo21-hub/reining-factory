@@ -81,8 +81,8 @@ achievements:
 offspring: []
 
 breeding:
-  fee: "€ 1.650"
-  fee_en: "$ 1,750"
+  fee: "€ 1.750"
+  fee_en: "$1,750"
   semenType: "Congelato"
   semenType_en: "Frozen"
   semenNotes: "Seme congelato disponibile presso Israbraz Ranch (USA) e tramite Infoal Partners (EU)."

@@ -1,5 +1,7 @@
 ---
 name: "SPOOKS GOTTA TINSEL"
+nickname: "Mr Consistent"
+nickname_en: "Mr Consistent"
 badge: ""
 badge_en: ""
 badge_hero: "TRFAM OPEN SHOOTOUT CO-RESERVE CHAMPION"

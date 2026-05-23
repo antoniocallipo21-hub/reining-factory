@@ -1409,7 +1409,19 @@ const panelCount = geneticEntries.length;
     <section class="video-section">
       <div class="container">
         <div class="video-header"><div class="section-label" style="color:rgba(200,151,58,0.6); margin:0;">Video</div><div class="video-title" style="color:white;">{t('horse.in_arena')}</div></div>
-        <div class="video-wrapper"><iframe src={embedUrl} title={horse.name} frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>
+        <div class="video-wrapper">
+          <iframe 
+            src={horse.videoUrl.includes('vimeo.com') 
+              ? horse.videoUrl.replace('vimeo.com/', 'player.vimeo.com/video/') 
+              : horse.videoUrl.includes('facebook.com')
+                ? `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(horse.videoUrl)}&show_text=0&width=560`
+                : horse.videoUrl.replace('youtu.be/', 'www.youtube.com/embed/').replace('watch?v=', 'embed/')}
+            title="Video"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen
+          ></iframe>
+        </div>
       </div>
     </section>
   )}
@@ -1422,7 +1434,9 @@ const panelCount = geneticEntries.length;
           <div class="offspring-title">{t('horse.offspring')}</div>
           {(horse.stats?.sireRecord || horse.stats?.offspringEarnings) && (
             <div class="offspring-count">
-              Sire record: {horse.stats.sireRecord ? horse.stats.sireRecord : horse.stats.offspringEarnings}
+              Sire record: {isEn 
+                ? (horse.stats.sireRecord_en || horse.stats.sireRecord || horse.stats.offspringEarnings_en || horse.stats.offspringEarnings) 
+                : (horse.stats.sireRecord || horse.stats.offspringEarnings)}
             </div>
           )}
         </div>

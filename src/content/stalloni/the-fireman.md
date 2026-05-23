@@ -85,7 +85,7 @@ offspring: []
 
 breeding:
   fee: "€ 3.500"
-  fee_en: "$ 3,700"
+  fee_en: "$3,500"
   semenType: "Fresco / Congelato"
   semenType_en: "Fresh / Frozen"
   semenNotes: "Seme fresco disponibile negli USA. Seme congelato disponibile per l'Europa tramite Infoal Partners."
