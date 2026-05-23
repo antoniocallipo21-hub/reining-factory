@@ -52,22 +52,28 @@ if (isEn && h.badge_en) {
 const allStalloni = await getCollection('stalloni');
 const allFattrici = await getCollection('fattrici');
 const allHorses = [...allStalloni, ...allFattrici];
-const horseMap = new Map(allStalloni.map(s => [s.data.name?.toUpperCase().trim(), s.id]));
+const horseMap = new Map([
+  ...allStalloni.map(s => [s.data.name?.toUpperCase().trim(), { slug: s.id, collection: 'stalloni' }]),
+  ...allFattrici.map(f => [f.data.name?.toUpperCase().trim(), { slug: f.id, collection: 'fattrici' }])
+]);
 const langPrefix = '/' + lang;
 
-// YouTube embed Helper
-function getYoutubeEmbed(url) {
+// Video embed helper (YouTube + Facebook)
+function getVideoEmbed(url) {
   if (!url) return null;
-  const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]+)/);
-  return match ? `https://www.youtube.com/embed/${match[1]}` : url;
+  const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]+)/);
+  if (yt) return `https://www.youtube.com/embed/${yt[1]}`;
+  const fb = url.match(/facebook\.com\/watch\/?\?v=(\d+)/);
+  if (fb) return `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(url)}&show_text=false`;
+  return url;
 }
-const embedUrl = getYoutubeEmbed(h.videoUrl);
+const embedUrl = getVideoEmbed(h.videoUrl);
 
 function renderHorseLink(name) {
   if (!name) return "-";
   const cleanName = name.toUpperCase().trim();
-  const slug = horseMap.get(cleanName);
-  if (slug) return `<a href="${langPrefix}/stalloni/${slug}" class="off-link">${name}</a>`;
+  const horse = horseMap.get(cleanName);
+  if (horse) return `<a href="${langPrefix}/${horse.collection}/${horse.slug}" class="off-link">${name}</a>`;
   return name;
 }
 // Funzione di formattazione guadagni per figli
@@ -110,6 +116,36 @@ manualOffspring.forEach(mon => {
     if (!isDuplicate) {
         mergedOffspring.push(mon);
     }
+});
+
+// LOGICA AUTOMAZIONE SIBLINGS (Fratelli Pieni)
+const currentSire = h.pedigree?.sire?.toUpperCase().trim();
+const currentDam = h.pedigree?.dam?.toUpperCase().trim();
+
+const foundSiblings = (currentSire && currentDam)
+  ? allHorses
+      .filter(horse =>
+        horse.id !== f.id &&
+        horse.data.pedigree?.sire?.toUpperCase().trim() === currentSire &&
+        horse.data.pedigree?.dam?.toUpperCase().trim() === currentDam
+      )
+      .map(horse => ({
+        name: horse.data.name,
+        slug: horse.id,
+        collection: horse.collection
+      }))
+  : [];
+
+const manualSiblings = (h.siblings || []).map(sib => ({
+  name: typeof sib === 'string' ? sib : sib.name,
+  manual: true
+}));
+
+const combinedSiblings = [...foundSiblings];
+manualSiblings.forEach(ms => {
+  if (!combinedSiblings.some(s => s.name?.toUpperCase().trim() === ms.name?.toUpperCase().trim())) {
+    combinedSiblings.push(ms);
+  }
 });
 
 // 4. Formatto i guadagni
@@ -403,6 +439,11 @@ const firstPart = originalParts.join(' ');
       transition: opacity 0.2s;
     }
     .ped-fulllink:hover { opacity: 0.6; }
+    .siblings-disclaimer { margin-top: 1.5rem; font-family: 'Barlow Condensed', sans-serif; font-size: 0.8rem; letter-spacing: 0.1em; color: rgba(154,145,136,0.8); text-transform: uppercase; }
+    .siblings-label { color: var(--db-gold); font-weight: 600; margin-right: 0.5rem; }
+    .sibling-link { color: var(--db-gold); text-decoration: none; transition: opacity 0.2s; }
+    .sibling-link:hover { opacity: 0.7; }
+    .sibling-text { color: var(--db-gold); }
 
     /* VIDEO SECTION */
     .video-section {
@@ -590,6 +631,24 @@ const firstPart = originalParts.join(' ');
           </div>
         </div>
         {h.pedigreeUrl && <a href={h.pedigreeUrl} target="_blank" class="ped-fulllink">{isEn ? 'Full Pedigree' : 'Pedigree completo'} →</a>}
+
+        {combinedSiblings.length > 0 && (
+          <div class="siblings-disclaimer">
+            <span class="siblings-label">{isEn ? 'Full Siblings:' : 'Fratelli Pieni:'}</span>
+            {combinedSiblings.map((sib, index) => (
+              <>
+                {sib.slug ? (
+                  <a href={`/${lang}/${sib.collection === 'stalloni' ? 'stalloni' : 'fattrici'}/${sib.slug}`} class="sibling-link">
+                    {sib.name}
+                  </a>
+                ) : (
+                  <span class="sibling-text">{sib.name}</span>
+                )}
+                {index < combinedSiblings.length - 1 && <span style="margin: 0 4px; color: rgba(200,151,58,0.5);">·</span>}
+              </>
+            ))}
+          </div>
+        )}
       </div>
     </section>
 
