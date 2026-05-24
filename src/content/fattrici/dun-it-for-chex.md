@@ -32,6 +32,8 @@ pedigree:
   granddam_sire: "BLOSSOM BERRY"
   grandsire_dam: "DOCS SILVER N BLUE"
   granddam_dam: "NUNES ENDORA CHEX"
+pedigreeUrl: "https://beta.allbreedpedigree.com/dun+it+for+chex/pedigree"
+offspringUrl: "https://beta.allbreedpedigree.com/dun+it+for+chex/offspring"
 
 achievements:
   - year: "2019"

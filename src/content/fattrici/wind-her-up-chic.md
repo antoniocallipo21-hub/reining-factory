@@ -25,6 +25,8 @@ pedigree:
   granddam_sire: "GAY SUGAR CHIC"
   grandsire_dam: "DOCS SIDEWINDER"
   granddam_dam: "SHADOW JAMES"
+pedigreeUrl: "https://beta.allbreedpedigree.com/wind+her+up+chic/pedigree"
+offspringUrl: "https://beta.allbreedpedigree.com/wind+her+up+chic/offspring"
 
 achievements:
   - year: "2006"

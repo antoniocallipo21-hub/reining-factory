@@ -28,6 +28,8 @@ pedigree:
   granddam_sire: "Leolita Step"
   grandsire_dam: "Smart Chic Olena"
   granddam_dam: "Collena Freckles"
+pedigreeUrl: "https://beta.allbreedpedigree.com/wimpys+little+chic/pedigree"
+offspringUrl: "https://beta.allbreedpedigree.com/wimpys+little+chic/offspring"
 
 achievements:
   - year: "2007"

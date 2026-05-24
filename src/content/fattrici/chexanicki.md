@@ -25,6 +25,8 @@ pedigree:
   granddam_sire: "BUENO CHEX KAWEAH"
   grandsire_dam: "HOLLYWOOD DUN IT"
   granddam_dam: "GREAT FOOTWORK"
+pedigreeUrl: "https://beta.allbreedpedigree.com/chexanicki/pedigree"
+offspringUrl: "https://beta.allbreedpedigree.com/chexanicki/offspring"
 
 achievements:
   - year: "2004"

@@ -25,6 +25,8 @@ pedigree:
   granddam_sire: "DIAMONDS SPARKLE"
   grandsire_dam: "TOPSAIL WHIZ"
   granddam_dam: "EBONY CHEX"
+pedigreeUrl: "https://beta.allbreedpedigree.com/ebony+shines/pedigree"
+offspringUrl: "https://beta.allbreedpedigree.com/ebony+shines/offspring"
 
 achievements:
   - year: "2004"

@@ -25,6 +25,8 @@ pedigree:
   granddam_sire: "SHINEY WALLA WANDA"
   grandsire_dam: "WIMPYS LITTLE STEP"
   granddam_dam: "COLLENA CHIC OLENA"
+pedigreeUrl: "https://beta.allbreedpedigree.com/shesouttayourleague/pedigree"
+offspringUrl: "https://beta.allbreedpedigree.com/shesouttayourleague/offspring"
 
 achievements:
   - year: "2015"

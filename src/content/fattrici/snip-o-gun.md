@@ -30,6 +30,8 @@ pedigree:
   granddam_sire: "DOC O'LENA"
   grandsire_dam: "MISS SEVENTY ONE"
   granddam_dam: "KIM'S PENDA"
+pedigreeUrl: "https://beta.allbreedpedigree.com/snip+o+gun/pedigree"
+offspringUrl: "https://beta.allbreedpedigree.com/snip+o+gun/offspring"
 
 achievements:
   - year: "2019"
