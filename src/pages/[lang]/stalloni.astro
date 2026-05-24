@@ -32,7 +32,7 @@ const uniqueSemen = [...new Set(
     const raw = isEn ? (s.data.breeding?.semenType_en || s.data.breeding?.semenType) : s.data.breeding?.semenType;
     if (!raw) return [];
     // Splitta per "/" o "," e pulisce gli spazi
-    return raw.split(/[\/\,]+/).map(item => item.trim());
+    return raw.split(/[\/\,]+/).map(item => item.trim().toLowerCase());
   }).flat().filter(Boolean)
 )].sort();
 
@@ -119,6 +119,7 @@ function pedLink(name, allSt) {
         placeholder={t('stalloni.search_placeholder')}
         autocomplete="off"
       />
+      <button class="db-search-clear" id="searchClear" aria-label="Cancella ricerca">✕</button>
     </div>
     <!-- ORIGINE -->
     <div class="db-filter-group">
@@ -177,7 +178,7 @@ function pedLink(name, allSt) {
         <label class="db-adv-label">{t('horse.semen')}</label>
         <select class="db-adv-select" id="semenSelect">
           <option value="">{t('stalloni.semen_all')}</option>
-          {uniqueSemen.map(s => <option value={s}>{s}</option>)}
+          {uniqueSemen.map(s => <option value={s}>{s.toUpperCase()}</option>)}
         </select>
       </div>
       <div class="db-adv-group">
@@ -391,7 +392,18 @@ function pedLink(name, allSt) {
     }
 
     // Event Listeners
-    searchInput?.addEventListener('input', e => { state.search = e.target.value.toLowerCase().trim(); applyFilters(); });
+    const searchClear = document.getElementById('searchClear');
+    searchInput?.addEventListener('input', e => {
+      state.search = e.target.value.toLowerCase().trim();
+      searchClear?.classList.toggle('visible', e.target.value.length > 0);
+      applyFilters();
+    });
+    searchClear?.addEventListener('click', () => {
+      searchInput.value = '';
+      state.search = '';
+      searchClear.classList.remove('visible');
+      applyFilters();
+    });
     originBtns.forEach(btn => btn.addEventListener('click', () => {
       originBtns.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
@@ -423,6 +435,7 @@ function pedLink(name, allSt) {
       state.search = ''; state.origin = 'all'; state.elite = null; state.color = ''; state.semen = '';
       state.earnings = ''; state.yearFrom = ''; state.yearTo = ''; state.priceFrom = ''; state.priceTo = '';
       [searchInput, colorSelect, semenSelect, earningsSelect, yearFrom, yearTo, priceFrom, priceTo].forEach(el => { if(el) el.value = ''; });
+      searchClear?.classList.remove('visible');
       originBtns.forEach(b => b.classList.toggle('active', b.dataset.origin === 'all'));
       eliteBtns.forEach(b => b.classList.remove('active'));
       applyFilters();
@@ -501,8 +514,11 @@ function pedLink(name, allSt) {
   .db-filters { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; padding: 1.2rem 1.8rem; flex-wrap: wrap; }
   .db-search-box { position: relative; width: 100%; max-width: 380px; min-width: 250px; }
   .db-search-icon { position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--db-warm-gray); pointer-events: none; }
-  .db-search-input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(200,151,58,0.2); border-radius: 4px; color: var(--db-cream); font-family: 'Barlow', sans-serif; font-size: 0.85rem; padding: 0.65rem 0.9rem 0.65rem 2.5rem; outline: none; transition: border-color 0.2s; }
+  .db-search-input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(200,151,58,0.2); border-radius: 4px; color: var(--db-cream); font-family: 'Barlow', sans-serif; font-size: 0.85rem; padding: 0.65rem 2rem 0.65rem 2.5rem; outline: none; transition: border-color 0.2s; }
   .db-search-input::placeholder { color: rgba(154,145,136,0.5); }
+  .db-search-clear { display: none; position: absolute; right: 0.7rem; top: 50%; transform: translateY(-50%); background: none; border: none; color: rgba(154,145,136,0.6); font-size: 0.8rem; cursor: pointer; padding: 0.2rem; line-height: 1; transition: color 0.2s; }
+  .db-search-clear:hover { color: var(--db-gold); }
+  .db-search-clear.visible { display: block; }
   .db-filter-group { display: flex; align-items: center; gap: 0.6rem; flex-shrink: 0; }
   .db-filter-label { font-family: 'Barlow Condensed', sans-serif; font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--db-warm-gray); white-space: nowrap; }
   .db-toggle-group { display: flex; gap: 4px; }
