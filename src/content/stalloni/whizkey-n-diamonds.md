@@ -99,7 +99,7 @@ breeding:
   fee: "€ 3.500"
   fee_en: "$3,500"
   semenType: "Congelato / ICSI"
-  semenType_en: "Frozen / ICSI"
+  semenType_en: "FROZEN / ICSI"
   semenNotes: "Seme congelato disponibile negli USA presso Oswood Stallion Station ed in Europa tramite le principali concessionarie."
   semenNotes_en: "Frozen semen available in the USA at Oswood Stallion Station and in Europe through major distributors."
   status: "ATTIVO"

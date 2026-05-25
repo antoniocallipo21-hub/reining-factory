@@ -108,7 +108,7 @@ breeding:
   fee: "€ 1.800"
   fee_en: "$1,800"
   semenType: "Fresco / Congelato"
-  semenType_en: "Fresh / Frozen"
+  semenType_en: "FRESH / FROZEN"
   semenNotes: "Disponibile presso Quarter Dream SRL e i partner autorizzati."
   semenNotes_en: "Available at Quarter Dream SRL and authorized partners."
   status: "ATTIVO"

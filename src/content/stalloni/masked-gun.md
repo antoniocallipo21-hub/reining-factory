@@ -86,7 +86,7 @@ breeding:
   fee: "€ 1.500"
   fee_en: "$1,500"
   semenType: "Congelato"
-  semenType_en: "Frozen"
+  semenType_en: "FROZEN"
   semenNotes: "Disponibile tramite Infoal Partners, Orlandini Equine e Frozen Partners (EU)."
   semenNotes_en: "Available via Infoal Partners, Orlandini Equine and Frozen Partners (EU)."
   status: "ATTIVO"

@@ -88,7 +88,7 @@ breeding:
   fee: "€ 1.900"
   fee_en: "$ 2,000"
   semenType: "Congelato"
-  semenType_en: "Frozen"
+  semenType_en: "FROZEN"
   semenNotes: "Seme congelato disponibile presso Scott McCutcheon Reining Horses (USA) e tramite Infoal Partners (EU)."
   semenNotes_en: "Frozen semen available at Scott McCutcheon Reining Horses (USA) and through Infoal Partners (EU)."
   status: "ATTIVO"

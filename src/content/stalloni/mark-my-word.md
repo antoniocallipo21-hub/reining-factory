@@ -92,7 +92,7 @@ breeding:
   fee: "€ 2.000"
   fee_en: "$2,000"
   semenType: "Congelato / ICSI"
-  semenType_en: "Frozen / ICSI"
+  semenType_en: "FROZEN / ICSI"
   semenNotes: "Disponibile tramite 7 Lakes Ranch (USA), Frozen Partners (EU) e Orlandini Equine (EU)."
   semenNotes_en: "Available via 7 Lakes Ranch (USA), Frozen Partners (EU) and Orlandini Equine (EU)."
   status: "ATTIVO"
@@ -114,6 +114,6 @@ breedingLinks:
 # Campi per filtri
 origine: "USA"
 isElite: false
-isFeatured: true
+isFeatured: false
 tags: ["Futurity Champion", "Palomino"]
 ---

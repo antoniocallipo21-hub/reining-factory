@@ -82,7 +82,7 @@ offspring: []
 breeding:
   fee: "$0,000"
   semenType: "Congelato / Fresco"
-  semenType_en: "Frozen / Fresh"
+  semenType_en: "FRESH / FROZEN"
   semenNotes: "Seme fresco disponibile presso [Scuderia] (USA). Seme congelato disponibile tramite [Partner] (EU)."
   semenNotes_en: "Fresh semen available at [Stable] (USA). Frozen semen available via [Partner] (EU)."
   status: "ATTIVO"

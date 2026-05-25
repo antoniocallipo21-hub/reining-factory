@@ -80,7 +80,7 @@ breeding:
   fee: "€ 2.000"
   fee_en: "$2,000"
   semenType: "Congelato"
-  semenType_en: "Frozen"
+  semenType_en: "FROZEN"
   semenNotes: "Disponibile tramite Foothills Farm (USA), Frozen Partners (EU) e Orlandini Equine (EU)."
   semenNotes_en: "Available via Foothills Farm (USA), Frozen Partners (EU) and Orlandini Equine (EU)."
   status: "ATTIVO"

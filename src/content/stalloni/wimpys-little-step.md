@@ -100,7 +100,7 @@ breeding:
   fee: "€ 6.000"
   fee_en: "$6,000"
   semenType: "ICSI"
-  semenType_en: "ICSI Only"
+  semenType_en: "ICSI"
   semenNotes: "Disponibile solo tramite procedura ICSI. Seme congelato ICSI disponibile in Europa tramite Infoal Partners."
   semenNotes_en: "Available via ICSI procedure only. Frozen ICSI semen available in Europe through Infoal Partners."
   status: "ATTIVO"
@@ -122,6 +122,6 @@ breedingLinks:
 # Campi per filtri
 origine: "USA"
 isElite: true
-isFeatured: true
+isFeatured: false
 tags: ["NRHA Hall of Fame", "15 Million Dollar Sire", "Futurity Champion"]
 ---

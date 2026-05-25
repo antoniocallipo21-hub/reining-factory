@@ -108,6 +108,6 @@ breedingLinks:
 # Campi per filtri
 origine: "USA"
 isElite: true
-isFeatured: true
+isFeatured: false
 tags: ["14 Million Dollar Sire", "AQHA World Champion", "Hall of Fame"]
 ---

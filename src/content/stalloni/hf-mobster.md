@@ -126,6 +126,6 @@ breedingLinks:
 # Campi per filtri
 origine: "USA"
 isElite: true
-isFeatured: true
+isFeatured: false
 tags: ["1 Million Dollar Sire", "Derby Champion", "WEG Competitor"]
 ---

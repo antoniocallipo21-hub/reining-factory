@@ -91,7 +91,7 @@ breeding:
   fee: "€ 3.000"
   fee_en: "$3,000"
   semenType: "Congelato / ICSI"
-  semenType_en: "Frozen / ICSI"
+  semenType_en: "FROZEN / ICSI"
   semenNotes: "Disponibile tramite Silver Spurs Equine (USA), Frozen Partners, Orlandini Equine, Serequine e In Foal Partners (EU)."
   semenNotes_en: "Available via Silver Spurs Equine (USA), Frozen Partners, Orlandini Equine, Serequine and In Foal Partners (EU)."
   status: "ATTIVO"

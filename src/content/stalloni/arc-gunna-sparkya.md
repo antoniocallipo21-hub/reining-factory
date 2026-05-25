@@ -101,6 +101,6 @@ breedingLinks:
 # Campi per filtri
 origine: "USA"
 isElite: true
-isFeatured: true
+isFeatured: false
 tags: ["NRBC Reserve Champion", "Futurity Finalist", "ICSI Only"]
 ---

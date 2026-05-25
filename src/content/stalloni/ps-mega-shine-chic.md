@@ -82,7 +82,7 @@ breeding:
   fee: "€ 3.000"
   fee_en: "$3,000"
   semenType: "Congelato"
-  semenType_en: "Frozen"
+  semenType_en: "FROZEN"
   semenNotes: "Disponibile negli USA tramite Tom McCutcheon Reining Horses e Cinder Lakes Ranch. Disponibile in Europa tramite Frozen Partners e Orlandini Equine."
   semenNotes_en: "Available in the USA via Tom McCutcheon Reining Horses and Cinder Lakes Ranch. Available in Europe via Frozen Partners and Orlandini Equine."
   status: "ATTIVO"

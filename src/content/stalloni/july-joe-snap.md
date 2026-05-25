@@ -87,7 +87,7 @@ breeding:
   fee: "€ 2.000"
   fee_en: "$2,000"
   semenType: "Fresco / Congelato"
-  semenType_en: "Fresh / Frozen"
+  semenType_en: "FRESH / FROZEN"
   semenNotes: "Seme fresco disponibile presso Orlandini Equine."
   semenNotes_en: "Fresh semen available at Orlandini Equine."
   status: "ATTIVO"

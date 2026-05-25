@@ -83,7 +83,7 @@ breeding:
   fee: "€ 2.750"
   fee_en: "$2,750"
   semenType: "Fresco / Congelato / ICSI"
-  semenType_en: "Fresh / Frozen / ICSI"
+  semenType_en: "FRESH / FROZEN / ICSI"
   semenNotes: "Seme fresco disponibile negli USA presso Oswood Stallion Station. Disponibile in Europa tramite Frozen Partners e Orlandini Equine."
   semenNotes_en: "Fresh semen available in the USA at Oswood Stallion Station. Available in Europe via Frozen Partners and Orlandini Equine."
   status: "ATTIVO"

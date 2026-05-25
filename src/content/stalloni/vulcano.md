@@ -83,7 +83,7 @@ breeding:
   fee: "€ 2.000"
   fee_en: "$ 2,000"
   semenType: "Fresco / Congelato"
-  semenType_en: "Fresh / Frozen"
+  semenType_en: "FRESH / FROZEN"
   semenNotes: "Seme fresco disponibile negli USA presso Toyon Ranch. Seme congelato disponibile per l'Europa tramite Infoal Partners."
   semenNotes_en: "Fresh semen available in the USA at Toyon Ranch. Frozen semen available for Europe through Infoal Partners."
   status: "ATTIVO"

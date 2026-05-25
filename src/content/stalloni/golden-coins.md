@@ -82,7 +82,7 @@ breeding:
   fee: "€ 3.500"
   fee_en: "$3,500"
   semenType: "Congelato / ICSI"
-  semenType_en: "Frozen / ICSI"
+  semenType_en: "FROZEN / ICSI"
   semenNotes: "Disponibile tramite Capital Quarter Horses (USA), Frozen Partners e Orlandini Equine (EU)."
   semenNotes_en: "Available via Capital Quarter Horses (USA), Frozen Partners and Orlandini Equine (EU)."
   status: "ATTIVO"

@@ -119,7 +119,7 @@ breeding:
   fee: "€ 1.800"
   fee_en: "$1,800"
   semenType: "Congelato"
-  semenType_en: "Frozen"
+  semenType_en: "FROZEN"
   semenNotes: "Disponibile solo congelato in USA ed Europa."
   semenNotes_en: "Available only as frozen semen in USA and Europe."
   status: "ATTIVO"

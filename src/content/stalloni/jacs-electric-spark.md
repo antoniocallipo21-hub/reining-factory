@@ -86,7 +86,7 @@ breeding:
   fee: "€ 5.000"
   fee_en: "$5,000"
   semenType: "ICSI"
-  semenType_en: "ICSI Only"
+  semenType_en: "ICSI"
   semenNotes: "Disponibile solo tramite ICSI."
   semenNotes_en: "Available only via ICSI."
   status: "DECEDUTO"
@@ -111,6 +111,6 @@ breedingLinks:
 # Campi per filtri
 origine: "USA"
 isElite: true
-isFeatured: true
+isFeatured: false
 tags: ["4 Million Dollar Sire", "Shining Spark Son", "ICSI Only"]
 ---

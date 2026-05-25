@@ -91,7 +91,7 @@ breeding:
   fee: "€ 5.000"
   fee_en: "$5,000"
   semenType: "Fresco / Congelato / ICSI"
-  semenType_en: "Fresh / Frozen / ICSI"
+  semenType_en: "FRESH / FROZEN / ICSI"
   semenNotes: "Disponibile fresco presso Colt Company limitatamente. / Seme congelato ed ICSI in Europa."
   semenNotes_en: "Fresh available at Colt Company. / Frozen and ICSI in Europe."
   status: "ATTIVO"

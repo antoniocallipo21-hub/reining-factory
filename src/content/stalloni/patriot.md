@@ -111,6 +111,6 @@ breedingLinks:
 # Campi per filtri
 origine: "USA"
 isElite: true
-isFeatured: true
+isFeatured: false
 tags: ["TRFAM Champion", "Derby Reserve Champion"]
 ---

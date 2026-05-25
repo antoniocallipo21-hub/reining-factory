@@ -103,6 +103,6 @@ breedingLinks:
 # Campi per filtri
 origine: "USA"
 isElite: true
-isFeatured: true
+isFeatured: false
 tags: ["2 Million Dollar Sire", "NRBC Champion", "Derby Reserve Champion"]
 ---

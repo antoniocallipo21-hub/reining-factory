@@ -83,7 +83,7 @@ breeding:
   fee: "€ 3.000"
   fee_en: "$3,000"
   semenType: "Congelato / ICSI"
-  semenType_en: "Frozen / ICSI"
+  semenType_en: "FROZEN / ICSI"
   semenNotes: "Disponibile solo congelato o ICSI."
   semenNotes_en: "Available only as frozen semen or ICSI."
   status: "ATTIVO"

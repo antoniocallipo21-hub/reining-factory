@@ -89,7 +89,7 @@ breeding:
   fee: "€ 1.850"
   fee_en: "$1,850"
   semenType: "Fresco / Congelato"
-  semenType_en: "Fresh / Frozen"
+  semenType_en: "FRESH / FROZEN"
   semenNotes: "Disponibile presso Frozen Partners e Riverside Ranch."
   semenNotes_en: "Available at Frozen Partners and Riverside Ranch."
   status: "ATTIVO"

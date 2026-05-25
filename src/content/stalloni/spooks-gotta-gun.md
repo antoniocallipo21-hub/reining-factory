@@ -88,7 +88,7 @@ breeding:
   fee: "€ 7.000"
   fee_en: "$7,000"
   semenType: "Congelato"
-  semenType_en: "Frozen"
+  semenType_en: "FROZEN"
   semenNotes: "Seme congelato disponibile per ICSI presso Silver Spurs Equine (USA). Disponibile in Europa tramite Frozen Partners e Orlandini Equine."
   semenNotes_en: "Frozen semen available for ICSI at Silver Spurs Equine (USA). Available in Europe via Frozen Partners and Orlandini Equine."
   status: "DECEDUTO"

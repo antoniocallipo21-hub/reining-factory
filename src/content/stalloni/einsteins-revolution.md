@@ -111,7 +111,7 @@ breeding:
   fee: "€ 2.250"
   fee_en: "$2,250"
   semenType: "ICSI"
-  semenType_en: "ICSI Only"
+  semenType_en: "ICSI"
   semenNotes: "Disponibile solo tramite ICSI."
   semenNotes_en: "Available only via ICSI."
   status: "DECEDUTO"
@@ -134,6 +134,6 @@ breedingLinks:
 # Campi per filtri
 origine: "USA"
 isElite: true
-isFeatured: true
+isFeatured: false
 tags: ["NRBC Open Champion", "2 Million Dollar Sire", "NRHA Record Holder"]
 ---

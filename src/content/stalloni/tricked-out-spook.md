@@ -96,7 +96,7 @@ breeding:
   fee: "€ 2.150"
   fee_en: "$2,150"
   semenType: "Congelato"
-  semenType_en: "Frozen"
+  semenType_en: "FROZEN"
   semenNotes: "Seme congelato disponibile negli USA presso Foals R Us. In Europa disponibile tramite Frozen Partners, Orlandini Equine e Infoal Partners."
   semenNotes_en: "Frozen semen available in the USA at Foals R Us. Available in Europe through Frozen Partners, Orlandini Equine, and Infoal Partners."
   status: "ATTIVO"

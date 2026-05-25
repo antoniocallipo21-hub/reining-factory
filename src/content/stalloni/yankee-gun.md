@@ -90,7 +90,7 @@ breeding:
   fee: "€ 1.500"
   fee_en: "€ 1.500"
   semenType: "FRESCO / CONGELATO"
-  semenType_en: "COOLED / FROZEN"
+  semenType_en: "FRESH / FROZEN"
   semenNotes: "Seme fresco disponibile presso Lara Maiocchi Stallion Station (EU). Seme congelato disponibile tramite Colt Company (USA) e Serequine (EU)."
   semenNotes_en: "Fresh semen available at Lara Maiocchi Stallion Station (EU). Frozen semen available through Colt Company (USA) and Serequine (EU)."
   status: "ATTIVO"
@@ -112,6 +112,6 @@ breedingLinks:
 origine: "EU"
 disciplina: "Reining"
 isElite: false
-isFeatured: true
+isFeatured: false
 tags: []
 ---

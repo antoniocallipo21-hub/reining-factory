@@ -109,6 +109,6 @@ breedingLinks:
 # Campi per filtri
 origine: "USA"
 isElite: true
-isFeatured: true
+isFeatured: false
 tags: ["Triple Crown Winner", "Futurity Champion", "Derby Champion", "1 Million Dollar Sire"]
 ---

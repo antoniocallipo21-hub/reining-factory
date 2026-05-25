@@ -83,7 +83,7 @@ breeding:
   fee: "€ 2.500"
   fee_en: "$2,500"
   semenType: "Congelato / Fresco"
-  semenType_en: "Frozen / Fresh"
+  semenType_en: "FRESH / FROZEN"
   semenNotes: "Seme fresco disponibile negli USA presso Tom McCutcheon Reining Horses. Seme congelato disponibile in Europa tramite Frozen Partners e Orlandini Equine."
   semenNotes_en: "Fresh semen available in the USA at Tom McCutcheon Reining Horses. Frozen semen available in Europe via Frozen Partners and Orlandini Equine."
   status: "ATTIVO"

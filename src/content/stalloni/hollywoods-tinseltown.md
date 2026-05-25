@@ -87,8 +87,8 @@ offspring:
 breeding:
   fee: "€ 3.000"
   fee_en: "$3,000"
-  semenType: "ICSI ONLY"
-  semenType_en: "ICSI ONLY"
+  semenType: "ICSI"
+  semenType_en: "ICSI"
   semenNotes: "Disponibile tramite Tom McCutcheon Reining Horses (USA), Frozen Partners, Orlandini Equine e Serequine (EU). Solo tecnica ICSI."
   semenNotes_en: "Available via Tom McCutcheon Reining Horses (USA), Frozen Partners, Orlandini Equine and Serequine (EU). ICSI technique only."
   status: "DECEDUTO"

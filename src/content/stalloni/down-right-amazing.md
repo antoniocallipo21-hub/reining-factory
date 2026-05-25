@@ -86,7 +86,7 @@ breeding:
   fee: "€ 3.500"
   fee_en: "$3,500"
   semenType: "Congelato / ICSI"
-  semenType_en: "Frozen / ICSI"
+  semenType_en: "FROZEN / ICSI"
   semenNotes: "Disponibile tramite Oswood Stallion Station e distributori EU autorizzati."
   semenNotes_en: "Available via Oswood Stallion Station and authorized EU distributors."
   status: "ATTIVO"
@@ -107,5 +107,6 @@ breedingLinks:
 
 # Campi per filtri
 origine: "USA"
+isFeatured: true
 disciplina: "Reining"
 ---

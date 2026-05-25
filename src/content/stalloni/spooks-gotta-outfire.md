@@ -84,7 +84,7 @@ breeding:
   fee: "€ 1.750"
   fee_en: "$1,750"
   semenType: "Congelato"
-  semenType_en: "Frozen"
+  semenType_en: "FROZEN"
   semenNotes: "Seme congelato disponibile presso Israbraz Ranch (USA) e tramite Infoal Partners (EU)."
   semenNotes_en: "Frozen semen available at Israbraz Ranch (USA) and through Infoal Partners (EU)."
   status: "ATTIVO"

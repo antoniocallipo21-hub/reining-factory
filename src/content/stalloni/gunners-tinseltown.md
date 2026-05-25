@@ -98,7 +98,7 @@ breeding:
   fee: "€ 1.500"
   fee_en: "$1,500"
   semenType: "Congelato / ICSI"
-  semenType_en: "Frozen / ICSI"
+  semenType_en: "FROZEN / ICSI"
   semenNotes: "Disponibile tramite Tom McCutcheon Reining Horses (USA), Frozen Partners, Orlandini Equine e Serequine (EU)."
   semenNotes_en: "Available via Tom McCutcheon Reining Horses (USA), Frozen Partners, Orlandini Equine and Serequine (EU)."
   status: "ATTIVO"

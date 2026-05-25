@@ -86,7 +86,7 @@ breeding:
   fee: "€ 2.500"
   fee_en: "$2,500"
   semenType: "Fresco / Congelato"
-  semenType_en: "Fresh / Frozen"
+  semenType_en: "FRESH / FROZEN"
   semenNotes: "Seme fresco disponibile negli USA presso Tom McCutcheon Reining Horses. Seme congelato disponibile in Europa tramite Serequine."
   semenNotes_en: "Fresh semen available in the USA at Tom McCutcheon Reining Horses. Frozen semen available in Europe through Serequine."
   status: "ATTIVO"
@@ -105,6 +105,6 @@ breedingLinks:
 # Campi per filtri
 origine: "USA"
 isElite: true
-isFeatured: true
+isFeatured: false
 tags: ["NRHA Derby Champion", "Futurity Finalist", "Gunners Special Nite Son"]
 ---

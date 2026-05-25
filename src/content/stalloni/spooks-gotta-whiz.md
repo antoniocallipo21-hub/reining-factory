@@ -96,7 +96,7 @@ breeding:
   fee: "€ 9.175"
   fee_en: "$9,175"
   semenType: "Fresco / Congelato"
-  semenType_en: "Fresh / Frozen"
+  semenType_en: "FRESH / FROZEN"
   semenNotes: "Solo seme congelato in EU / Disponibile fresco in TX"
   semenNotes_en: "Frozen semen only in EU / Fresh available in TX"
   status: "ATTIVO"

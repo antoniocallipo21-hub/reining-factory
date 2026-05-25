@@ -84,7 +84,7 @@ breeding:
   fee: "€ 1.000"
   fee_en: "$1,000"
   semenType: "Fresco / Congelato"
-  semenType_en: "Fresh / Frozen"
+  semenType_en: "FRESH / FROZEN"
   semenNotes: "Seme fresco e congelato disponibile tramite Infoal Partners."
   semenNotes_en: "Fresh and frozen semen available through Infoal Partners."
   status: "ATTIVO"

@@ -91,7 +91,7 @@ breeding:
   fee: "€ 5.100"
   fee_en: "$5,100"
   semenType: "Congelato / ICSI"
-  semenType_en: "Frozen / ICSI"
+  semenType_en: "FROZEN / ICSI"
   semenNotes: "Disponibile negli USA tramite Toyon Ranch. Seme congelato disponibile in Europa tramite distributori ufficiali."
   semenNotes_en: "Available in the USA via Toyon Ranch. Frozen semen available in Europe via official distributors."
   status: "ATTIVO"
@@ -121,6 +121,6 @@ breedingLinks:
 
 origine: "USA"
 isElite: true
-isFeatured: true
+isFeatured: false
 tags: ["5-million-sire"]
 ---

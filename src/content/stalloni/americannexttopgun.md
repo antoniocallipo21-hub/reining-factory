@@ -98,7 +98,7 @@ breeding:
   fee: "€ 4.500"
   fee_en: "$4,500"
   semenType: "Congelato / ICSI"
-  semenType_en: "Frozen / ICSI"
+  semenType_en: "FROZEN / ICSI"
   semenNotes: "Disponibile in Europa tramite Orlandini Equine."
   semenNotes_en: "Available in Europe via Orlandini Equine."
   status: "ATTIVO"
@@ -119,5 +119,6 @@ breedingLinks:
     
 # Campi per filtri
 origine: "USA"
+isFeatured: true
 disciplina: "Reining"
 ---

@@ -102,7 +102,7 @@ breeding:
   fee: "€ 2.750"
   fee_en: "$2,750"
   semenType: "Fresco / Congelato"
-  semenType_en: "Fresh / Frozen"
+  semenType_en: "FRESH / FROZEN"
   semenNotes: "Seme fresco disponibile negli USA presso Silver Spurs Equine. Seme congelato disponibile in Europa tramite Infoal Partners, Frozen Partners e Serequine."
   semenNotes_en: "Fresh semen available in the USA at Silver Spurs Equine. Frozen semen available in Europe through Infoal Partners, Frozen Partners, and Serequine."
   status: "ATTIVO"
@@ -127,6 +127,6 @@ breedingLinks:
 # Campi per filtri
 origine: "USA"
 isElite: true
-isFeatured: true
+isFeatured: false
 tags: ["NRBC Champion", "AQHA Reserve World Champion", "Wimpys Little Step Son"]
 ---

@@ -86,7 +86,7 @@ breeding:
   fee: "€ 1.250"
   fee_en: "$1,250"
   semenType: "Fresco / Congelato"
-  semenType_en: "Fresh / Frozen"
+  semenType_en: "FRESH / FROZEN"
   semenNotes: "Seme fresco disponibile negli USA presso Alpha Quarter Horses. Seme congelato disponibile in Europa tramite Infoal Partners."
   semenNotes_en: "Fresh semen available in the USA at Alpha Quarter Horses. Frozen semen available in Europe through Infoal Partners."
   status: "ATTIVO"

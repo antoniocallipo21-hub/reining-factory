@@ -87,7 +87,7 @@ breeding:
   fee: "€ 3.650"
   fee_en: "$3,650"
   semenType: "Congelato / ICSI"
-  semenType_en: "Frozen / ICSI"
+  semenType_en: "FROZEN / ICSI"
   semenNotes: "Disponibile tramite Foals R Us e In Foal Partners."
   semenNotes_en: "Available via Foals R Us and In Foal Partners."
   status: "ATTIVO"

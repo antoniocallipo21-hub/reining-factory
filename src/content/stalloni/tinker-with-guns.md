@@ -115,7 +115,7 @@ breeding:
   fee: "€ 2.000"
   fee_en: "$2,000"
   semenType: "Congelato"
-  semenType_en: "Frozen"
+  semenType_en: "FROZEN"
   semenNotes: "Seme congelato disponibile negli USA presso Silver Spurs Equine. Disponibile in Europa tramite Serequine e Frozen Partners."
   semenNotes_en: "Frozen semen available in the USA at Silver Spurs Equine. Available in Europe via Serequine and Frozen Partners."
   status: "ATTIVO"

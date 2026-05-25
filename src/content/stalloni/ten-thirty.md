@@ -77,7 +77,7 @@ breeding:
   fee: "€ 2.300"
   fee_en: "$2,425"
   semenType: "Congelato"
-  semenType_en: "Frozen"
+  semenType_en: "FROZEN"
   semenNotes: "Seme congelato disponibile tramite Oswood Stallion Station (USA), Frozen Partners e Orlandini Equine (EU)."
   semenNotes_en: "Frozen semen available via Oswood Stallion Station (USA), Frozen Partners and Orlandini Equine (EU)."
   status: "ATTIVO"

@@ -84,7 +84,7 @@ breeding:
   fee: "€ 3.000"
   fee_en: "$3,000"
   semenType: "Congelato"
-  semenType_en: "Frozen"
+  semenType_en: "FROZEN"
   semenNotes: "Disponibile negli USA presso Toyon Ranch. Disponibile in Europa tramite Orlandini Equine e Frozen Partners (seme congelato)."
   semenNotes_en: "Available in the USA at Toyon Ranch. Available in Europe via Orlandini Equine and Frozen Partners (frozen semen)."
   status: "ATTIVO"

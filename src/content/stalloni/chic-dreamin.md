@@ -100,6 +100,6 @@ breedingLinks:
 # Campi per filtri
 origine: "USA"
 isElite: true
-isFeatured: true
+isFeatured: false
 tags: ["NRBC Champion", "AQHA World Champion", "Derby Champion"]
 ---
