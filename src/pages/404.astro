@@ -1,0 +1,96 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="404 — Reining Factory">
+  <style>
+    .not-found {
+      min-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 4rem 2rem;
+    }
+
+    .not-found-code {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(7rem, 22vw, 14rem);
+      font-weight: 900;
+      line-height: 1;
+      color: var(--gold);
+      letter-spacing: -0.02em;
+      margin-bottom: 1.5rem;
+      opacity: 0.9;
+    }
+
+    .not-found-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: clamp(1.2rem, 4vw, 1.8rem);
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--cream);
+      margin-bottom: 0.8rem;
+    }
+
+    .not-found-subtitle {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: clamp(0.95rem, 2.5vw, 1.1rem);
+      font-weight: 300;
+      color: rgba(245, 240, 232, 0.5);
+      max-width: 420px;
+      line-height: 1.6;
+      margin-bottom: 2.5rem;
+    }
+
+    .not-found-divider {
+      width: 40px;
+      height: 2px;
+      background: var(--gold);
+      margin: 0 auto 2rem;
+      opacity: 0.5;
+    }
+
+    .not-found-btn {
+      display: inline-block;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--dark);
+      background: var(--gold);
+      border: 1px solid var(--gold);
+      padding: 0.85rem 2.2rem;
+      text-decoration: none;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .not-found-btn:hover {
+      background: transparent;
+      color: var(--gold);
+    }
+  </style>
+
+  <section class="not-found">
+    <div class="not-found-code">404</div>
+    <h1 class="not-found-title" id="nf-title">Pagina non trovata</h1>
+    <div class="not-found-divider"></div>
+    <p class="not-found-subtitle" id="nf-subtitle">Questa pista non esiste nel nostro database.<br><span id="nf-desc">L'indirizzo che cerchi potrebbe essere stato spostato o rimosso.</span></p>
+    <a href="/" class="not-found-btn" id="nf-btn">Torna alla home</a>
+  </section>
+
+  <script>
+    const lang = (navigator.language || 'it').toLowerCase();
+    const isEn = lang.startsWith('en');
+
+    if (isEn) {
+      document.getElementById('nf-title').textContent = 'Page not found';
+      document.getElementById('nf-subtitle').childNodes[0].textContent = "This trail doesn't exist in our database.";
+      document.getElementById('nf-desc').textContent = 'The page you\'re looking for may have been moved or removed.';
+      document.getElementById('nf-btn').textContent = 'Back to home';
+    }
+  </script>
+</Layout>
