@@ -80,7 +80,7 @@ export const ui = {
     'home.intro.title': 'Eleganza e tecnica',
     'home.intro.title_em': 'diventano spettacolo',
     'home.intro.p1': 'Il reining è una disciplina equestre western in cui il cavaliere guida il cavallo attraverso una serie di manovre prestabilite, chiamate pattern. Ogni movimento viene valutato da una giuria con un punteggio che parte da 70 punti.',
-    'home.intro.p2': 'Spinning, sliding stop, rollback, lead change: ogni figura racconta la storia di un cavallo nato per lavorare il bestiame, oggi trasformato in un atleta di precisione assoluta.',
+    'home.intro.p2': 'Spins, sliding stop, rollback, lead change: ogni figura racconta la storia di un cavallo nato per lavorare il bestiame, oggi trasformato in un atleta di precisione assoluta.',
     'home.intro.cta': 'Leggi tutto sullo sport',
     'home.intro.caption': 'Lo sliding stop — la firma del reining',
 
