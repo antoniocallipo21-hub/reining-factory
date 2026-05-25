@@ -92,7 +92,7 @@ function getBadges(tags, customBadge) {
           >
             <div class="db-card-media">
               {(h.cardImage || h.mainImage)
-                ? <img src={h.cardImage || h.mainImage} alt={h.name} loading="lazy" />
+                ? <img src={h.cardImage || h.mainImage} alt={h.name} loading="lazy" width="400" height="300" />
                 : <div class="db-card-placeholder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>
               }
               <div class="db-badges-container">

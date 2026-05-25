@@ -26,6 +26,7 @@ const featuredStallions = (await getCollection('stalloni', ({ data }) => {
   title={isEn ? "Reining Factory — The complete Reining resource" : "Reining Factory — La Risorsa completa sul Reining"}
   description={isEn ? "Bloodlines, stallions, mares, events and history of reining." : "Linee di sangue, stalloni, fattrici, eventi e storia del reining. La risorsa italiana più completa su questo sport."}
 >
+  <link slot="head" rel="preload" as="image" href="/immagini/hero.jpg" />
 
   <!-- HERO -->
   <section class="hero">
@@ -69,7 +70,7 @@ const featuredStallions = (await getCollection('stalloni', ({ data }) => {
       <a href={langPrefix + "/reining"} class="btn-ghost" style="color:var(--gold);margin-top:1rem;">{t('home.intro.cta')}</a>
     </div>
     <div class="intro-img-wrap reveal-right">
-      <img src="/immagini/reining-intro.jpg" alt="Sliding stop nel reining"/>
+      <img src="/immagini/reining-intro.jpg" alt="Sliding stop nel reining" loading="lazy" width="800" height="440"/>
       <span class="img-caption">{t('home.intro.caption')}</span>
     </div>
   </section>

@@ -169,10 +169,11 @@ const firstPart = originalParts.join(' ');
 
 ---
 
-<Layout 
+<Layout
   title={`${h.name} | Reining Factory Legacy`}
   description={isEn ? h.description_en : h.description_it}
 >
+  <link slot="head" rel="preload" as="image" href={h.mainImage} />
   <style is:global>
     :root {
       --warm-gray: #9A9188;
@@ -546,7 +547,7 @@ const firstPart = originalParts.join(' ');
     {h.gallery && h.gallery.length > 0 && (
       <div class="gallery-strip">
         {h.gallery.map((img, idx) => (
-          <img src={img} class="gallery-thumb" onclick={`openLightbox(${idx})`} alt={`${h.name} detail ${idx + 1}`} />
+          <img src={img} class="gallery-thumb" onclick={`openLightbox(${idx})`} alt={`${h.name} detail ${idx + 1}`} loading="lazy" />
         ))}
       </div>
     )}

@@ -157,10 +157,11 @@ const geneticEntries = horse.geneticTest ? Object.entries(horse.geneticTest).fil
 const panelCount = geneticEntries.length;
 ---
 
-<Layout 
+<Layout
   title={`${horse.name} – Reining Factory`}
   description={isEn ? (horse.description_en || horse.description_it) : horse.description_it}
 >
+  <link slot="head" rel="preload" as="image" href={horse.mainImage} />
   <style is:global>
     :root {
       --warm-gray: #9A9188;
@@ -1090,10 +1091,10 @@ const panelCount = geneticEntries.length;
     <section class="hero">
     <div class="hero-gallery">
       <div class="main-img">
-        <img src={horse.mainImage} alt={horse.name}>
+        <img src={horse.mainImage} alt={horse.name} loading="eager" fetchpriority="high">
       </div>
-      {horse.heroImages?.[0] && <div class="side-img"><img src={horse.heroImages[0]} alt=""></div>}
-      {horse.heroImages?.[1] && <div class="side-img"><img src={horse.heroImages[1]} alt=""></div>}
+      {horse.heroImages?.[0] && <div class="side-img"><img src={horse.heroImages[0]} alt="" loading="eager"></div>}
+      {horse.heroImages?.[1] && <div class="side-img"><img src={horse.heroImages[1]} alt="" loading="eager"></div>}
     </div>
     <div class="hero-overlay"></div>
 
@@ -1175,13 +1176,13 @@ const panelCount = geneticEntries.length;
             {horse.gallery && horse.gallery.length > 0 && (
               <div class="gallery-strip" style="margin-top: 0; justify-content: flex-start;">
                 {horse.gallery.map((img, index) => (
-                  <img class="gallery-thumb" src={img} alt="" onclick={`window.openLightbox(${index})`}>
+                  <img class="gallery-thumb" src={img} alt="" loading="lazy" onclick={`window.openLightbox(${index})`}>
                 ))}
               </div>
             )}
           </div>
           <div style="display: flex; justify-content: center; align-items: center; width: 100%;">
-            {horse.logo && <img src={horse.logo} alt={`Logo ${horse.name}`} class="gallery-logo" style="margin-bottom: 0;" />}
+            {horse.logo && <img src={horse.logo} alt={`Logo ${horse.name}`} class="gallery-logo" style="margin-bottom: 0;" loading="lazy" />}
           </div>
         </div>
       </div>
