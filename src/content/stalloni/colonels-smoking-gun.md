@@ -37,7 +37,7 @@ geneticCertificateUrl: "#"
 # SOCIAL
 social:
   instagram: "https://www.instagram.com/reiningfactory/"
-  facebook: "https://www.facebook.com/reiningfactory"
+  facebook: "https://www.facebook.com/profile.php?id=61590167892858"
   website: "https://www.mcquaystables.com/in-memory-of-gunner"
 
 pedigree:
