@@ -70,6 +70,14 @@ const canonicalPath = Astro.url.pathname.replace(/\/$/, '') || '/';
   <script async src="https://cdn.iubenda.com/cs/iubenda_cs.js"></script>
   <slot name="head" />
   <ClientRouter />
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-V91XK0END2"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-V91XK0END2');
+  </script>
 </head>
 <body data-astro-transition-scope="header">
   <script is:inline>
