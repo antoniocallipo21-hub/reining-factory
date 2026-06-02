@@ -16,6 +16,26 @@
       "source": "/index.html",
       "destination": "/",
       "permanent": true
+    },
+    {
+      "source": "/stalloni/:slug",
+      "destination": "/it/stalloni/:slug",
+      "permanent": true
+    },
+    {
+      "source": "/fattrici/:slug",
+      "destination": "/it/fattrici/:slug",
+      "permanent": true
+    },
+    {
+      "source": "/stalloni",
+      "destination": "/it/stalloni",
+      "permanent": true
+    },
+    {
+      "source": "/fattrici",
+      "destination": "/it/fattrici",
+      "permanent": true
     }
   ]
 }
