@@ -205,7 +205,10 @@ function pedLink(name, allSt) {
   </div>
   <!-- CONTATORE E VIEW TOGGLE -->
   <div class="db-results-bar">
-    <span id="resultsCount" class="db-results-count"></span>
+    <div class="db-results-left">
+      <span id="resultsCount" class="db-results-count"></span>
+      <span class="db-disclaimer">({isEn ? 'database continuously updated' : 'database in continuo aggiornamento'})</span>
+    </div>
     <div class="db-view-toggle">
       <button class="db-view-btn active" data-view="grid" title="Grid View">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
@@ -216,7 +219,6 @@ function pedLink(name, allSt) {
     </div>
   </div>
 </div>
-<p class="db-disclaimer">{isEn ? 'The database is continuously updated. Some stallions may not yet be listed.' : 'Il database è in continuo aggiornamento. Alcuni stalloni potrebbero non essere ancora presenti.'}</p>
 
 <!-- GRIGLIA -->
 <div class="db-grid-wrap">
@@ -540,6 +542,7 @@ function pedLink(name, allSt) {
   .db-reset-btn { display: inline-flex; align-items: center; gap: 0.4rem; background: transparent; border: 1px solid rgba(200,151,58,0.2); color: rgba(245,240,232,0.4); font-family: 'Barlow Condensed', sans-serif; font-size: 0.68rem; letter-spacing: 0.15em; text-transform: uppercase; padding: 0.5rem 1rem; border-radius: 3px; cursor: pointer; transition: all 0.2s; }
   
   .db-results-bar { padding: 0.5rem 1.8rem 0.8rem; border-top: 1px solid rgba(200,151,58,0.06); display: flex; justify-content: space-between; align-items: center; }
+  .db-results-left { display: flex; align-items: center; gap: 0.6rem; }
   .db-results-count { font-family: 'Barlow Condensed', sans-serif; font-size: 0.68rem; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(154,145,136,0.6); }
   .db-view-toggle { display: flex; gap: 0.4rem; }
   .db-view-btn { background: transparent; border: 1px solid transparent; color: rgba(245,240,232,0.3); padding: 0.35rem; border-radius: 4px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
@@ -638,7 +641,6 @@ function pedLink(name, allSt) {
   }
   @media (max-width: 480px) { .db-grid { grid-template-columns: 1fr; } .db-grid.view-list { grid-template-columns: 1fr; } .db-card-name { font-size: 1.1rem; } }
 
-  .db-disclaimer { font-family: 'Barlow', sans-serif; font-weight: 300; font-size: 0.85rem; font-style: italic; color: var(--sand); margin: 0.6rem 2rem 0; text-align: left; }
-  @media (max-width: 1024px) { .db-disclaimer { margin-left: 1rem; margin-right: 1rem; } }
-  @media (max-width: 768px) { .db-disclaimer { margin-left: 0.75rem; margin-right: 0.75rem; } }
+  .db-disclaimer { font-family: 'Barlow', sans-serif; font-weight: 300; font-size: 0.72rem; font-style: italic; color: var(--sand); opacity: 0.7; }
+  @media (max-width: 768px) { .db-disclaimer { display: none; } }
 </style>
