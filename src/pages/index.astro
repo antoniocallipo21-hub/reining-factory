@@ -7,12 +7,12 @@ export const partial = true;
   (function() {
     var lang = navigator.language || navigator.userLanguage;
     if (lang && lang.toLowerCase().startsWith('it')) {
-      window.location.replace('/it/');
+      window.location.replace('/it');
     } else {
-      window.location.replace('/en/');
+      window.location.replace('/en');
     }
   })();
 </script>
 <noscript>
-  <meta http-equiv="refresh" content="0;url=/en/" />
+  <meta http-equiv="refresh" content="0;url=/en" />
 </noscript>
