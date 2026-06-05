@@ -216,6 +216,7 @@ function pedLink(name, allSt) {
     </div>
   </div>
 </div>
+<p class="db-disclaimer">{isEn ? 'The database is continuously updated. Some stallions may not yet be listed.' : 'Il database è in continuo aggiornamento. Alcuni stalloni potrebbero non essere ancora presenti.'}</p>
 
 <!-- GRIGLIA -->
 <div class="db-grid-wrap">
@@ -636,4 +637,8 @@ function pedLink(name, allSt) {
     .db-grid.view-list .db-card-footer { display: none; }
   }
   @media (max-width: 480px) { .db-grid { grid-template-columns: 1fr; } .db-grid.view-list { grid-template-columns: 1fr; } .db-card-name { font-size: 1.1rem; } }
+
+  .db-disclaimer { font-family: 'Barlow', sans-serif; font-weight: 300; font-size: 0.85rem; font-style: italic; color: var(--sand); margin: 0.6rem 2rem 0; text-align: left; }
+  @media (max-width: 1024px) { .db-disclaimer { margin-left: 1rem; margin-right: 1rem; } }
+  @media (max-width: 768px) { .db-disclaimer { margin-left: 0.75rem; margin-right: 0.75rem; } }
 </style>
