@@ -36,10 +36,10 @@ geneticTest:
 geneticCertificateUrl: ""
 
 social:
-  instagram: ""
+  instagram: "https://www.instagram.com/callmemrvoodoo/"
   facebook: "https://www.facebook.com/CallMeMrVoodoo/"
   tiktok: ""
-  website: "https://equanta.at/stallion-promotion/callmemrvoodoo/"
+  website: ""
 
 pedigree:
   sire: "SHINERS VOODOO DR"
@@ -51,7 +51,7 @@ pedigree:
 pedigreeUrl: "https://beta.allbreedpedigree.com/call+me+mr+voodoo"
 offspringUrl: "https://beta.allbreedpedigree.com/call+me+mr+voodoo/offspring"
 
-videoUrl: ""
+videoUrl: "https://youtu.be/04kiWvXi5qQ?si=5hVZuKCXWPJyeRm5"
 gallery:
   - "/stalloni/call-me-mr-voodoo/gallery1.jpg"
   - "/stalloni/call-me-mr-voodoo/gallery2.jpg"
