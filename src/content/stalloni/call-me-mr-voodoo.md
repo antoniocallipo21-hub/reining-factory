@@ -87,17 +87,20 @@ breeding:
   fee_en: "€1,400"
   semenType: "Fresco / Congelato"
   semenType_en: "FRESH / FROZEN"
-  semenNotes: "Seme fresco, refrigerato e congelato disponibile. Per informazioni contattare Brighenti Performance Horses (IT) o Equanta (EU)."
-  semenNotes_en: "Fresh, cooled and frozen semen available. For information contact Brighenti Performance Horses (IT) or Equanta (EU)."
+  semenNotes: "Seme fresco, refrigerato e congelato disponibile. Concessionaria esclusiva: Lara Maiocchi Stallion Station (IT)."
+  semenNotes_en: "Fresh, cooled and frozen semen available. Exclusive dealer: Lara Maiocchi Stallion Station (IT)."
   status: "ATTIVO"
   status_en: "STANDING"
   statusNotes: "Disponibile per la stagione di monta corrente. Early booking: €1.100."
   statusNotes_en: "Standing for the current breeding season. Early booking: €1,100."
 
 breedingLinks:
+  - label: "Lara Maiocchi Stallion Station (IT)"
+    url: "https://www.instagram.com/lara_maiocchi_stallion_station/"
+    primary: true
   - label: "Equanta (EU)"
     url: "https://equanta.at/stallion-promotion/callmemrvoodoo/"
-    primary: true
+    primary: false
   - label: "IRHBA Catalog (EU)"
     url: "https://www.irhba.com/en/catalog/stallions/557"
     primary: false
