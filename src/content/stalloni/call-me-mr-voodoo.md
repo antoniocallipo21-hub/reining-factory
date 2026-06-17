@@ -9,8 +9,10 @@ badge_hero_en: ""
 yearOfBirth: 2014
 breed: "AQHA"
 color: "Palomino"
-owner: "Brighenti Performance Horses"
-location: "Europa (EU)"
+owner: "Elisabetta Zoccarato"
+location: "Brighenti Performance Horses (EU)"
+height: "N/D"
+height_en: "N/D"
 mainImage: "/stalloni/call-me-mr-voodoo/main.jpg"
 cardImage: "/stalloni/call-me-mr-voodoo/card.jpg"
 heroImages: []
