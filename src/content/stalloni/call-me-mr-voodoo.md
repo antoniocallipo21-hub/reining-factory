@@ -13,6 +13,7 @@ height: "N/D"
 height_en: "N/D"
 owner: "Elisabetta Zoccarato"
 location: "Brighenti Performance Horses (IT, EU)"
+logo: "/stalloni/call-me-mr-voodoo/logo.png"
 mainImage: "/stalloni/call-me-mr-voodoo/main.jpg"
 cardImage: "/stalloni/call-me-mr-voodoo/card.jpg"
 heroImages:
@@ -47,7 +48,7 @@ pedigree:
   grandsire_sire: "SHINING SPARK"
   granddam_sire: "VOODOO CHIC"
   grandsire_dam: "SNAPPER CAL BAR"
-  granddam_dam: "N/D"
+  granddam_dam: "CUTTERS HONEY LADY"
 pedigreeUrl: "https://beta.allbreedpedigree.com/call+me+mr+voodoo"
 offspringUrl: "https://beta.allbreedpedigree.com/call+me+mr+voodoo/offspring"
 
@@ -59,6 +60,15 @@ gallery:
   - "/stalloni/call-me-mr-voodoo/gallery4.jpg"
   - "/stalloni/call-me-mr-voodoo/gallery5.jpg"
   - "/stalloni/call-me-mr-voodoo/gallery6.jpg"
+  - "/stalloni/call-me-mr-voodoo/gallery7.jpg"
+  - "/stalloni/call-me-mr-voodoo/gallery8.jpg"
+  - "/stalloni/call-me-mr-voodoo/gallery9.jpg"
+  - "/stalloni/call-me-mr-voodoo/gallery10.jpg"
+  - "/stalloni/call-me-mr-voodoo/gallery11.jpg"
+  - "/stalloni/call-me-mr-voodoo/gallery12.jpg"
+  - "/stalloni/call-me-mr-voodoo/gallery13.jpg"
+  - "/stalloni/call-me-mr-voodoo/gallery14.jpg"
+  - "/stalloni/call-me-mr-voodoo/gallery15.jpg"
 
 achievements:
   - year: "2017"
@@ -91,19 +101,13 @@ breeding:
   semenNotes_en: "Fresh, cooled and frozen semen available. Exclusive dealer: Lara Maiocchi Stallion Station (IT)."
   status: "ATTIVO"
   status_en: "STANDING"
-  statusNotes: "Disponibile per la stagione di monta corrente. Early booking: €1.100."
-  statusNotes_en: "Standing for the current breeding season. Early booking: €1,100."
+  statusNotes: "Disponibile per la stagione di monta corrente."
+  statusNotes_en: "Standing for the current breeding season."
 
 breedingLinks:
-  - label: "Lara Maiocchi Stallion Station (IT)"
+  - label: "Lara Maiocchi Stallion Station (EU)"
     url: "https://www.instagram.com/lara_maiocchi_stallion_station/"
     primary: true
-  - label: "Equanta (EU)"
-    url: "https://equanta.at/stallion-promotion/callmemrvoodoo/"
-    primary: false
-  - label: "IRHBA Catalog (EU)"
-    url: "https://www.irhba.com/en/catalog/stallions/557"
-    primary: false
 
 origine: "EU"
 isElite: false
