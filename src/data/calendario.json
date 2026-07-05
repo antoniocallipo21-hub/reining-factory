@@ -77,7 +77,16 @@
     "titolo": "World Reining European Continental Championship 2026",
     "luogo": "BO Ranch, La Chapelle, Francia",
     "tipo": "",
-    "linkSchedule": "",
+    "linkSchedule": "https://www.showmanager.info/Eventliste.aspx?turnierID=1793",
+    "linkLivestream": ""
+  },
+  {
+    "dataInizio": "30/06/2026",
+    "dataFine": "04/07/2026",
+    "titolo": "Woodside Slide 2026",
+    "luogo": "Woodside, CA, USA",
+    "tipo": "",
+    "linkSchedule": "https://www.showmanager.info/Eventliste.aspx?turnierID=1916",
     "linkLivestream": ""
   },
   {
@@ -86,7 +95,7 @@
     "titolo": "Brazos Slide 2026",
     "luogo": "Waco, TX, USA",
     "tipo": "",
-    "linkSchedule": "",
+    "linkSchedule": "https://www.showmanager.info/Eventliste.aspx?turnierID=1849",
     "linkLivestream": ""
   },
   {
