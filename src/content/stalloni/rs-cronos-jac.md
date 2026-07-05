@@ -69,6 +69,8 @@ gallery:
   - "/stalloni/rs-cronos-jac/gallery10.jpg"
 
 achievements:
+  - year: "2026"
+    title: "World Reining European Continental Championship Gold Medalist"
   - year: "2025"
     title: "World Reining Championships Senior NP Gold Medalist"
   - year: "2024"
