@@ -2,11 +2,12 @@
 name: "COLONELS SHINING GUN"
 nickname: "JoJo"
 nickname_en: "JoJo"
-badge: "5 MILLION DOLLAR SIRE"
-badge_en: "5 MILLION DOLLAR SIRE"
+badge: "5 Million Dollar Sire"
+badge_en: "5 Million Dollar Sire"
 yearOfBirth: 2007
 breed: "AQHA / APHA"
-color: "Chestnut"
+color: "Sauro"
+color_en: "Chestnut"
 height: "1,50 m"
 height_en: "14.3 h"
 owner: "Katarzyna Roleska"
@@ -88,20 +89,19 @@ offspring:
     earnings: "$108,664"
 
 breeding:
-  fee: "€ 5.000"
-  fee_en: "$5,000"
-  semenType: "Fresco / Congelato / ICSI"
-  semenType_en: "FRESH / FROZEN / ICSI"
+  fee: "$5,000"
+  semenType: "Congelato / ICSI"
+  semenType_en: "Frozen / ICSI"
   semenNotes: "Disponibile fresco presso Colt Company limitatamente. / Seme congelato ed ICSI in Europa."
   semenNotes_en: "Fresh available at Colt Company. / Frozen and ICSI in Europe."
   status: "ATTIVO"
   status_en: "STANDING"
-  statusNotes: "Disponibile per la stagione di monta corrente."
-  statusNotes_en: "Standing for the current breeding season."
+  statusNotes: "Stallone disponibile per la stagione di monta 2026."
+  statusNotes_en: "Stallion standing for the 2026 breeding season."
 
 breedingLinks:
   - label: "Colt Company (USA)"
-    url: "https://coltcompany.com/colonelsshininggun"
+    url: "https://www.coltcompany.com/colonels-shining-gun"
     primary: true
   - label: "Orlandini Equine (EU)"
     url: "https://www.orlandiniequine.com/it/colonels-shining-gun-jojo/"
@@ -112,6 +112,6 @@ breedingLinks:
 
 origine: "USA"
 isElite: true
-isFeatured: false
+isFeatured: true
 tags: ["5 Million Dollar Sire", "WEG Medalist",]
 ---
