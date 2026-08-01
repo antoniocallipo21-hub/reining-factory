@@ -104,7 +104,7 @@
     "titolo": "The Run For A Million",
     "luogo": "Las Vegas, USA",
     "tipo": "",
-    "linkSchedule": "",
+    "linkSchedule": "https://www.showmanager.info/Eventliste.aspx?turnierID=1929",
     "linkLivestream": ""
   },
   {
@@ -113,7 +113,16 @@
     "titolo": "ARHA Futurity & NRHA Show",
     "luogo": "WTC Wr. Neustadt, Austria",
     "tipo": "",
-    "linkSchedule": "",
+    "linkSchedule": "https://www.showmanager.info/Eventliste.aspx?turnierID=1822",
+    "linkLivestream": ""
+  },
+  {
+    "dataInizio": "26/08/2026",
+    "dataFine": "30/08/2026",
+    "titolo": "NRHA Belgium Power Reining Circuit 4",
+    "luogo": "Azelhof Lier, Belgio",
+    "tipo": "",
+    "linkSchedule": "https://www.showmanager.info/Eventliste.aspx?turnierID=1808",
     "linkLivestream": ""
   },
   {
@@ -122,7 +131,7 @@
     "titolo": "100X Tulsa Reining Classic 2026",
     "luogo": "Tulsa, OK, USA",
     "tipo": "",
-    "linkSchedule": "",
+    "linkSchedule": "https://www.showmanager.info/Eventliste.aspx?turnierID=1850",
     "linkLivestream": ""
   },
   {
