@@ -2,8 +2,8 @@
 name: "SPOOKS GOTTA WHIZ"
 nickname: "Baby"
 nickname_en: "Baby"
-badge: "NRHA TRIPLE CROWN WINNER · NRHA HALL OF FAME · 13 MILLION DOLLAR SIRE"
-badge_en: "NRHA TRIPLE CROWN WINNER · NRHA HALL OF FAME · 13 MILLION DOLLAR SIRE"
+badge: "NRHA TRIPLE CROWN WINNER · NRHA HALL OF FAME · 14 MILLION DOLLAR SIRE"
+badge_en: "NRHA TRIPLE CROWN WINNER · NRHA HALL OF FAME · 14 MILLION DOLLAR SIRE"
 yearOfBirth: 2007
 breed: "AQHA / APHA"
 color: "Bay Overo"
@@ -18,12 +18,12 @@ heroImages:
   - "/stalloni/spooks-gotta-whiz/hero1.jpg"
   - "/stalloni/spooks-gotta-whiz/hero2.jpg"
 
-description_it: "Spooks Gotta Whiz è una leggenda del reining moderno. Conosciuto affettuosamente come 'Baby', è uno dei rari cavalli ad aver conquistato la Triple Crown NRHA (Futurity, NRBC e Derby Open Level 4). In aggiunta ai successi individuali, ha rappresentato in modo brillante il Team USA vincendo l'oro ai World Equestrian Games del 2014. Oggi, come riproduttore d'élite, ha superato i 13 milioni di dollari di vincite della sua progenie ed è membro orgoglioso della NRHA Hall of Fame."
-description_en: "Spooks Gotta Whiz is a modern reining legend. Affectionately known as 'Baby', he is one of the rare horses to have captured the NRHA Triple Crown (Level 4 Open Futurity, NRBC, and Derby). Adding to his individual success, he brilliantly represented Team USA by winning gold at the 2014 World Equestrian Games. Today, as an elite sire, his offspring have surpassed 13 million dollars in earnings, earning him an induction into the prestigious NRHA Hall of Fame."
+description_it: "Spooks Gotta Whiz è una leggenda del reining moderno. Conosciuto affettuosamente come 'Baby', è uno dei rari cavalli ad aver conquistato la Triple Crown NRHA (Futurity, NRBC e Derby Open Level 4). In aggiunta ai successi individuali, ha rappresentato in modo brillante il Team USA vincendo l'oro ai World Equestrian Games del 2014. Oggi, come riproduttore d'élite, ha superato i 14 milioni di dollari di vincite della sua progenie ed è membro orgoglioso della NRHA Hall of Fame."
+description_en: "Spooks Gotta Whiz is a modern reining legend. Affectionately known as 'Baby', he is one of the rare horses to have captured the NRHA Triple Crown (Level 4 Open Futurity, NRBC, and Derby). Adding to his individual success, he brilliantly represented Team USA by winning gold at the 2014 World Equestrian Games. Today, as an elite sire, his offspring have surpassed 14 million dollars in earnings, earning him an induction into the prestigious NRHA Hall of Fame."
 
 stats:
   earnings: "$346,000+"
-  sireRecord: "$13M+"
+  sireRecord: "$14M+"
 
 geneticTest:
   HYPP: "N/N"
@@ -118,5 +118,5 @@ breedingLinks:
 origine: "USA"
 isElite: true
 isFeatured: true
-tags: ["NRHA Hall of Fame", "NRHA Triple Crown", "13 Million Dollar Sire"]
+tags: ["NRHA Hall of Fame", "NRHA Triple Crown", "14 Million Dollar Sire"]
 ---

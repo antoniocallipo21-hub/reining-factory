@@ -20,12 +20,12 @@ heroImages:
   - "/stalloni/tricked-out-spook/hero2.jpg"
   - "/stalloni/tricked-out-spook/hero3.jpg"
 
-description_it: "Tricked Out Spook è uno stallone straordinario che combina un'estetica mozzafiato con prestazioni di altissimo livello. Figlio del leggendario Spooks Gotta Gun e di Rowdy Brinna, questo stallone baio con spettacolari macchie bianche (Splash/Overo) ha conquistato le arene americane diventando APHA World Champion nel 2015 e trionfando al Reining By The Bay Open Derby nel 2016. Con oltre $71,000 di vincite personali e una produzione che ha già superato gli $800,000, Tricked Out Spook si è affermato come un riproduttore d'élite, capace di trasmettere atletismo, una mente solida e quel 'look' distintivo che lo ha reso celebre in tutto il mondo."
-description_en: "Tricked Out Spook is an extraordinary stallion that combines breathtaking aesthetics with top-level performance. Sired by the legendary Spooks Gotta Gun and out of Rowdy Brinna, this bay stallion with spectacular white markings (Splash/Overo) conquered American arenas, becoming the 2015 APHA World Champion and winning the 2016 Reining By The Bay Open Derby. With over $71,000 in personal earnings and offspring earnings already exceeding $800,000, Tricked Out Spook has established himself as an elite sire, capable of passing on athleticism, a solid mind, and that distinctive 'look' that has made him famous worldwide."
+description_it: "Tricked Out Spook è uno stallone straordinario che combina un'estetica mozzafiato con prestazioni di altissimo livello. Figlio del leggendario Spooks Gotta Gun e di Rowdy Brinna, questo stallone baio con spettacolari macchie bianche (Splash/Overo) ha conquistato le arene americane diventando APHA World Champion nel 2015 e trionfando al Reining By The Bay Open Derby nel 2016. Con oltre $71,000 di vincite personali e una produzione che ha superato il milione di dollari (NRHA 1 Million Dollar Sire), Tricked Out Spook si è affermato come un riproduttore d'élite, capace di trasmettere atletismo, una mente solida e quel 'look' distintivo che lo ha reso celebre in tutto il mondo."
+description_en: "Tricked Out Spook is an extraordinary stallion that combines breathtaking aesthetics with top-level performance. Sired by the legendary Spooks Gotta Gun and out of Rowdy Brinna, this bay stallion with spectacular white markings (Splash/Overo) conquered American arenas, becoming the 2015 APHA World Champion and winning the 2016 Reining By The Bay Open Derby. With over $71,000 in personal earnings and offspring earnings surpassing $1 million (NRHA 1 Million Dollar Sire), Tricked Out Spook has established himself as an elite sire, capable of passing on athleticism, a solid mind, and that distinctive 'look' that has made him famous worldwide."
 
 stats:
   earnings: "$71,800+"
-  sireRecord: "$867,000+"
+  sireRecord: "$1M+"
 
 geneticTest:
   HYPP: "N/N"

@@ -2,8 +2,8 @@
 name: "COLONELS SMOKING GUN"
 nickname: "Gunner"
 nickname_en: "Gunner"
-badge: "NRHA HALL OF FAME · 15 MILLION DOLLAR SIRE"
-badge_en: "NRHA HALL OF FAME · 15 MILLION DOLLAR SIRE"
+badge: "NRHA HALL OF FAME · 16 MILLION DOLLAR SIRE"
+badge_en: "NRHA HALL OF FAME · 16 MILLION DOLLAR SIRE"
 yearOfBirth: 1993
 yearOfDeath: 2013
 breed: "AQHA / APHA"
@@ -24,7 +24,7 @@ description_en: "Colonels Smoking Gun, better known as 'Gunner', was one of the 
 
 stats:
   earnings: "$177,670+"
-  sireRecord: "$15M+"
+  sireRecord: "$16M+"
 geneticTest:
   HYP: "N/N"
   HERDA: "N/N"
@@ -114,5 +114,5 @@ breedingLinks:
 origine: "USA"
 isElite: true
 isFeatured: false
-tags: ["NRHA Hall of Fame", "15 Million Dollar Sire"]
+tags: ["NRHA Hall of Fame", "16 Million Dollar Sire"]
 ---

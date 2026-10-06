@@ -20,13 +20,13 @@ heroImages:
   - "/stalloni/americannexttopgun/hero2.jpg"
   - "/stalloni/americannexttopgun/hero3.jpg"
 
-description_it: "Conosciuto in tutto il mondo come 'Maverick', Americasnexttopgun è uno degli stalloni più dominanti e iconici dell'era moderna. Figlio del Million Dollar Sire Walla Walla Whiz e della leggendaria Americasnextgunmodel, Maverick ha riscritto la storia del Reining vincendo i titoli più prestigiosi, tra cui l'NRHA Open Derby e l'NRBC Open Derby. Come riproduttore, ha stabilito un record senza precedenti: la sua primissima annata di figli ha già superato i $718,000 di vincite, con una media di oltre $18,000 a soggetto. Oggi Maverick rappresenta l'apice assoluto della selezione genetica mondiale, capace di trasmettere una potenza e un'attitudine alla vittoria fuori dal comune."
-description_en: "Known worldwide as 'Maverick', Americasnexttopgun is one of the most dominant and iconic stallions of the modern era. Sired by the Million Dollar Sire Walla Walla Whiz and out of the legendary Americasnextgunmodel, Maverick has rewritten Reining history by winning the most prestigious titles, including the NRHA Open Derby and the NRBC Open Derby. As a sire, he has set an unprecedented record: his very first foal crop has already surpassed $718,000 in earnings, with an average of over $18,000 per earner. Today, Maverick represents the absolute pinnacle of global genetic selection, capable of passing on extraordinary power and winning attitude."
+description_it: "Conosciuto in tutto il mondo come 'Maverick', Americasnexttopgun è uno degli stalloni più dominanti e iconici dell'era moderna. Figlio del Million Dollar Sire Walla Walla Whiz e della leggendaria Americasnextgunmodel, Maverick ha riscritto la storia del Reining vincendo i titoli più prestigiosi, tra cui l'NRHA Open Derby e l'NRBC Open Derby. Come riproduttore, ha fatto registrare traguardi straordinari: la sua progenie ha già superato il milione di dollari di vincite, confermandolo come NRHA 1 Million Dollar Sire. Oggi Maverick rappresenta l'apice assoluto della selezione genetica mondiale, capace di trasmettere una potenza e un'attitudine alla vittoria fuori dal comune."
+description_en: "Known worldwide as 'Maverick', Americasnexttopgun is one of the most dominant and iconic stallions of the modern era. Sired by the Million Dollar Sire Walla Walla Whiz and out of the legendary Americasnextgunmodel, Maverick has rewritten Reining history by winning the most prestigious titles, including the NRHA Open Derby and the NRBC Open Derby. As a sire, he has reached a remarkable milestone: his offspring have already surpassed $1 million in earnings, earning him the title of NRHA 1 Million Dollar Sire. Today, Maverick represents the absolute pinnacle of global genetic selection, capable of passing on extraordinary power and winning attitude."
 
 stats:
   earnings: "$425,893"
-  offspringEarnings: "$718,000+"
-  sireRecord: "Counting"
+  offspringEarnings: "$1M+"
+  sireRecord: "$1M+"
 
 geneticTest:
   HYPP: "N/N"

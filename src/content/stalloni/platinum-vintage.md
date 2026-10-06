@@ -20,12 +20,12 @@ heroImages:
   - "/stalloni/platinum-vintage/hero1.jpg"
   - "/stalloni/platinum-vintage/hero2.jpg"
 
-description_it: "Platinum Vintage è l'essenza dell'atleticità e dell'eleganza nel reining moderno. Figlio del leggendario A Sparkling Vintage e della grande fattrice Starjac Miss (da Hollywood Jac 86 e A Great Star), questo stallone Palomino ha dominato le arene americane vincendo l'NRHA Open Derby nel 2015 e il Cactus Reining Classic. La sua straordinaria affidabilità lo ha reso la scelta di Andrea Fappani per ben due edizioni del The Run For A Million (2019 e 2021), confermando il suo status tra l'élite mondiale. Con vincite che superano i 390.000 dollari, Platinum Vintage unisce potenza, stile e una genetica solida e collaudata."
-description_en: "Platinum Vintage is the essence of athleticism and elegance in modern reining. Sired by the legendary A Sparkling Vintage and out of the great mare Starjac Miss (by Hollywood Jac 86 and A Great Star), this Palomino stallion dominated American arenas by winning the 2015 NRHA Open Derby and the Cactus Reining Classic. His extraordinary reliability led Andrea Fappani to choose him for two editions of The Run For A Million (2019 and 2021), confirming his status among the world's elite. With earnings exceeding $390,000, Platinum Vintage combines power, style, and a solid, proven pedigree."
+description_it: "Platinum Vintage è l'essenza dell'atleticità e dell'eleganza nel reining moderno. Figlio del leggendario A Sparkling Vintage e della grande fattrice Starjac Miss (da Hollywood Jac 86 e A Great Star), questo stallone Palomino ha dominato le arene americane vincendo l'NRHA Open Derby nel 2015 e il Cactus Reining Classic. La sua straordinaria affidabilità lo ha reso la scelta di Andrea Fappani per ben due edizioni del The Run For A Million (2019 e 2021), confermando il suo status tra l'élite mondiale. Come riproduttore, la sua progenie ha superato il milione di dollari di vincite, certificandolo come NRHA 1 Million Dollar Sire. Platinum Vintage unisce potenza, stile e una genetica solida e collaudata."
+description_en: "Platinum Vintage is the essence of athleticism and elegance in modern reining. Sired by the legendary A Sparkling Vintage and out of the great mare Starjac Miss (by Hollywood Jac 86 and A Great Star), this Palomino stallion dominated American arenas by winning the 2015 NRHA Open Derby and the Cactus Reining Classic. His extraordinary reliability led Andrea Fappani to choose him for two editions of The Run For A Million (2019 and 2021), confirming his status among the world's elite. As a sire, his offspring have surpassed $1 million in earnings, certifying him as an NRHA 1 Million Dollar Sire. Platinum Vintage combines power, style, and a solid, proven pedigree."
 
 stats:
   earnings: "$390,828"
-  sireRecord: "$807,700+"
+  sireRecord: "$1M+"
 
 geneticTest:
   HYP: "N/N"

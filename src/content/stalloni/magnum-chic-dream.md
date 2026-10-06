@@ -17,15 +17,15 @@ heroImages:
   - "/stalloni/magnum-chic-dream/hero2.jpg"
   - "/stalloni/magnum-chic-dream/hero3.jpg"
 
-badge: "NRHA HALL OF FAME · 14 MILLION DOLLAR SIRE"
-badge_en: "NRHA HALL OF FAME · 14 MILLION DOLLAR SIRE"
+badge: "NRHA HALL OF FAME · 15 MILLION DOLLAR SIRE"
+badge_en: "NRHA HALL OF FAME · 15 MILLION DOLLAR SIRE"
 
-description_it: "Pochi cavalli hanno avuto un impatto così profondo e duraturo sull'industria del reining come Magnum Chic Dream. Dopo una carriera sportiva di assoluto rispetto, coronata dal titolo di AQHA World Champion nel Senior Reining e da innumerevoli piazzamenti di vertice, 'Magnum' ha riscritto la storia come riproduttore. Sfondando il tetto dei 14 Milioni di Dollari vinti dai suoi figli (NRHA 14 Million Dollar Sire), si è affermato come una vera e propria leggenda vivente. Figlio del fenomenale Smart Chic Olena e della grande fattrice Sailin Barbee (da Topsail Cody), trasmette costantemente ai suoi puledri una mente eccezionale, un enorme talento sullo spin e stop profondissimi. È il padre di innumerevoli campioni, tra cui Mega Maggie Mae, Taris Designer Genes e Ruf Lil Magnum, rendendo la sua linea di sangue una delle più influenti e ricercate al mondo."
-description_en: "Few horses have had such a profound and lasting impact on the reining industry as Magnum Chic Dream. Following a highly respected show career, crowned by the AQHA World Champion title in Senior Reining and countless top finishes, 'Magnum' rewrote history as a sire. Smashing through the $14 Million mark in offspring earnings (NRHA 14 Million Dollar Sire), he has established himself as a true living legend. Sired by the phenomenal Smart Chic Olena and out of the great mare Sailin Barbee (by Topsail Cody), he consistently passes on an exceptional mind, enormous talent in the spins, and incredibly deep stops to his foals. He is the sire of countless champions, including Mega Maggie Mae, Taris Designer Genes, and Ruf Lil Magnum, making his bloodline one of the most influential and sought-after in the world."
+description_it: "Pochi cavalli hanno avuto un impatto così profondo e duraturo sull'industria del reining come Magnum Chic Dream. Dopo una carriera sportiva di assoluto rispetto, coronata dal titolo di AQHA World Champion nel Senior Reining e da innumerevoli piazzamenti di vertice, 'Magnum' ha riscritto la storia come riproduttore. Sfondando il tetto dei 15 Milioni di Dollari vinti dai suoi figli (NRHA 15 Million Dollar Sire), si è affermato come una vera e propria leggenda vivente. Figlio del fenomenale Smart Chic Olena e della grande fattrice Sailin Barbee (da Topsail Cody), trasmette costantemente ai suoi puledri una mente eccezionale, un enorme talento sullo spin e stop profondissimi. È il padre di innumerevoli campioni, tra cui Mega Maggie Mae, Taris Designer Genes e Ruf Lil Magnum, rendendo la sua linea di sangue una delle più influenti e ricercate al mondo."
+description_en: "Few horses have had such a profound and lasting impact on the reining industry as Magnum Chic Dream. Following a highly respected show career, crowned by the AQHA World Champion title in Senior Reining and countless top finishes, 'Magnum' rewrote history as a sire. Smashing through the $15 Million mark in offspring earnings (NRHA 15 Million Dollar Sire), he has established himself as a true living legend. Sired by the phenomenal Smart Chic Olena and out of the great mare Sailin Barbee (by Topsail Cody), he consistently passes on an exceptional mind, enormous talent in the spins, and incredibly deep stops to his foals. He is the sire of countless champions, including Mega Maggie Mae, Taris Designer Genes, and Ruf Lil Magnum, making his bloodline one of the most influential and sought-after in the world."
 
 stats:
   earnings: "$44,294+"
-  sireRecord: "$14M+"
+  sireRecord: "$15M+"
 
 geneticTest:
   HYPP: "N/N"
@@ -64,8 +64,8 @@ gallery:
   - "/stalloni/magnum-chic-dream/gallery5.jpg"
 
 achievements:
-  - year: "2024"
-    title: "NRHA 14 Million Dollar Sire"
+  - year: "2026"
+    title: "NRHA 15 Million Dollar Sire"
   - year: "2004"
     title: "AQHA World Champion Senior Reining"
   - year: "2000"
@@ -109,5 +109,5 @@ breedingLinks:
 origine: "USA"
 isElite: true
 isFeatured: false
-tags: ["14 Million Dollar Sire", "AQHA World Champion", "Hall of Fame"]
+tags: ["15 Million Dollar Sire", "AQHA World Champion", "Hall of Fame"]
 ---
