@@ -3,10 +3,10 @@ name: "GOLDEN COINS"
 nickname: "Zeus"
 nickname_en: "Zeus"
 slug: "golden-coins"
-badge_card: "2X NRBC LEVEL 4 OPEN CHAMPION"
-badge_card_en: "2X NRBC LEVEL 4 OPEN CHAMPION"
-badge_hero: "2X NRBC LEVEL 4 OPEN CHAMPION · TRFAM OPEN SHOOTOUT CHAMPION"
-badge_hero_en: "2X NRBC LEVEL 4 OPEN CHAMPION · TRFAM OPEN SHOOTOUT CHAMPION"
+badge_card: "2X NRBC LEVEL 4 OPEN CHAMPION · THE RUN FOR A MILLION 2026 CHAMPION"
+badge_card_en: "2X NRBC LEVEL 4 OPEN CHAMPION · THE RUN FOR A MILLION 2026 CHAMPION"
+badge_hero: "2X NRBC LEVEL 4 OPEN CHAMPION · THE RUN FOR A MILLION 2026 CHAMPION (237.5 — WORLD RECORD)"
+badge_hero_en: "2X NRBC LEVEL 4 OPEN CHAMPION · THE RUN FOR A MILLION 2026 CHAMPION (237.5 — WORLD RECORD)"
 yearOfBirth: 2020
 breed: "AQHA"
 color: "Bay"
@@ -22,8 +22,8 @@ heroImages:
   - "/stalloni/golden-coins/hero2.jpg"
   - "/stalloni/golden-coins/hero3.jpg"
 
-description_it: "Golden Coins, conosciuto da tutti come 'Zeus', è l'idolo indiscusso del reining moderno. Questo stallone baio ha riscritto la storia recente della disciplina diventando per due anni consecutivi (2025 e 2026) il Campione Open dell'NRBC, una delle arene più difficili al mondo. Figlio di Spooks Gotta Gun e della grande fattrice Electric Cha Ching, Zeus combina una potenza esplosiva con una eleganza e precisione nei movimenti che lasciano il pubblico senza fiato. Con vincite che superano già i $350,000 in pochissimi anni di carriera, rappresenta il nuovo standard di eccellenza del Reining mondiale, unendo carisma, atleticità e una mentalità da vero fuoriclasse."
-description_en: "Golden Coins, known to everyone as 'Zeus,' is the undisputed idol of modern reining. This bay stallion has rewritten the recent history of the discipline by becoming the NRBC Open Champion for two consecutive years (2025 and 2026), in one of the most challenging arenas in the world. Sired by Spooks Gotta Gun and out of the great mare Electric Cha Ching, Zeus combines explosive power with elegance and precision in movement that leaves the audience breathless. With earnings already exceeding $350,000 in just a few years of competition, he represents the new standard of excellence in world Reining, merging charisma, athleticism, and a true champion mindset."
+description_it: "Golden Coins, conosciuto da tutti come 'Zeus', ha riscritto la storia del reining moderno. Questo stallone baio ha dominato le più grandi arene al mondo: Campione Open dell'NRBC per due anni consecutivi (2025 e 2026) e vincitore del The Run For A Million 2026 con un punteggio di 237.5 — il record assoluto nella storia del reining. Figlio di Spooks Gotta Gun e della grande fattrice Electric Cha Ching, Zeus combina una potenza esplosiva con una eleganza e precisione nei movimenti che lasciano il pubblico senza fiato. Con vincite che superano già i $350,000 in pochissimi anni di carriera, rappresenta il nuovo standard di eccellenza del Reining mondiale."
+description_en: "Golden Coins, known to everyone as 'Zeus,' has rewritten the history of modern reining. This bay stallion has dominated the world's greatest arenas: NRBC Open Champion for two consecutive years (2025 and 2026), and winner of The Run For A Million 2026 with a score of 237.5 — the all-time world record in reining history. Sired by Spooks Gotta Gun and out of the great mare Electric Cha Ching, Zeus combines explosive power with elegance and precision in movement that leaves the audience breathless. With earnings already exceeding $350,000 in just a few years of competition, he represents the new standard of excellence in world Reining."
 
 stats:
   earnings: "$356,131+"
@@ -67,6 +67,8 @@ gallery:
   - "/stalloni/golden-coins/gallery7.jpg"
 
 achievements:
+  - year: "2026"
+    title: "The Run For A Million Champion (237.5 — All-Time World Record)"
   - year: "2026"
     title: "NRBC Level 4 Open Classic Champion"
   - year: "2025"
