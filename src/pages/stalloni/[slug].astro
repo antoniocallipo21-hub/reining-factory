@@ -28,7 +28,7 @@ const firstPart = nameParts.join(' ');
 function getYoutubeEmbed(url) {
   if (!url) return null;
   const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]+)/);
-  return match ? `https://www.youtube.com/embed/${match[1]}` : url;
+  return match ? `https://www.youtube-nocookie.com/embed/${match[1]}` : url;
 }
 const embedUrl = getYoutubeEmbed(horse.videoUrl);
 ---

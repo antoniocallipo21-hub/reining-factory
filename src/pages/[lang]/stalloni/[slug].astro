@@ -1416,7 +1416,7 @@ const panelCount = geneticEntries.length;
               ? horse.videoUrl.replace('vimeo.com/', 'player.vimeo.com/video/') 
               : horse.videoUrl.includes('facebook.com')
                 ? `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(horse.videoUrl)}&show_text=0&width=560`
-                : horse.videoUrl.replace('youtu.be/', 'www.youtube.com/embed/').replace('watch?v=', 'embed/')}
+                : horse.videoUrl.replace('youtu.be/', 'www.youtube-nocookie.com/embed/').replace('watch?v=', 'embed/')}
             title="Video"
             frameborder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
