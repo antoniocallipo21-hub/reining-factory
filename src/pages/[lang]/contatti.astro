@@ -383,7 +383,11 @@ const langPrefix = '/' + lang;
       <div class="contatti-form">
         <p class="form-title">{t('contact.form_title')}</p>
 
-        <form id="contactForm" action="https://formspree.io/f/mjgarddb" method="POST">
+        <form id="contactForm" action="https://api.web3forms.com/submit" method="POST">
+          <input type="hidden" name="access_key" value="d2b138a2-e9dd-4efb-a221-c8020286773f"/>
+          <input type="hidden" name="subject" value="Nuovo messaggio da Reining Factory"/>
+          <input type="hidden" name="from_name" value="Reining Factory Contact"/>
+          <input type="checkbox" name="botcheck" style="display:none"/>
 
           <div class="form-group">
             <label for="nome">{t('contact.form_name')}</label>
@@ -475,7 +479,8 @@ const langPrefix = '/' + lang;
               body: new FormData(form),
               headers: { 'Accept': 'application/json' }
             });
-            if(res.ok) {
+            const data = await res.json();
+            if(data.success) {
               ok.style.display = 'block';
               form.reset();
               btn.disabled = true;
