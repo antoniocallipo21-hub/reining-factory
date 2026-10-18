@@ -166,7 +166,7 @@ const langPrefix = '/' + lang;
       color: rgba(245,240,232,0.5);
       margin-bottom: 0.5rem;
     }
-    .form-group input,
+    .form-group input:not([type="checkbox"]),
     .form-group select,
     .form-group textarea {
       width: 100%;
@@ -182,7 +182,7 @@ const langPrefix = '/' + lang;
       appearance: none;
       border-radius: 0;
     }
-    .form-group input:focus,
+    .form-group input:not([type="checkbox"]):focus,
     .form-group select:focus,
     .form-group textarea:focus {
       border-color: rgba(201,150,58,0.5);
@@ -420,7 +420,7 @@ const langPrefix = '/' + lang;
             </label>
           </div>
 
-          <button type="submit" class="form-submit" id="submitBtn">{t('contact.form_submit')}</button>
+          <button type="submit" class="form-submit" id="submitBtn" disabled>{t('contact.form_submit')}</button>
 
           <div class="form-feedback success" id="feedbackSuccess">
             {t('contact.form_success')}
@@ -453,6 +453,13 @@ const langPrefix = '/' + lang;
       const btn = document.getElementById('submitBtn');
       const ok = document.getElementById('feedbackSuccess');
       const err = document.getElementById('feedbackError');
+      const privacy = document.getElementById('privacyConsent');
+
+      if (privacy) {
+        privacy.addEventListener('change', () => {
+          btn.disabled = !privacy.checked;
+        });
+      }
 
       if (form) {
         form.addEventListener('submit', async function(e){
@@ -471,14 +478,16 @@ const langPrefix = '/' + lang;
             if(res.ok) {
               ok.style.display = 'block';
               form.reset();
+              btn.disabled = true;
             } else {
               err.style.display = 'block';
+              btn.disabled = !privacy.checked;
             }
           } catch(e) {
             err.style.display = 'block';
+            btn.disabled = !privacy.checked;
           }
-          
-          btn.disabled = false;
+
           btn.textContent = submitText;
         });
       }
