@@ -6,6 +6,9 @@ import sitemap from '@astrojs/sitemap';
 export default defineConfig({
   site: 'https://www.reiningfactory.com',
   trailingSlash: 'never',
+  redirects: {
+    '/reining.html': '/it/reining',
+  },
   integrations: [sitemap()],
   server: {
     host: true,
