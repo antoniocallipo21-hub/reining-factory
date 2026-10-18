@@ -385,7 +385,7 @@ const langPrefix = '/' + lang;
 
         <form id="contactForm" action="https://api.web3forms.com/submit" method="POST">
           <input type="hidden" name="access_key" value="d2b138a2-e9dd-4efb-a221-c8020286773f"/>
-          <input type="hidden" name="subject" value="Nuovo messaggio da Reining Factory"/>
+          <input type="hidden" name="subject" id="subjectField" value="Nuovo messaggio da Reining Factory"/>
           <input type="hidden" name="from_name" value="Reining Factory Contact"/>
           <input type="checkbox" name="botcheck" style="display:none"/>
 
@@ -468,6 +468,8 @@ const langPrefix = '/' + lang;
       if (form) {
         form.addEventListener('submit', async function(e){
           e.preventDefault();
+          const oggettoVal = form.querySelector('#oggetto')?.value;
+          if(oggettoVal) document.getElementById('subjectField').value = 'Reining Factory — ' + oggettoVal;
           btn.disabled = true;
           btn.textContent = sendingText;
           ok.style.display = 'none';
