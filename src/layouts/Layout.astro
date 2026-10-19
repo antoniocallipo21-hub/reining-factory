@@ -11,6 +11,21 @@ const {
 
 import { ClientRouter } from 'astro:transitions';
 import { getLangFromUrl, useTranslations } from '../i18n/utils';
+import '@fontsource/bebas-neue/400.css';
+import '@fontsource/playfair-display/400.css';
+import '@fontsource/playfair-display/400-italic.css';
+import '@fontsource/playfair-display/700.css';
+import '@fontsource/playfair-display/900.css';
+import '@fontsource/barlow-condensed/300.css';
+import '@fontsource/barlow-condensed/400.css';
+import '@fontsource/barlow-condensed/600.css';
+import '@fontsource/barlow-condensed/700.css';
+import '@fontsource/barlow/300.css';
+import '@fontsource/barlow/400.css';
+import '@fontsource/barlow/500.css';
+import '@fontsource/dm-sans/300.css';
+import '@fontsource/dm-sans/400.css';
+import '@fontsource/dm-sans/500.css';
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
@@ -26,18 +41,14 @@ const canonicalPath = Astro.url.pathname.replace(/\/$/, '') || '/';
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>{title}</title>
   <meta name="description" content={description}/>
-  <link rel="icon" type="image/png" href="/immagini/favicon.png"/>
+  <link rel="icon" href="/favicon.ico" sizes="any"/>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml"/>
   <link rel="apple-touch-icon" href="/immagini/favicon-180.png"/>
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9951631825010422" crossorigin="anonymous"></script>
   <link rel="canonical" href={`https://www.reiningfactory.com${canonicalPath}`} />
   <link rel="alternate" hreflang="it" href={`https://www.reiningfactory.com${canonicalPath.replace(/^\/(en|it)/, '/it')}`} />
   <link rel="alternate" hreflang="en" href={`https://www.reiningfactory.com${canonicalPath.replace(/^\/(en|it)/, '/en')}`} />
   <link rel="alternate" hreflang="x-default" href={`https://www.reiningfactory.com${canonicalPath.replace(/^\/(en|it)/, '/en')}`} />
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Barlow+Condensed:wght@300;400;600;700&family=Barlow:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap"/>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Barlow+Condensed:wght@300;400;600;700&family=Barlow:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" media="print" onload="this.media='all'"/>
-  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Barlow+Condensed:wght@300;400;600;700&family=Barlow:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap"/></noscript>
   <!-- Iubenda Cookie & Privacy -->
   <link rel="preload" as="script" href="https://cdn.iubenda.com/cs/iubenda_cs.js"/>
   <link rel="preload" as="script" href="https://cdn.iubenda.com/cs/tcf/stub-v2.js"/>
