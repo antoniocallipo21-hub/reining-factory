@@ -1,0 +1,543 @@
+---
+// src/pages/start.astro
+// Landing page reached from the stickers' QR code and from social bios.
+// Lives at /start with no language prefix: Astro i18n only governs [lang]/.
+//
+// The event block is NOT hardcoded. It is assembled in the browser from
+// src/data/calendario.json, so a static build made weeks earlier still shows
+// the right state on the day someone scans.
+
+import calendario from '../data/calendario.json';
+
+/** "DD/MM/YYYY" -> whole days since epoch (UTC). Null when the string is unusable. */
+function toDay(value: unknown): number | null {
+  const m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(String(value ?? '').trim());
+  if (!m) return null;
+  const day = Number(m[1]);
+  const month = Number(m[2]);
+  const year = Number(m[3]);
+  if (month < 1 || month > 12 || day < 1 || day > 31) return null;
+  return Math.floor(Date.UTC(year, month - 1, day) / 86400000);
+}
+
+type RawEvent = {
+  dataInizio?: string;
+  dataFine?: string;
+  titolo?: string;
+  luogo?: string;
+  tipo?: string;
+  linkSchedule?: string;
+  linkLivestream?: string;
+};
+
+// Only the fields the page needs, so the payload stays small.
+const events = (calendario as RawEvent[])
+  .map((e) => {
+    const start = toDay(e.dataInizio);
+    if (start === null) return null;
+    const end = toDay(e.dataFine) ?? start; // single-day events may omit dataFine
+    return {
+      title: (e.titolo ?? '').trim(),
+      place: (e.luogo ?? '').trim(),
+      start,
+      end: Math.max(start, end),
+      live: (e.linkLivestream ?? '').trim(),
+      schedule: (e.linkSchedule ?? '').trim(),
+    };
+  })
+  .filter((e): e is NonNullable<typeof e> => e !== null && e.title !== '')
+  .sort((a, b) => a.start - b.start);
+
+const title = 'Reining Factory';
+const description = 'Pedigrees, bloodlines, earnings and Hall of Fame. All reining in one place.';
+const canonical = 'https://www.reiningfactory.com/start';
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {/* A link hub has little text of its own: keep it out of the index so it
+        never competes with the real pages, but let the links be followed. */}
+    <meta name="robots" content="noindex, follow" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:type" content="website" />
+    <meta name="theme-color" content="#1a1408" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Barlow:wght@300;400&display=swap"
+    />
+  </head>
+
+  <body>
+    <main class="page">
+      <div class="brand">
+        <a class="home" href="/en/" id="home-logo">
+          <img src="/immagini/logo.png" alt="Reining Factory" width="212" height="150" />
+        </a>
+        <p class="slogan">All reining in one place</p>
+        <div class="rule"></div>
+      </div>
+
+      <section class="event" id="event" aria-label="Event" hidden>
+        <div class="now">
+          <span class="dot" id="dot" aria-hidden="true"></span>
+          <span class="tag" id="tag"></span>
+        </div>
+        <h2 id="ev-name"><small id="ev-meta"></small></h2>
+        <div class="stack" id="ev-links"></div>
+      </section>
+
+      <a class="primary" href="/en/" id="home-cta">Explore Reining Factory</a>
+
+      <nav class="social" aria-label="Social">
+        <a href="https://www.instagram.com/reiningfactory" aria-label="Instagram"
+          ><span aria-hidden="true">IG</span></a
+        >
+        <a href="https://www.facebook.com/profile.php?id=61590167892858" aria-label="Facebook"
+          ><span aria-hidden="true">FB</span></a
+        >
+        <a href="https://www.tiktok.com/@reiningfactory" aria-label="TikTok"
+          ><span aria-hidden="true">TT</span></a
+        >
+      </nav>
+
+      <div class="spacer"></div>
+
+      <footer>reiningfactory.com</footer>
+    </main>
+
+    <script type="application/json" id="rf-events" set:html={JSON.stringify(events)} is:inline
+    ></script>
+
+    <script>
+      type Ev = {
+        title: string;
+        place: string;
+        start: number;
+        end: number;
+        live: string;
+        schedule: string;
+      };
+
+      const LEAD = 7; // days before the start the block appears
+      const TAIL = 5; // days after the end it stays, carrying results
+
+      const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+      function readEvents(): Ev[] {
+        const node = document.getElementById('rf-events');
+        if (!node || !node.textContent) return [];
+        try {
+          const parsed = JSON.parse(node.textContent);
+          return Array.isArray(parsed) ? (parsed as Ev[]) : [];
+        } catch {
+          return [];
+        }
+      }
+
+      /** Compare whole UTC days, so the block never flips a day early or late
+          for a visitor in another timezone.
+          If the URL has ?d=YYYY-MM-DD that date is used instead (test override). */
+      function today(): number {
+        const params = new URLSearchParams(location.search);
+        const d = params.get('d');
+        if (d) {
+          const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d);
+          if (m) {
+            const ts = Date.UTC(+m[1], +m[2] - 1, +m[3]) / 86400000;
+            if (!isNaN(ts)) return Math.floor(ts);
+          }
+        }
+        const now = new Date();
+        return Math.floor(
+          Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) / 86400000
+        );
+      }
+
+      function dateRange(start: number, end: number): string {
+        const a = new Date(start * 86400000);
+        const b = new Date(end * 86400000);
+        const tail = `${b.getUTCDate()} ${MONTHS[b.getUTCMonth()]} ${b.getUTCFullYear()}`;
+        if (start === end) return tail;
+        return a.getUTCMonth() === b.getUTCMonth()
+          ? `${a.getUTCDate()}–${tail}`
+          : `${a.getUTCDate()} ${MONTHS[a.getUTCMonth()]} – ${tail}`;
+      }
+
+      type Hit = { ev: Ev; state: 'soon' | 'now' | 'done' };
+
+      function pick(events: Ev[], day: number): Hit | null {
+        let best: Hit | null = null;
+        for (const ev of events) {
+          if (day < ev.start - LEAD || day > ev.end + TAIL) continue;
+          const state: Hit['state'] = day < ev.start ? 'soon' : day <= ev.end ? 'now' : 'done';
+          // A running event always beats one that is merely approaching.
+          if (!best || (state === 'now' && best.state !== 'now') || ev.start < best.ev.start) {
+            best = { ev, state };
+          }
+        }
+        return best;
+      }
+
+      function ghost(href: string, text: string, live = false): HTMLAnchorElement {
+        const a = document.createElement('a');
+        a.className = live ? 'ghost live' : 'ghost';
+        a.href = href;
+        a.textContent = text;
+        a.rel = 'noopener';
+        if (/^https?:/i.test(href)) a.target = '_blank';
+        return a;
+      }
+
+      function render(): void {
+        const section = document.getElementById('event');
+        const dot = document.getElementById('dot');
+        const tag = document.getElementById('tag');
+        const name = document.getElementById('ev-name');
+        const meta = document.getElementById('ev-meta');
+        const links = document.getElementById('ev-links');
+        if (!section || !dot || !tag || !name || !meta || !links) return;
+
+        const hit = pick(readEvents(), today());
+        if (!hit) {
+          (section as HTMLElement).hidden = true;
+          return;
+        }
+
+        const { ev, state } = hit;
+
+        // Nothing useful to offer: don't show an empty panel.
+        const hasLink = (state === 'now' && ev.live) || ev.schedule;
+        if (!hasLink) {
+          (section as HTMLElement).hidden = true;
+          return;
+        }
+
+        const days = ev.start - today();
+        tag.textContent =
+          state === 'now'
+            ? 'On now'
+            : state === 'done'
+              ? 'Just finished'
+              : days <= 1
+                ? 'Starts tomorrow'
+                : `In ${days} days`;
+
+        name.childNodes[0]?.nodeType === Node.TEXT_NODE
+          ? (name.childNodes[0].nodeValue = ev.title + ' ')
+          : name.insertBefore(document.createTextNode(ev.title + ' '), name.firstChild);
+
+        meta.textContent = ev.place ? `${ev.place} · ${dateRange(ev.start, ev.end)}` : dateRange(ev.start, ev.end);
+
+        links.textContent = '';
+        if (state === 'now' && ev.live) links.appendChild(ghost(ev.live, 'Watch live', true));
+        if (ev.schedule) {
+          links.appendChild(ghost(ev.schedule, state === 'done' ? 'Results' : 'Schedule'));
+        }
+
+        section.setAttribute('data-state', state);
+        (dot as HTMLElement).hidden = state !== 'now';
+        (section as HTMLElement).hidden = false;
+      }
+
+      /** The page is English, but an Italian visitor is better served by /it/. */
+      function localiseHomeLinks(): void {
+        if (!/^it\b/i.test(navigator.language || '')) return;
+        for (const id of ['home-logo', 'home-cta']) {
+          const el = document.getElementById(id) as HTMLAnchorElement | null;
+          if (el) el.href = '/it/';
+        }
+      }
+
+      render();
+      localiseHomeLinks();
+    </script>
+
+    <style>
+      /* Committed dark theme: the brand is dark-premium western.
+         Gold is the only accent; the live red is semantic and appears once. */
+      :root {
+        --dark: #1a1408;
+        --panel: #241c0e;
+        --cream: #e8e0d0;
+        --gold: #e0b05a;
+        --sand: #d4b896;
+        --live: #e8734f;
+        --line: rgba(224, 176, 90, 0.2);
+        --muted: rgba(232, 224, 208, 0.58);
+        --label: 'Barlow Condensed', 'Arial Narrow', system-ui, sans-serif;
+        --body: 'Barlow', system-ui, -apple-system, 'Helvetica Neue', sans-serif;
+        color-scheme: dark;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+      }
+
+      body {
+        background:
+          radial-gradient(120% 60% at 50% 0%, rgba(224, 176, 90, 0.12) 0%, rgba(224, 176, 90, 0) 58%),
+          var(--dark);
+        color: var(--cream);
+        font-family: var(--body);
+        font-weight: 300;
+        display: flex;
+        justify-content: center;
+      }
+
+      .page {
+        width: 100%;
+        max-width: 420px;
+        min-height: 100svh;
+        display: flex;
+        flex-direction: column;
+        gap: 26px;
+        padding-block: calc(46px + env(safe-area-inset-top, 0px))
+          calc(28px + env(safe-area-inset-bottom, 0px));
+        padding-left: max(26px, env(safe-area-inset-left, 0px));
+        padding-right: max(26px, env(safe-area-inset-right, 0px));
+      }
+
+      .brand {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 18px;
+      }
+      .home {
+        display: block;
+        line-height: 0;
+      }
+      .brand img {
+        width: 212px;
+        max-width: 100%;
+        height: auto;
+        display: block;
+      }
+
+      .slogan {
+        margin: 0;
+        font-family: var(--label);
+        font-weight: 600;
+        font-size: 13px;
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        color: var(--gold);
+        text-align: center;
+      }
+
+      .rule {
+        width: 46px;
+        height: 1px;
+        background: var(--gold);
+        opacity: 0.45;
+      }
+
+      .event {
+        border: 1px solid var(--line);
+        border-radius: 3px;
+        background: var(--panel);
+        padding: 15px 16px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 13px;
+      }
+      .event[data-state='now'] {
+        border-color: rgba(232, 115, 79, 0.4);
+      }
+      .event[data-state='done'] {
+        border-color: rgba(232, 224, 208, 0.14);
+      }
+
+      .now {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+      }
+      .dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--live);
+        flex-shrink: 0;
+        animation: pulse 2s ease-in-out infinite;
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.35;
+        }
+      }
+
+      .now .tag {
+        font-family: var(--label);
+        font-weight: 600;
+        font-size: 12px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--gold);
+      }
+      .event[data-state='now'] .now .tag {
+        color: var(--live);
+      }
+      .event[data-state='done'] .now .tag {
+        color: var(--muted);
+      }
+
+      .event h2 {
+        margin: 0;
+        font-family: var(--label);
+        font-weight: 500;
+        font-size: 19px;
+        line-height: 1.22;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--cream);
+        text-wrap: balance;
+      }
+      .event h2 small {
+        display: block;
+        font-size: 13px;
+        letter-spacing: 0.12em;
+        color: var(--muted);
+        margin-top: 3px;
+      }
+
+      .ghost {
+        display: block;
+        text-decoration: none;
+        border: 1px solid var(--line);
+        border-radius: 3px;
+        padding: 12px 14px;
+        text-align: center;
+        font-family: var(--label);
+        font-weight: 600;
+        font-size: 15px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--cream);
+        transition:
+          border-color 140ms ease,
+          color 140ms ease;
+      }
+      .ghost:hover {
+        border-color: var(--gold);
+        color: var(--gold);
+      }
+      .ghost.live {
+        border-color: rgba(232, 115, 79, 0.55);
+        color: var(--live);
+      }
+      .ghost.live:hover {
+        border-color: var(--live);
+      }
+
+      .stack {
+        display: flex;
+        flex-direction: column;
+        gap: 9px;
+      }
+
+      .primary {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        background: var(--gold);
+        color: #1a1408;
+        border-radius: 3px;
+        padding: 17px 20px;
+        font-family: var(--label);
+        font-weight: 600;
+        font-size: 17px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        text-align: center;
+        transition: background 160ms ease;
+      }
+      .primary:hover {
+        background: #eec074;
+      }
+
+      .social {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+      }
+      .social a {
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        border: 1px solid var(--line);
+        border-radius: 3px;
+        font-family: var(--label);
+        font-weight: 600;
+        font-size: 15px;
+        letter-spacing: 0.08em;
+        color: var(--sand);
+        transition:
+          border-color 140ms ease,
+          color 140ms ease;
+      }
+      .social a:hover {
+        border-color: var(--gold);
+        color: var(--gold);
+      }
+      /* The official social SVGs drop in here, replacing the two-letter
+         placeholders. Strip their hardcoded fill so they inherit the hover. */
+      .social svg {
+        width: 22px;
+        height: 22px;
+        display: block;
+        fill: currentColor;
+      }
+
+      .spacer {
+        flex: 1 1 auto;
+        min-height: 8px;
+      }
+
+      footer {
+        text-align: center;
+        font-family: var(--label);
+        font-size: 13px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: rgba(232, 224, 208, 0.4);
+      }
+
+      a:focus-visible {
+        outline: 2px solid var(--gold);
+        outline-offset: 3px;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          transition: none !important;
+          animation: none !important;
+        }
+      }
+    </style>
+  </body>
+</html>

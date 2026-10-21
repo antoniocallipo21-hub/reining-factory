@@ -9,7 +9,9 @@ export default defineConfig({
   redirects: {
     '/reining.html': '/it/reining',
   },
-  integrations: [sitemap()],
+  integrations: [sitemap({
+    filter: (page) => !page.includes('/start'),
+  })],
   server: {
     host: true,
     port: 4321,
