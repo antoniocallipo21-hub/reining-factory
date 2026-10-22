@@ -120,6 +120,11 @@ const canonical = 'https://www.reiningfactory.com/start';
     ></script>
 
     <script>
+      import { inject } from '@vercel/analytics';
+      inject();
+    </script>
+
+    <script>
       type Ev = {
         title: string;
         place: string;
