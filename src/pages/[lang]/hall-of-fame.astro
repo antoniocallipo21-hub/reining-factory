@@ -36,6 +36,17 @@ allStallions.forEach(s => {
   }
 });
 
+const allFattrici = await getCollection('fattrici');
+const fattricMap = new Map();
+allFattrici.forEach(f => {
+  if (f.data.name) {
+    fattricMap.set(f.data.name.toLowerCase().trim(), f.id);
+  }
+  if (f.data.nickname) {
+    fattricMap.set(f.data.nickname.toLowerCase().trim(), f.id);
+  }
+});
+
 const processedData = {};
 CATEGORIES.forEach(cat => {
   const catRows = hofData.filter(r => (r.Categoria || '').trim().toLowerCase() === cat);
@@ -49,8 +60,12 @@ CATEGORIES.forEach(cat => {
     // Auto-link horse names if they exist in our DB (prioritize internal link)
     const lowerName = (r.Nome || '').toLowerCase().trim();
     let link = (r.Link || '').trim();
-    if (cat === 'horses' && stallionMap.has(lowerName)) {
-      link = `/stalloni/${stallionMap.get(lowerName)}`;
+    if (cat === 'horses') {
+      if (stallionMap.has(lowerName)) {
+        link = `/stalloni/${stallionMap.get(lowerName)}`;
+      } else if (fattricMap.has(lowerName)) {
+        link = `/fattrici/${fattricMap.get(lowerName)}`;
+      }
     }
 
     groupedByYear[year].push({ ...r, Link: link });
