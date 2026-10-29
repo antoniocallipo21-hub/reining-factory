@@ -2,10 +2,10 @@
 name: "PS MEGA SHINE CHIC"
 nickname: "Crush"
 nickname_en: "Crush"
-badge: "1 MILLION DOLLAR SIRE"
-badge_en: "1 MILLION DOLLAR SIRE"
-badge_hero: "1 MILLION DOLLAR SIRE · TRFAM SHOOTOUT CHAMPION"
-badge_hero_en: "1 MILLION DOLLAR SIRE · TRFAM SHOOTOUT CHAMPION"
+badge: "2 MILLION DOLLAR SIRE"
+badge_en: "2 MILLION DOLLAR SIRE"
+badge_hero: "2 MILLION DOLLAR SIRE · TRFAM SHOOTOUT CHAMPION"
+badge_hero_en: "2 MILLION DOLLAR SIRE · TRFAM SHOOTOUT CHAMPION"
 yearOfBirth: 2013
 breed: "AQHA"
 color: "Sorrel"
@@ -20,8 +20,8 @@ heroImages:
   - "/stalloni/ps-mega-shine-chic/hero1.jpg"
   - "/stalloni/ps-mega-shine-chic/hero2.jpg"
 
-description_it: "PS Mega Shine Chic, meglio conosciuto come 'Crush', è uno degli stalloni più carismatici e performanti degli ultimi anni. Figlio di Shine Chic Shine e della grande fattrice Megas Sugar Baby (da Marthas Mega Jac e Dry Sugar Rose), Crush ha dimostrato il suo immenso talento nelle arene più competitive del mondo, culminando con la vittoria del The Run For A Million Open Shootout nel 2019 sotto la sella di Dany Tremblay. Recentemente consacrato come NRHA Million Dollar Sire (Gennaio 2025), sta dimostrando una costanza eccezionale nel trasmettere la sua potenza, la sua manovrabilità e la sua attitudine vincente a una progenie che sta già scalando le classifiche mondiali."
-description_en: "PS Mega Shine Chic, better known as 'Crush', is one of the most charismatic and high-performing stallions of recent years. Sired by Shine Chic Shine and out of the great mare Megas Sugar Baby (by Marthas Mega Jac and Dry Sugar Rose), Crush proved his immense talent in the world's most competitive arenas, highlighted by winning the 2019 The Run For A Million Open Shootout under the saddle of Dany Tremblay. Recently recognized as an NRHA Million Dollar Sire (January 2025), he is showing exceptional consistency in passing on his power, maneuverability, and winning attitude to offspring that are already climbing the world rankings."
+description_it: "PS Mega Shine Chic, meglio conosciuto come 'Crush', è uno degli stalloni più carismatici e performanti degli ultimi anni. Figlio di Shine Chic Shine e della grande fattrice Megas Sugar Baby (da Marthas Mega Jac e Dry Sugar Rose), Crush ha dimostrato il suo immenso talento nelle arene più competitive del mondo, culminando con la vittoria del The Run For A Million Open Shootout nel 2019 sotto la sella di Dany Tremblay. Consacrato NRHA Million Dollar Sire nel gennaio 2025 e 2 Million Dollar Sire nel 2026, sta dimostrando una costanza eccezionale nel trasmettere la sua potenza, la sua manovrabilità e la sua attitudine vincente a una progenie che sta già scalando le classifiche mondiali."
+description_en: "PS Mega Shine Chic, better known as 'Crush', is one of the most charismatic and high-performing stallions of recent years. Sired by Shine Chic Shine and out of the great mare Megas Sugar Baby (by Marthas Mega Jac and Dry Sugar Rose), Crush proved his immense talent in the world's most competitive arenas, highlighted by winning the 2019 The Run For A Million Open Shootout under the saddle of Dany Tremblay. Recognized as an NRHA Million Dollar Sire in January 2025 and a 2 Million Dollar Sire in 2026, he is showing exceptional consistency in passing on his power, maneuverability, and winning attitude to offspring that are already climbing the world rankings."
 
 stats:
   earnings: "$239,655"
@@ -108,5 +108,5 @@ breedingLinks:
 origine: "USA"
 isElite: true
 isFeatured: false
-tags: ["Million Dollar Sire", "TRFAM Champion", "Sorrel"]
+tags: ["2 Million Dollar Sire", "TRFAM Champion", "Sorrel"]
 ---
