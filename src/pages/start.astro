@@ -186,8 +186,11 @@ const canonical = 'https://www.reiningfactory.com/start';
         for (const ev of events) {
           if (day < ev.start - LEAD || day > ev.end + TAIL) continue;
           const state: Hit['state'] = day < ev.start ? 'soon' : day <= ev.end ? 'now' : 'done';
-          // A running event always beats one that is merely approaching.
-          if (!best || (state === 'now' && best.state !== 'now') || ev.start < best.ev.start) {
+          // Priority: now > soon > done; within same state prefer earlier start.
+          if (!best ||
+              (state === 'now' && best.state !== 'now') ||
+              (state === 'soon' && best.state === 'done') ||
+              (state === best.state && ev.start < best.ev.start)) {
             best = { ev, state };
           }
         }
