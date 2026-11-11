@@ -2,15 +2,28 @@
 interface Props {
   title?: string;
   description?: string;
+  compactNav?: boolean;
 }
 
 const {
   title = "Reining Factory — La Risorsa completa sul Reining",
   description = "Linee di sangue, stalloni, fattrici, eventi e storia del reining. La risorsa italiana più completa su questo sport.",
+  compactNav = false,
 } = Astro.props;
 
 import { ClientRouter } from 'astro:transitions';
 import { getLangFromUrl, useTranslations } from '../i18n/utils';
+import calendarioRaw from '../data/calendario.json';
+
+type RawEvt = { dataInizio?: string; dataFine?: string; titolo?: string; linkLivestream?: string; linkSchedule?: string; linkResults?: string };
+function toDay(v: unknown): number | null {
+  const m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(String(v ?? '').trim());
+  if (!m) return null;
+  return Math.floor(Date.UTC(+m[3], +m[2] - 1, +m[1]) / 86400000);
+}
+const liveEvents = (calendarioRaw as RawEvt[])
+  .map(e => ({ title: (e.titolo ?? '').trim(), start: toDay(e.dataInizio), end: toDay(e.dataFine), live: (e.linkLivestream ?? '').trim(), schedule: (e.linkSchedule ?? '').trim(), results: (e.linkResults ?? '').trim() }))
+  .filter(e => e.start !== null && e.title !== '');
 import '@fontsource/bebas-neue/400.css';
 import '@fontsource/playfair-display/400.css';
 import '@fontsource/playfair-display/400-italic.css';
@@ -98,7 +111,42 @@ const canonicalPath = Astro.url.pathname.replace(/\/$/, '') || '/';
     gtag('config', 'G-V91XK0END2');
   </script>
 </head>
-<body data-astro-transition-scope="header">
+<body data-astro-transition-scope="header" data-compact-nav={compactNav ? '1' : undefined}>
+
+  <!-- LIVE EVENT BANNER -->
+  <div id="live-banner" style="display:none">
+    <span class="live-dot" aria-hidden="true"></span>
+    <span id="live-banner-text"></span>
+    <div class="live-banner-links">
+      <a id="live-banner-watch" href="#" target="_blank" rel="noopener" style="display:none">Watch Live</a>
+      <a id="live-banner-schedule" href="#" style="display:none">Risultati Live</a>
+    </div>
+    <button id="live-banner-close" aria-label="Close">✕</button>
+  </div>
+  <script type="application/json" id="rf-live-events" set:html={JSON.stringify(liveEvents)} is:inline></script>
+  <script is:inline>
+    (function() {
+      var node = document.getElementById('rf-live-events');
+      if (!node) return;
+      var events = JSON.parse(node.textContent || '[]');
+      var today = Math.floor(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate()) / 86400000);
+      var ev = events.find(function(e) { return today >= e.start && today <= (e.end || e.start); });
+      if (!ev) return;
+      var banner = document.getElementById('live-banner');
+      document.getElementById('live-banner-text').textContent = ev.title;
+      if (ev.live) { var w = document.getElementById('live-banner-watch'); w.href = ev.live; w.style.display = ''; }
+      // Schedule button: link to internal programma page, detect lang from path
+      if (ev.results || ev.schedule) {
+        var s = document.getElementById('live-banner-schedule');
+        var langSegment = window.location.pathname.startsWith('/en') ? '/en' : '/it';
+        s.href = langSegment + '/programma';
+        s.style.display = '';
+      }
+      if (sessionStorage.getItem('live-banner-closed') !== '1') banner.style.display = '';
+      document.getElementById('live-banner-close').addEventListener('click', function() { banner.style.display = 'none'; sessionStorage.setItem('live-banner-closed', '1'); });
+    })();
+  </script>
+
   <script is:inline>
     // Istantanea classe scrolled per evitare "vibrazioni" al caricamento
     function checkScroll() {
@@ -120,7 +168,7 @@ const canonicalPath = Astro.url.pathname.replace(/\/$/, '') || '/';
         <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
       </svg>
     </button>
-    <a href={langPrefix + "/"} onclick="closeNav()">{t('nav.home')}</a>
+    <a href={langPrefix} onclick="closeNav()">{t('nav.home')}</a>
     <a href={langPrefix + "/reining"} onclick="closeNav()">{t('nav.reining')}</a>
     <span class="mobile-label">{t('nav.cavalli')}</span>
     <div class="mobile-sub">
@@ -155,11 +203,11 @@ const canonicalPath = Astro.url.pathname.replace(/\/$/, '') || '/';
 
   <!-- NAVBAR -->
   <nav id="navbar">
-    <a href={langPrefix + "/"} class="nav-logo">
+    <a href={langPrefix} class="nav-logo">
       <img src="/immagini/logo.png" alt="Reining Factory" class="logo-img"/>
     </a>
     <ul class="nav-links">
-      <li><a href={langPrefix + "/"}>{t('nav.home')}</a></li>
+      <li><a href={langPrefix}>{t('nav.home')}</a></li>
       <li><a href={langPrefix + "/reining"}>{t('nav.reining')}</a></li>
       <li>
         <a href="#">{t('nav.cavalli')} <span class="arr">▼</span></a>
@@ -372,6 +420,52 @@ const canonicalPath = Astro.url.pathname.replace(/\/$/, '') || '/';
 </html>
 
 <style is:global>
+  /* LIVE BANNER */
+  #live-banner {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 9999;
+    background: #1a0a08;
+    border-bottom: 1px solid rgba(232,115,79,0.4);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 20px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #e8e0d0;
+  }
+  .live-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #e8734f;
+    flex-shrink: 0;
+    animation: livepulse 2s ease-in-out infinite;
+  }
+  @keyframes livepulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  #live-banner-text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .live-banner-links { display: flex; gap: 8px; flex-shrink: 0; }
+  .live-banner-links a {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    text-decoration: none;
+    padding: 3px 10px;
+    border-radius: 2px;
+    transition: background 140ms;
+  }
+  #live-banner-watch { background: rgba(232,115,79,0.18); color: #e8734f; border: 1px solid rgba(232,115,79,0.5); }
+  #live-banner-watch:hover { background: rgba(232,115,79,0.3); }
+  #live-banner-schedule { background: rgba(224,176,90,0.1); color: #e0b05a; border: 1px solid rgba(224,176,90,0.3); }
+  #live-banner-schedule:hover { background: rgba(224,176,90,0.2); }
+  #live-banner-close { background: none; border: none; color: rgba(232,224,208,0.4); cursor: pointer; font-size: 14px; padding: 0 4px; flex-shrink: 0; }
+  #live-banner-close:hover { color: #e8e0d0; }
+  body:has(#live-banner[style*="display: flex"]) #navbar,
+  body:has(#live-banner:not([style*="none"])) #navbar { top: 33px; }
+
   *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
   :root {
     --cream: #f5f0e8;
@@ -408,6 +502,19 @@ const canonicalPath = Astro.url.pathname.replace(/\/$/, '') || '/';
     backdrop-filter: blur(12px);
     padding: 1rem 4rem;
     border-bottom: 1px solid var(--border);
+  }
+  /* Pages that need navbar always compact (e.g. /programma) */
+  body[data-compact-nav] { background: #f5f0e8 !important; }
+  body[data-compact-nav] #navbar {
+    padding: 1rem 4rem !important;
+    transition: none !important;
+    border-bottom: none !important;
+    background: rgba(26,20,8,0.97) !important;
+    backdrop-filter: blur(12px) !important;
+  }
+  body[data-compact-nav] .logo-img {
+    height: 108px !important;
+    transition: none !important;
   }
   .nav-logo { text-decoration: none; display: flex; align-items: center; color: inherit; } /* Forza colore per evitare link blu */
   .logo-img { height: 120px; width: auto; display: block; }
@@ -561,10 +668,8 @@ const canonicalPath = Astro.url.pathname.replace(/\/$/, '') || '/';
   .footer-credits a:hover { color: var(--gold); }
 
   /* BACK TO TOP */
-  .back-top { position: fixed; bottom: 2rem; right: 2rem; z-index: 999; width: 48px; height: 48px; background: transparent; border: 1px solid var(--gold); color: var(--gold); display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0; pointer-events: none; transition: all 0.4s ease; }
-  .back-top::before { content: ''; position: absolute; inset: 0; background: var(--gold); transform: scaleY(0); transform-origin: bottom; transition: transform 0.3s ease; z-index: -1; }
-  .back-top:hover::before { transform: scaleY(1); }
-  .back-top:hover { color: var(--dark); }
+  .back-top { position: fixed; bottom: 2rem; right: 2rem; z-index: 999; width: 48px; height: 48px; border-radius: 50%; background: transparent; border: 1px solid var(--gold); color: var(--gold); display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0; pointer-events: none; transition: background 0.3s ease, color 0.3s ease, opacity 0.4s ease; overflow: hidden; }
+  .back-top:hover { background: var(--gold); color: var(--dark); }
   .back-top.visible { opacity: 1; pointer-events: all; }
   .back-top svg { width: 20px; height: 20px; transition: transform 0.3s ease; }
   .back-top:hover svg { transform: translateY(-3px); }

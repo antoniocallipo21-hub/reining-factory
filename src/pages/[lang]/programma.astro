@@ -1,0 +1,798 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getLangFromUrl } from '../../i18n/utils';
+import calendario from '../../data/calendario.json';
+
+export function getStaticPaths() {
+  return [{ params: { lang: 'it' } }, { params: { lang: 'en' } }];
+}
+
+const lang = getLangFromUrl(Astro.url);
+const isEn = lang === 'en';
+
+type RawEvt = { dataInizio?: string; dataFine?: string; titolo?: string; linkSchedule?: string; linkResults?: string; linkLivestream?: string };
+function toDay(v: unknown): number | null {
+  const m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(String(v ?? '').trim());
+  if (!m) return null;
+  return Math.floor(Date.UTC(+m[3], +m[2] - 1, +m[1]) / 86400000);
+}
+
+const today = Math.floor(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate()) / 86400000);
+const LEAD = 7, TAIL = 5;
+
+type Candidate = { ev: RawEvt & { start: number; end: number }; state: 'now' | 'soon' | 'done' };
+let best: Candidate | null = null;
+for (const e of (calendario as RawEvt[])) {
+  if (!(e.linkResults || e.linkSchedule)) continue;
+  const start = toDay(e.dataInizio);
+  if (start === null) continue;
+  const end = toDay(e.dataFine) ?? start;
+  let state: 'now' | 'soon' | 'done' | null = null;
+  if (today >= start && today <= end) state = 'now';
+  else if (today < start && today >= start - LEAD) state = 'soon';
+  else if (today > end && today <= end + TAIL) state = 'done';
+  if (!state) continue;
+  const candidate = { ev: { ...e, start, end }, state };
+  if (!best ||
+      (state === 'now' && best.state !== 'now') ||
+      (state === 'soon' && best.state === 'done') ||
+      (state === best.state && start < best.ev.start)) {
+    best = candidate;
+  }
+}
+const currentEvent = best?.ev ?? null;
+
+const pageTitle = isEn ? 'Live Results' : 'Risultati Live';
+const hasResults = !!currentEvent?.linkResults;
+---
+
+<Layout title={`${currentEvent?.titolo ?? pageTitle} — Reining Factory`} description={isEn ? 'Live standings and results for current reining events.' : 'Classifiche e risultati live per gli eventi di reining in corso.'} compactNav={true}>
+  <div class="page-wrap">
+    <div class="page-header">
+      <div class="header-inner">
+        <h1 id="page-title">{currentEvent?.titolo ?? pageTitle}</h1>
+        <p id="comp-subtitle" class="comp-subtitle"></p>
+        <span id="last-updated" class="last-updated"></span>
+      </div>
+    </div>
+
+    <div class="content-with-sponsors">
+      <!-- Sponsor slot sinistra -->
+      <aside class="sponsor-col">
+        <a href={`/${lang}/contatti`} class="sponsor-slot">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.35"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+          <span class="sponsor-label">{isEn ? 'Your brand here' : 'Il tuo brand qui'}</span>
+          <span class="sponsor-cta">{isEn ? 'Contact us →' : 'Contattaci →'}</span>
+        </a>
+      </aside>
+
+      <!-- Contenuto principale -->
+      <div class="content">
+        {hasResults ? (
+          <>
+            <!-- Striscia sponsor mobile (sopra tabella) -->
+            <a href={`/${lang}/contatti`} class="sponsor-strip">
+              <span class="sponsor-label">{isEn ? 'Your brand here — Contact us →' : 'Il tuo brand qui — Contattaci →'}</span>
+            </a>
+
+            <div id="main-content"
+              data-results-url={currentEvent?.linkResults}
+              data-lang={lang}>
+              <div id="judges-row" class="judges-row"></div>
+              <div class="content-top-bar">
+                <nav id="tab-nav" class="tab-nav" aria-label="Competitions"></nav>
+                <div class="top-bar-actions">
+                  {(currentEvent?.linkResults || currentEvent?.linkSchedule) && (
+                    <a href={currentEvent.linkResults || currentEvent.linkSchedule} target="_blank" rel="noopener" class="btn-showmanager">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                      Showmanager
+                    </a>
+                  )}
+                  {currentEvent?.linkLivestream && (
+                    <a href={currentEvent.linkLivestream} target="_blank" rel="noopener" class="btn-watch">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                      {isEn ? 'Watch Live' : 'Guarda Live'}
+                    </a>
+                  )}
+                </div>
+              </div>
+              <div id="standings-wrap" class="standings-wrap">
+                <div id="standings-list" hidden>
+                  <div class="table-scroll">
+                    <table class="rf-table" id="standings-table">
+                      <thead id="standings-head"></thead>
+                      <tbody id="standings-body"></tbody>
+                    </table>
+                  </div>
+                  <div id="drawlist-section" hidden>
+                    <div class="section-divider">
+                      <span>{isEn ? 'Still to compete' : 'Ancora da gareggiare'}</span>
+                    </div>
+                    <div class="table-scroll">
+                      <table class="rf-table rf-table--draw">
+                        <thead id="drawlist-head"></thead>
+                        <tbody id="drawlist-body"></tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Striscia sponsor mobile (sotto tabella) -->
+            <a href={`/${lang}/contatti`} class="sponsor-strip">
+              <span class="sponsor-label">{isEn ? 'Your brand here — Contact us →' : 'Il tuo brand qui — Contattaci →'}</span>
+            </a>
+          </>
+        ) : (
+          <p class="no-event">{isEn ? 'No live results available for the current event.' : 'Nessun risultato live disponibile per questo evento.'}</p>
+        )}
+      </div>
+
+      <!-- Sponsor slot destra -->
+      <aside class="sponsor-col">
+        <a href={`/${lang}/contatti`} class="sponsor-slot">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.35"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+          <span class="sponsor-label">{isEn ? 'Your brand here' : 'Il tuo brand qui'}</span>
+          <span class="sponsor-cta">{isEn ? 'Contact us →' : 'Contattaci →'}</span>
+        </a>
+      </aside>
+    </div>
+  </div>
+
+
+  <script>
+    // Runs after every page load, including View Transitions navigations
+    document.addEventListener('astro:page-load', () => {
+      const container = document.getElementById('main-content');
+      if (!container) return; // not on the programma page
+
+      const resultsUrl: string = container.dataset.resultsUrl ?? '';
+      const isEn = container.dataset.lang === 'en';
+      if (!resultsUrl) return;
+
+      const REFRESH_MS = 10 * 1000;
+      let currentPage = 100;
+      let refreshTimer: ReturnType<typeof setTimeout> | undefined;
+      let tabsData: { name: string; page: number }[] = [];
+
+      const fmtTime = (iso: string) =>
+        new Date(iso).toLocaleTimeString(isEn ? 'en-US' : 'it-IT', { hour: '2-digit', minute: '2-digit' });
+
+      function setHidden(id: string, val: boolean) {
+        const el = document.getElementById(id);
+        if (el) el.hidden = val;
+      }
+      function setText(id: string, val: string) {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val;
+      }
+
+      function shortenTabName(name: string) {
+        return name
+          .replace(/^NRHA\s+/i, '').replace(/^IRHA\s+/i, '')
+          .replace(/FUTURITY\s*/i, '').replace(/3\s+YRS\s+OLD\s*/i, '3yo ')
+          .replace(/4\s+YRS\s+OLD\s*/i, '4yo ').replace(/\s+/g, ' ').trim();
+      }
+
+      function renderTabs(tabs: { name: string; page: number }[], activePage: number) {
+        const nav = document.getElementById('tab-nav');
+        if (!nav) return;
+        nav.innerHTML = '';
+        tabs.forEach(tab => {
+          const btn = document.createElement('button');
+          btn.className = 'tab-btn' + (tab.page === activePage ? ' tab-active' : '');
+          btn.textContent = tab.page === 100 ? (isEn ? 'Overall' : 'Totale') : shortenTabName(tab.name);
+          btn.title = tab.name;
+          btn.addEventListener('click', () => loadPage(tab.page));
+          nav.appendChild(btn);
+        });
+      }
+
+      function esc(s: string) {
+        return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      }
+
+      const ISO3: Record<string, string> = {
+        ITA:'IT',FRA:'FR',BEL:'BE',POL:'PL',GER:'DE',DEU:'DE',AUT:'AT',
+        ESP:'ES',USA:'US',SUI:'CH',NED:'NL',GBR:'GB',SWE:'SE',NOR:'NO',
+        DEN:'DK',DAN:'DK',POR:'PT',CZE:'CZ',SLO:'SI',SVK:'SK',CRO:'HR',
+        HUN:'HU',RUS:'RU',UKR:'UA',NZL:'NZ',AUS:'AU',CAN:'CA',MEX:'MX',
+        BRA:'BR',ARG:'AR',RSA:'ZA',ISR:'IL',LUX:'LU',FIN:'FI',ROM:'RO',
+        SRB:'RS',BUL:'BG',SCO:'GB',IRL:'IE',TCH:'CZ',ALG:'DZ',MAR:'MA',
+      };
+      function natFlag(code: string): string {
+        const c2 = ISO3[code.toUpperCase()];
+        if (!c2) return code;
+        return [...c2].map(ch => String.fromCodePoint(0x1F1E6 + ch.charCodeAt(0) - 65)).join('');
+      }
+
+      // Maps showmanager column names to CSS classes
+      function colClass(name: string): string {
+        const n = name.toLowerCase().trim();
+        if (!n) return 'col-nat';
+        if (n === 'place' || n === 'draw') return 'col-place';
+        if (n === 'horse') return 'col-horse';
+        if (n === 'back #') return 'col-num';
+        if (n === 'rider') return 'col-rider';
+        if (n === 'owner') return 'col-owner';
+        if (/^j\d+$/.test(n)) return 'col-score';
+        if (n === 'score' || n === 'total') return 'col-total';
+        if (n.startsWith('go')) return 'col-go';
+        return 'col-score';
+      }
+
+      // Localizes column header names
+      function localize(name: string): string {
+        const map: Record<string, string> = isEn
+          ? { 'Place': 'Pl.', 'Draw': 'Draw', 'Horse': 'Horse', 'Back #': 'N.', 'Rider': 'Rider', 'Owner': 'Owner' }
+          : { 'Place': 'Pos.', 'Draw': 'Draw', 'Horse': 'Cavallo', 'Back #': 'N.', 'Rider': 'Cavaliere', 'Owner': 'Proprietario' };
+        return map[name.trim()] ?? name;
+      }
+
+      function buildHead(headId: string, cols: string[]) {
+        const head = document.getElementById(headId);
+        if (!head || !cols.length) return;
+        const tr = document.createElement('tr');
+        cols.forEach((col) => {
+          const th = document.createElement('th');
+          th.className = colClass(col);
+          th.textContent = localize(col);
+          tr.appendChild(th);
+        });
+        head.innerHTML = '';
+        head.appendChild(tr);
+      }
+
+      // back# is at index 2 in showmanager rows
+      const BACK_IDX = 2;
+
+      let prevScores = new Map<string, string>();
+      let highlightedKeys = new Set<string>();
+
+      function renderStandings(cols: string[], rows: string[][], lastBackNum: string, qualifiedCount: number) {
+        const body = document.getElementById('standings-body');
+        if (!body) return;
+
+        buildHead('standings-head', cols);
+
+        if (lastBackNum) {
+          // showmanager marks the last result with class="mark" — always use it
+          highlightedKeys = new Set([lastBackNum]);
+        } else if (prevScores.size > 0) {
+          // fallback: detect changed scores between refreshes
+          const newKeys = new Set<string>();
+          for (const row of rows) {
+            const key = row[BACK_IDX] ?? '';
+            const prev = prevScores.get(key);
+            const cur = row[row.length - 1] ?? '';
+            if (prev === undefined || prev !== cur) newKeys.add(key);
+          }
+          if (newKeys.size > 0) highlightedKeys = newKeys;
+        }
+
+        body.innerHTML = '';
+        rows.forEach((cells, i) => {
+          const key = cells[BACK_IDX] ?? '';
+          const isQualified = qualifiedCount > 0 && i < qualifiedCount;
+          const isLastQualified = qualifiedCount > 0 && i === qualifiedCount - 1;
+          const tr = document.createElement('tr');
+          let cls = i % 2 === 1 ? 'row-alt' : '';
+          if (isQualified) cls += ' row-finalist';
+          if (isLastQualified) cls += ' row-finalist-last';
+          if (highlightedKeys.has(key)) cls += ' row-new';
+          tr.className = cls.trim();
+          cells.forEach((val, j) => {
+            const td = document.createElement('td');
+            const cls = colClass(cols[j] ?? '');
+            td.className = cls;
+            if (j === 0) {
+              td.innerHTML = '<span class="place-badge">' + esc(val) + '</span>';
+            } else if (cls === 'col-nat') {
+              td.textContent = natFlag(val);
+            } else {
+              td.textContent = val;
+            }
+            tr.appendChild(td);
+          });
+          body.appendChild(tr);
+        });
+
+        prevScores = new Map(rows.map(r => [r[BACK_IDX] ?? '', r[r.length - 1] ?? '']));
+      }
+
+      function renderDrawlist(cols: string[], rows: string[][]) {
+        const section = document.getElementById('drawlist-section');
+        const body = document.getElementById('drawlist-body');
+        if (!section || !body) return;
+        if (!rows.length) { section.hidden = true; return; }
+
+        buildHead('drawlist-head', cols);
+
+        body.innerHTML = '';
+        let altIdx = 0;
+        rows.forEach((cells) => {
+          const tr = document.createElement('tr');
+          if (cells[0] === '__DRAG__') {
+            tr.className = 'row-drag';
+            const td = document.createElement('td');
+            td.colSpan = cols.length || 10;
+            td.className = 'drag-cell';
+            td.innerHTML = '<span class="drag-inner"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15a4 4 0 1 0 8 0a4 4 0 1 0-8 0"/><path d="M7 15v.01"/><path d="M17 17a2 2 0 1 0 4 0a2 2 0 1 0-4 0"/><path d="M10.5 17H17"/><path d="M20 15.2V11a1 1 0 0 0-1-1h-6l-2-5H5v6.5"/><path d="M18 5h-1a1 1 0 0 0-1 1v4"/></svg>Passaggio trattore</span>';
+            tr.appendChild(td);
+          } else if (cells[0] === '__SC__') {
+            tr.className = 'row-scratched';
+            const data = cells.slice(1);
+            data.forEach((val, j) => {
+              const td = document.createElement('td');
+              const cls = colClass(cols[j] ?? '');
+              td.className = cls;
+              if (j === 0) {
+                td.innerHTML = '<span class="place-badge badge-draw"><s>' + esc(val) + '</s></span>';
+              } else if (cls === 'col-nat') {
+                td.innerHTML = '<s>' + esc(natFlag(val)) + '</s>';
+              } else {
+                td.innerHTML = '<s>' + esc(val) + '</s>';
+              }
+              tr.appendChild(td);
+            });
+          } else {
+            tr.className = altIdx % 2 === 1 ? 'row-alt' : '';
+            altIdx++;
+            cells.forEach((val, j) => {
+              const td = document.createElement('td');
+              const cls = colClass(cols[j] ?? '');
+              td.className = cls;
+              if (j === 0) {
+                td.innerHTML = '<span class="place-badge badge-draw">' + esc(val) + '</span>';
+              } else if (cls === 'col-nat') {
+                td.textContent = natFlag(val);
+              } else {
+                td.textContent = val;
+              }
+              tr.appendChild(td);
+            });
+          }
+          body.appendChild(tr);
+        });
+        section.hidden = false;
+      }
+
+      async function loadPage(page: number) {
+        if (page !== currentPage) {
+          prevScores = new Map();
+          highlightedKeys = new Set();
+        }
+        currentPage = page;
+        tabsData.forEach((tab, i) => {
+          const btns = document.querySelectorAll<HTMLButtonElement>('.tab-btn');
+          if (btns[i]) btns[i].classList.toggle('tab-active', tab.page === page);
+        });
+        try {
+          const res = await fetch(`/api/livescore?resultsUrl=${encodeURIComponent(resultsUrl)}&page=${page}`);
+          if (!res.ok) throw new Error();
+          const data = await res.json();
+          const sub = document.getElementById('comp-subtitle');
+          if (sub) sub.textContent = data.compName + (data.section ? ' — ' + data.section : '');
+          renderStandings(data.standingsCols ?? [], data.standings ?? [], data.lastResultBackNum ?? '', data.qualifiedCount ?? 0);
+          renderDrawlist(data.drawlistCols ?? [], data.drawlist ?? []);
+          setText('last-updated', (isEn ? 'Updated ' : 'Aggiornato ') + fmtTime(data.fetchedAt));
+        } catch { /* keep existing standings visible */ }
+        clearTimeout(refreshTimer);
+        refreshTimer = setTimeout(() => loadPage(currentPage), REFRESH_MS);
+      }
+
+      async function loadInitial() {
+        try {
+          const res = await fetch(`/api/livescore?resultsUrl=${encodeURIComponent(resultsUrl)}&page=100`);
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          const data = await res.json();
+
+          tabsData = data.tabs ?? [];
+          renderTabs(tabsData, 100);
+
+          const sub = document.getElementById('comp-subtitle');
+          if (sub) sub.textContent = data.compName + (data.section ? ' — ' + data.section : '');
+
+          if (data.judges?.length) {
+            const jRow = document.getElementById('judges-row');
+            if (jRow && jRow.childElementCount === 0) {
+              data.judges.forEach((j: string) => {
+                const span = document.createElement('span');
+                span.className = 'judge-chip';
+                span.textContent = j;
+                jRow.appendChild(span);
+              });
+            }
+          }
+
+          renderStandings(data.standingsCols ?? [], data.standings ?? [], data.lastResultBackNum ?? '', data.qualifiedCount ?? 0);
+          renderDrawlist(data.drawlistCols ?? [], data.drawlist ?? []);
+          setText('last-updated', (isEn ? 'Updated ' : 'Aggiornato ') + fmtTime(data.fetchedAt));
+          setHidden('standings-list', false);
+        } catch (err) {
+          console.error('[programma] loadInitial error:', err);
+        }
+        clearTimeout(refreshTimer);
+        refreshTimer = setTimeout(() => loadPage(currentPage), REFRESH_MS);
+      }
+
+      // Clean up timer when navigating away
+      document.addEventListener('astro:before-preparation', () => clearTimeout(refreshTimer), { once: true });
+
+      loadInitial();
+    });
+  </script>
+</Layout>
+
+<style>
+
+  /* 173px = 140px navbar compact + 33px live banner (worst case, harmless gap if no banner) */
+  .page-wrap { min-height: 80vh; padding-top: 173px; }
+  .page-header {
+    position: sticky;
+    top: 173px;
+    z-index: 100;
+    padding: 1rem 2rem 0.9rem;
+    border-bottom: 1px solid rgba(201,150,58,0.15);
+    background: rgba(26,20,8,0.97);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+  .header-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .header-inner h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(1.5rem, 2.8vw, 2.2rem);
+    letter-spacing: 0.04em;
+    color: var(--cream);
+    margin: 0;
+    line-height: 1;
+  }
+  .comp-subtitle {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.82rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(224,176,90,0.75);
+    margin: 0;
+  }
+  .last-updated {
+    font-family: 'Barlow Condensed', sans-serif; font-size: 0.65rem;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: rgba(245,240,232,0.2);
+    margin-left: auto;
+  }
+  .content-top-bar {
+    display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+    flex-wrap: wrap; margin-bottom: 1rem;
+  }
+  .top-bar-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .btn-showmanager {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: transparent; color: rgba(26,20,8,0.4);
+    border: 1px solid rgba(26,20,8,0.15);
+    padding: 5px 11px; border-radius: 5px;
+    font-family: 'Barlow Condensed', sans-serif; font-size: 0.72rem;
+    letter-spacing: 0.12em; text-transform: uppercase; text-decoration: none;
+    transition: color 0.2s, border-color 0.2s; flex-shrink: 0;
+  }
+  .btn-showmanager:hover { color: rgba(26,20,8,0.7); border-color: rgba(26,20,8,0.3); }
+  .btn-watch {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(232,115,79,0.12); color: #e8734f;
+    border: 1px solid rgba(232,115,79,0.35);
+    padding: 5px 12px; border-radius: 5px;
+    font-family: 'Barlow Condensed', sans-serif; font-size: 0.75rem;
+    letter-spacing: 0.15em; text-transform: uppercase; text-decoration: none;
+    transition: background 0.2s; flex-shrink: 0;
+  }
+  .btn-watch:hover { background: rgba(232,115,79,0.22); }
+
+  /* Layout a 3 colonne: sponsor | contenuto | sponsor */
+  .content-with-sponsors {
+    display: grid;
+    grid-template-columns: 160px 1fr 160px;
+    gap: 1.5rem;
+    max-width: 1480px;
+    margin: 0 auto;
+    padding: 1.5rem 2rem 4rem;
+    align-items: start;
+  }
+  @media (max-width: 1280px) {
+    .content-with-sponsors {
+      grid-template-columns: 1fr;
+    }
+    .sponsor-col { display: none; }
+  }
+  .content { min-width: 0; }
+
+  /* Sponsor slot */
+  .sponsor-col { }
+  .sponsor-slot {
+    position: sticky;
+    top: 250px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 160px;
+    min-height: 320px;
+    padding: 1.5rem 1rem;
+    border: 1.5px dashed rgba(201,150,58,0.3);
+    border-radius: 10px;
+    background: rgba(201,150,58,0.03);
+    text-decoration: none;
+    transition: border-color 0.2s, background 0.2s;
+    text-align: center;
+  }
+  .sponsor-slot:hover {
+    border-color: rgba(201,150,58,0.6);
+    background: rgba(201,150,58,0.07);
+  }
+  .sponsor-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.72rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(26,20,8,0.3);
+    line-height: 1.4;
+  }
+  .sponsor-cta {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(201,150,58,0.6);
+  }
+  .sponsor-slot:hover .sponsor-cta { color: #c9963a; }
+
+  .state-msg {
+    display: flex; align-items: center; gap: 12px; padding: 3rem 0;
+    font-family: 'Barlow Condensed', sans-serif; font-size: 0.85rem;
+    letter-spacing: 0.15em; text-transform: uppercase; color: rgba(245,240,232,0.4);
+  }
+  .spinner {
+    width: 20px; height: 20px; flex-shrink: 0;
+    border: 2px solid rgba(224,176,90,0.2); border-top-color: var(--gold);
+    border-radius: 50%; animation: spin 0.8s linear infinite;
+  }
+  .link-ext { color: var(--gold); font-family: 'Barlow Condensed', sans-serif; font-size: 0.85rem; }
+  .no-event { color: rgba(26,20,8,0.4); font-family: 'Barlow Condensed', sans-serif; padding: 4rem 0; }
+
+  /* Judges */
+  .judges-row {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    margin-bottom: 1.2rem;
+  }
+  .judges-row :global(.judge-chip) {
+    font-family: 'Barlow Condensed', sans-serif; font-size: 0.72rem;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: rgba(26,20,8,0.5); background: rgba(201,150,58,0.08);
+    border: 1px solid rgba(201,150,58,0.2); padding: 3px 9px; border-radius: 3px;
+  }
+
+  /* Tabs */
+  .tab-nav {
+    display: flex; flex-wrap: wrap; gap: 4px;
+    margin-bottom: 1.2rem;
+    border-bottom: 1px solid rgba(26,20,8,0.1);
+    padding-bottom: 1rem;
+  }
+  .tab-nav :global(.tab-btn) {
+    font-family: 'Barlow Condensed', sans-serif; font-size: 0.78rem;
+    letter-spacing: 0.15em; text-transform: uppercase;
+    color: rgba(26,20,8,0.45); background: transparent;
+    border: 1px solid transparent; padding: 5px 12px; border-radius: 4px;
+    cursor: pointer; transition: color 0.15s, border-color 0.15s, background 0.15s;
+    white-space: nowrap;
+  }
+  .tab-nav :global(.tab-btn:hover) { color: rgba(26,20,8,0.75); border-color: rgba(26,20,8,0.15); }
+  .tab-nav :global(.tab-btn.tab-active) {
+    color: #7a5518; border-color: rgba(201,150,58,0.5);
+    background: rgba(201,150,58,0.15);
+  }
+
+  /* ── Table wrapper — card bianca, no scroll ── */
+  .standings-wrap { }
+  .table-scroll {
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 2px 16px rgba(26,20,8,0.1);
+    border: 1px solid rgba(201,150,58,0.15);
+  }
+
+  /* ── Tabella RF ── */
+  :global(.rf-table) {
+    width: 100%; border-collapse: collapse;
+    font-family: 'Barlow Condensed', sans-serif;
+    background: #fff;
+  }
+
+  /* Intestazione oro con testo bianco */
+  :global(.rf-table thead tr) {
+    background: #c9963a;
+    border: none;
+  }
+  :global(.rf-table th) {
+    padding: 0.5rem 0.5rem;
+    font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase;
+    color: #fff; font-weight: 600;
+    text-align: left;
+    white-space: nowrap; overflow: hidden;
+  }
+
+  /* Righe dati — bianco / oro chiaro alternati */
+  :global(.rf-table tbody tr) {
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    background: #fff;
+    transition: background 0.12s;
+  }
+  :global(.rf-table tbody tr:hover) { background: #f5e9d0; }
+  :global(.rf-table tbody tr.row-alt) { background: #fdf4e3; }
+  :global(.rf-table tbody tr.row-alt:hover) { background: #f5e9d0; }
+
+  /* Finalist rows — only the place badge goes gold, row bg stays normal */
+  :global(.rf-table tbody tr.row-finalist .place-badge) {
+    background: #c9963a;
+    color: #fff;
+    border-color: #c9963a;
+  }
+  :global(.rf-table tbody tr.row-finalist-last) {
+    border-bottom: 2px solid rgba(201,150,58,0.4) !important;
+  }
+
+  :global(.rf-table tbody tr.row-new) {
+    background: #f5c842 !important;
+    box-shadow: inset 4px 0 0 #c9963a, inset -4px 0 0 #c9963a;
+  }
+  :global(.rf-table tbody tr.row-new td) {
+    color: #1a150a !important;
+    font-weight: 600;
+  }
+
+  :global(.rf-table td) {
+    padding: 0.55rem 0.5rem;
+    font-size: 0.84rem; letter-spacing: 0.02em;
+    color: #1a150a;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    vertical-align: middle;
+  }
+
+  /* Colonne — dimensioni naturali, il browser distribuisce lo spazio */
+  :global(.rf-table .col-place) { width: 54px;     text-align: center; white-space: nowrap; }
+  :global(.rf-table .col-horse) { min-width: 150px; font-size: 0.9rem; letter-spacing: 0.03em; color: #1a150a; font-weight: 600; }
+  :global(.rf-table .col-num)   { width: 44px;     text-align: center; color: rgba(26,21,10,0.35); }
+  :global(.rf-table .col-rider) { min-width: 130px; color: #2a200e; }
+  :global(.rf-table .col-nat)   { width: 36px;     text-align: center; font-size: 1rem; }
+  :global(.rf-table .col-owner) { min-width: 110px; color: rgba(26,21,10,0.4); font-size: 0.78rem; }
+  :global(.rf-table .col-score) { width: 52px;     text-align: right; color: rgba(26,21,10,0.5); font-size: 0.8rem; }
+  :global(.rf-table .col-go)    { width: 58px;     text-align: right; color: rgba(26,21,10,0.6); }
+  :global(.rf-table .col-total) {
+    width: 72px; text-align: right;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem; letter-spacing: 0.04em;
+    color: #c9963a;
+  }
+
+  /* Place badge */
+  :global(.rf-table .place-badge) {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 30px; height: 30px; border-radius: 50%;
+    font-family: 'Barlow Condensed', sans-serif; font-size: 0.82rem; font-weight: 600;
+    background: rgba(201,150,58,0.1);
+    color: #9a7020;
+    border: 1px solid rgba(201,150,58,0.25);
+  }
+  :global(.rf-table .badge-draw) {
+    background: transparent;
+    color: rgba(26,21,10,0.3);
+    border-color: rgba(26,21,10,0.12);
+    font-size: 0.72rem;
+  }
+
+  /* Drawlist separator */
+  .section-divider {
+    display: flex; align-items: center; gap: 1rem;
+    padding: 2rem 0 0.75rem;
+  }
+  .section-divider span {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.62rem; letter-spacing: 0.3em; text-transform: uppercase;
+    color: rgba(26,20,8,0.3); white-space: nowrap;
+  }
+  .section-divider::after {
+    content: ''; flex: 1; height: 1px; background: rgba(26,20,8,0.1);
+  }
+
+  /* Drawlist — leggermente dimmer */
+  :global(.rf-table--draw tbody tr) { opacity: 0.7; }
+  :global(.rf-table--draw tbody tr:hover) { opacity: 1; }
+
+  /* Riga passaggio trattore */
+  :global(.rf-table--draw tbody tr.row-drag) {
+    opacity: 1;
+    background: #c9963a !important;
+  }
+  :global(.rf-table--draw tbody tr.row-drag:hover) { background: #b8872e !important; }
+  :global(.drag-cell) {
+    padding: 0.5rem 0.75rem !important;
+    text-align: center;
+  }
+  :global(.drag-inner) {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: 'Barlow Condensed', sans-serif; font-size: 0.7rem;
+    letter-spacing: 0.22em; text-transform: uppercase;
+    color: #fff;
+  }
+
+  /* Riga scratched (ritirati) */
+  :global(.rf-table--draw tbody tr.row-scratched) {
+    opacity: 0.55;
+    background: rgba(180, 60, 60, 0.18) !important;
+  }
+  :global(.rf-table--draw tbody tr.row-scratched:hover) {
+    opacity: 0.75;
+    background: rgba(180, 60, 60, 0.26) !important;
+  }
+  :global(.rf-table--draw tbody tr.row-scratched s) {
+    text-decoration: line-through;
+    text-decoration-color: rgba(220, 80, 80, 0.9);
+    text-decoration-thickness: 2px;
+  }
+
+  /* Sponsor strip — mobile only, hidden on desktop */
+  .sponsor-strip {
+    display: none;
+    width: 100%; padding: 10px 14px;
+    margin: 0.75rem 0;
+    border: 1.5px dashed rgba(201,150,58,0.3);
+    border-radius: 8px;
+    background: rgba(201,150,58,0.03);
+    text-decoration: none;
+    text-align: center;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .sponsor-strip:hover { border-color: rgba(201,150,58,0.6); background: rgba(201,150,58,0.07); }
+  .sponsor-strip .sponsor-label {
+    font-family: 'Barlow Condensed', sans-serif; font-size: 0.7rem;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: rgba(26,20,8,0.35);
+  }
+
+  @media (max-width: 1280px) {
+    .sponsor-strip { display: block; }
+  }
+
+  /* Mobile table — tutto compatto, niente scroll */
+  @media (max-width: 700px) {
+    .content-with-sponsors { padding: 1rem 0.75rem 3rem; }
+
+    :global(.rf-table td) { padding: 0.35rem 0.3rem; font-size: 0.72rem; }
+    :global(.rf-table th) { padding: 0.4rem 0.3rem; font-size: 0.52rem; }
+
+    :global(.rf-table .col-place) { width: 36px; }
+    :global(.rf-table .col-horse) { min-width: 90px; font-size: 0.74rem; }
+    :global(.rf-table .col-rider) { min-width: 80px; font-size: 0.72rem; }
+    :global(.rf-table .col-total) { width: 52px; font-size: 0.9rem; }
+    :global(.rf-table .col-go)    { width: 42px; font-size: 0.7rem; }
+
+    /* Nascondi su mobile: numero pettorale, proprietario, voti singoli giudici */
+    :global(.rf-table .col-num),
+    :global(.rf-table .col-owner),
+    :global(.rf-table .col-score) { display: none; }
+
+    :global(.rf-table .place-badge) { width: 24px; height: 24px; font-size: 0.7rem; }
+
+    .judges-row { display: none; }
+    .last-updated { display: none; }
+  }
+</style>
