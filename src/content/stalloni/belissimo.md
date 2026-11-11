@@ -63,6 +63,8 @@ gallery:
   - "/stalloni/belissimo/gallery4.jpg"
   - "/stalloni/belissimo/gallery5.jpg"
   - "/stalloni/belissimo/gallery6.jpg"
+  - "/stalloni/belissimo/gallery7.jpg"
+  - "/stalloni/belissimo/gallery8.jpg"
 
 achievements:
   - year: "2025"

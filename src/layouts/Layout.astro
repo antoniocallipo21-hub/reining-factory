@@ -24,6 +24,8 @@ function toDay(v: unknown): number | null {
 const liveEvents = (calendarioRaw as RawEvt[])
   .map(e => ({ title: (e.titolo ?? '').trim(), start: toDay(e.dataInizio), end: toDay(e.dataFine), live: (e.linkLivestream ?? '').trim(), schedule: (e.linkSchedule ?? '').trim(), results: (e.linkResults ?? '').trim() }))
   .filter(e => e.start !== null && e.title !== '');
+const todayDay = Math.floor(Date.now() / 86400000);
+const hasLiveBanner = liveEvents.some(e => todayDay >= (e.start ?? Infinity) && todayDay <= (e.end ?? e.start ?? -Infinity));
 import '@fontsource/bebas-neue/400.css';
 import '@fontsource/playfair-display/400.css';
 import '@fontsource/playfair-display/400-italic.css';
@@ -111,7 +113,7 @@ const canonicalPath = Astro.url.pathname.replace(/\/$/, '') || '/';
     gtag('config', 'G-V91XK0END2');
   </script>
 </head>
-<body data-astro-transition-scope="header" data-compact-nav={compactNav ? '1' : undefined}>
+<body data-astro-transition-scope="header" data-compact-nav={compactNav ? '1' : undefined} data-live-banner={hasLiveBanner ? '1' : undefined}>
 
   <!-- LIVE EVENT BANNER -->
   <div id="live-banner" style="display:none">
@@ -131,7 +133,7 @@ const canonicalPath = Astro.url.pathname.replace(/\/$/, '') || '/';
       var events = JSON.parse(node.textContent || '[]');
       var today = Math.floor(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate()) / 86400000);
       var ev = events.find(function(e) { return today >= e.start && today <= (e.end || e.start); });
-      if (!ev) return;
+      if (!ev) { document.body.removeAttribute('data-live-banner'); return; }
       var banner = document.getElementById('live-banner');
       document.getElementById('live-banner-text').textContent = ev.title;
       if (ev.live) { var w = document.getElementById('live-banner-watch'); w.href = ev.live; w.style.display = ''; }
@@ -142,8 +144,16 @@ const canonicalPath = Astro.url.pathname.replace(/\/$/, '') || '/';
         s.href = langSegment + '/programma';
         s.style.display = '';
       }
-      if (sessionStorage.getItem('live-banner-closed') !== '1') banner.style.display = '';
-      document.getElementById('live-banner-close').addEventListener('click', function() { banner.style.display = 'none'; sessionStorage.setItem('live-banner-closed', '1'); });
+      if (sessionStorage.getItem('live-banner-closed') === '1') {
+        document.body.removeAttribute('data-live-banner');
+      } else {
+        banner.style.display = '';
+      }
+      document.getElementById('live-banner-close').addEventListener('click', function() {
+        banner.style.display = 'none';
+        document.body.removeAttribute('data-live-banner');
+        sessionStorage.setItem('live-banner-closed', '1');
+      });
     })();
   </script>
 
@@ -463,8 +473,7 @@ const canonicalPath = Astro.url.pathname.replace(/\/$/, '') || '/';
   #live-banner-schedule:hover { background: rgba(224,176,90,0.2); }
   #live-banner-close { background: none; border: none; color: rgba(232,224,208,0.4); cursor: pointer; font-size: 14px; padding: 0 4px; flex-shrink: 0; }
   #live-banner-close:hover { color: #e8e0d0; }
-  body:has(#live-banner[style*="display: flex"]) #navbar,
-  body:has(#live-banner:not([style*="none"])) #navbar { top: 33px; }
+  body[data-live-banner="1"] #navbar { top: 33px; }
 
   *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
   :root {

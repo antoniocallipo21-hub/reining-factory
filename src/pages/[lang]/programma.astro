@@ -55,6 +55,21 @@ const hasResults = !!currentEvent?.linkResults;
         <span id="last-updated" class="last-updated"></span>
       </div>
     </div>
+    <script is:inline>
+      (function() {
+        function syncNavBottom() {
+          var nav = document.getElementById('navbar');
+          if (!nav) return;
+          document.documentElement.style.setProperty('--nav-bottom', Math.round(nav.getBoundingClientRect().bottom) + 'px');
+        }
+        syncNavBottom();
+        window.addEventListener('resize', syncNavBottom);
+        window.addEventListener('load', syncNavBottom);
+        document.addEventListener('click', function(e) {
+          if (e.target && e.target.closest && e.target.closest('#live-banner-close')) requestAnimationFrame(syncNavBottom);
+        });
+      })();
+    </script>
 
     <div class="content-with-sponsors">
       <!-- Sponsor slot sinistra -->
@@ -427,19 +442,17 @@ const hasResults = !!currentEvent?.linkResults;
 
 <style>
 
-  /* 173px = 140px navbar compact + 33px live banner (worst case, harmless gap if no banner) */
-  .page-wrap { min-height: 80vh; padding-top: 173px; }
+  .page-wrap { min-height: 80vh; padding-top: var(--nav-bottom, 140px); }
   .page-header {
     position: sticky;
-    top: 173px;
+    top: var(--nav-bottom, 140px);
     z-index: 100;
     padding: 1rem 2rem 0.9rem;
     border-bottom: 1px solid rgba(201,150,58,0.15);
     background: rgba(26,20,8,0.97);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-  }
-  .header-inner {
+  }  .header-inner {
     max-width: 1100px;
     margin: 0 auto;
     display: flex;
