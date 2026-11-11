@@ -12,7 +12,13 @@ trailingSlash: 'never',
     '/reining.html': '/it/reining',
   },
   integrations: [sitemap({
-    filter: (page) => !page.includes('/start'),
+    filter: (page) => {
+      const path = new URL(page).pathname.replace(/\/$/, '');
+      if (path === '' || path.includes('/start') || path.includes('_template')) return false;
+      // /stalloni/<slug> without language only redirects to /it/stalloni/<slug>
+      if (path.startsWith('/stalloni/')) return false;
+      return true;
+    },
   })],
   server: {
     host: true,
