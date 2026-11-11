@@ -126,7 +126,7 @@ const canonicalPath = Astro.url.pathname.replace(/\/$/, '') || '/';
     <button id="live-banner-close" aria-label="Close">✕</button>
   </div>
   <script type="application/json" id="rf-live-events" set:html={JSON.stringify(liveEvents)} is:inline></script>
-  <script is:inline>
+  <script is:inline data-astro-rerun>
     (function() {
       var node = document.getElementById('rf-live-events');
       if (!node) return;

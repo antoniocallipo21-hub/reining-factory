@@ -55,7 +55,7 @@ const hasResults = !!currentEvent?.linkResults;
         <span id="last-updated" class="last-updated"></span>
       </div>
     </div>
-    <script is:inline>
+    <script is:inline data-astro-rerun>
       (function() {
         function syncNavBottom() {
           var nav = document.getElementById('navbar');
@@ -63,8 +63,11 @@ const hasResults = !!currentEvent?.linkResults;
           document.documentElement.style.setProperty('--nav-bottom', Math.round(nav.getBoundingClientRect().bottom) + 'px');
         }
         syncNavBottom();
+        if (window.__rfNavSync) return;
+        window.__rfNavSync = true;
         window.addEventListener('resize', syncNavBottom);
         window.addEventListener('load', syncNavBottom);
+        document.addEventListener('astro:page-load', syncNavBottom);
         document.addEventListener('click', function(e) {
           if (e.target && e.target.closest && e.target.closest('#live-banner-close')) requestAnimationFrame(syncNavBottom);
         });
