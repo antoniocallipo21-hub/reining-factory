@@ -2,8 +2,8 @@
 name: "COLONELS SHINING GUN"
 nickname: "JoJo"
 nickname_en: "JoJo"
-badge: "5 Million Dollar Sire"
-badge_en: "5 Million Dollar Sire"
+badge: "6 Million Dollar Sire"
+badge_en: "6 Million Dollar Sire"
 yearOfBirth: 2007
 breed: "AQHA / APHA"
 color: "Sauro"
@@ -19,12 +19,12 @@ heroImages:
   - "/stalloni/colonels-shining-gun/hero1.jpg"
   - "/stalloni/colonels-shining-gun/hero2.jpg"
 
-description_it: "Colonels Shining Gun, affettuosamente conosciuto come 'Jo Jo', è un formidabile figlio di Gunner e nipote di Shining Spark. Con le sue straordinarie doti atletiche ha conquistato i campi gara in Europa e negli USA, aggiudicandosi l'NRHA European Open Derby e una medaglia a squadre ai World Equestrian Games. Si è affermato rapidamente come riproduttore di caratura mondiale superando i 5 milioni di dollari di vincite per la sua progenie."
-description_en: "Colonels Shining Gun, affectionately known as 'Jo Jo', is an outstanding son of Gunner and grandson of Shining Spark. With his extraordinary athletic abilities, he dominated both in Europe and the USA, winning the NRHA European Open Derby and earning a WEG team medal. Today, he is a highly successful NRHA Five Million Dollar Sire, shaping the future of global reining."
+description_it: "Colonels Shining Gun, affettuosamente conosciuto come 'Jo Jo', è un formidabile figlio di Gunner e nipote di Shining Spark. Con le sue straordinarie doti atletiche ha conquistato i campi gara in Europa e negli USA, aggiudicandosi l'NRHA European Open Derby e una medaglia a squadre ai World Equestrian Games. Si è affermato rapidamente come riproduttore di caratura mondiale superando i 6 milioni di dollari di vincite per la sua progenie."
+description_en: "Colonels Shining Gun, affectionately known as 'Jo Jo', is an outstanding son of Gunner and grandson of Shining Spark. With his extraordinary athletic abilities, he dominated both in Europe and the USA, winning the NRHA European Open Derby and earning a WEG team medal. Today, he is a highly successful NRHA Six Million Dollar Sire, shaping the future of global reining."
 
 stats:
   earnings: "$115,000+"
-  sireRecord: "$5M+"
+  sireRecord: "$6M+"
 
 geneticTest:
   HYP: "N/N"
@@ -113,5 +113,5 @@ breedingLinks:
 origine: "USA"
 isElite: true
 isFeatured: true
-tags: ["5 Million Dollar Sire", "WEG Medalist",]
+tags: ["6 Million Dollar Sire", "WEG Medalist",]
 ---
