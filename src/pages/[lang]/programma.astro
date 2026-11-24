@@ -200,7 +200,7 @@ const hasResults = !!currentEvent?.linkResults;
         tabs.forEach(tab => {
           const btn = document.createElement('button');
           btn.className = 'tab-btn' + (tab.page === activePage ? ' tab-active' : '');
-          btn.textContent = tab.page === 100 ? (isEn ? 'Overall' : 'Totale') : shortenTabName(tab.name);
+          btn.textContent = /overall/i.test(tab.name) ? (isEn ? 'Overall' : 'Totale') : shortenTabName(tab.name);
           btn.title = tab.name;
           btn.addEventListener('click', () => loadPage(tab.page));
           nav.appendChild(btn);
@@ -402,12 +402,13 @@ const hasResults = !!currentEvent?.linkResults;
 
       async function loadInitial() {
         try {
-          const res = await fetch(`/api/livescore?resultsUrl=${encodeURIComponent(resultsUrl)}&page=100`);
+          const res = await fetch(`/api/livescore?resultsUrl=${encodeURIComponent(resultsUrl)}`);
           if (!res.ok) throw new Error('HTTP ' + res.status);
           const data = await res.json();
 
+          if (typeof data.page === 'number') currentPage = data.page;
           tabsData = data.tabs ?? [];
-          renderTabs(tabsData, 100);
+          renderTabs(tabsData, currentPage);
 
           const sub = document.getElementById('comp-subtitle');
           if (sub) sub.textContent = data.compName + (data.section ? ' — ' + data.section : '');

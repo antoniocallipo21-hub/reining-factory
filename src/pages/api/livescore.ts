@@ -5,7 +5,7 @@ import type { APIRoute } from 'astro';
 const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36';
 
 // Cache lsId per resultsUrl to avoid fetching LSResult.aspx on every poll
-const lsIdCache = new Map<string, { id: string; ts: number }>();
+const lsIdCache = new Map<string, { id: string; page: string; ts: number }>();
 const LS_ID_TTL = 3 * 60 * 1000; // 3 minutes
 
 function strip(html: string): string {
@@ -103,7 +103,7 @@ function parseLivescorePage(html: string) {
 
 export const GET: APIRoute = async ({ url }) => {
   const resultsUrl = url.searchParams.get('resultsUrl');
-  const page = url.searchParams.get('page') ?? '100';
+  const requestedPage = url.searchParams.get('page');
 
   if (!resultsUrl) {
     return new Response(JSON.stringify({ error: 'Missing resultsUrl' }), {
@@ -113,9 +113,11 @@ export const GET: APIRoute = async ({ url }) => {
 
   try {
     let lsId: string;
+    let basePage: string;
     const cached = lsIdCache.get(resultsUrl);
     if (cached && Date.now() - cached.ts < LS_ID_TTL) {
       lsId = cached.id;
+      basePage = cached.page;
     } else {
       const lsResultHtml = await fetchHtml(resultsUrl);
       const iframeSrc = lsResultHtml.match(
@@ -127,14 +129,17 @@ export const GET: APIRoute = async ({ url }) => {
       const id = iframeSrc[1].match(/\?id=(\d+)/)?.[1];
       if (!id) throw new Error('No id in iframe src');
       lsId = id;
-      lsIdCache.set(resultsUrl, { id: lsId, ts: Date.now() });
+      // The page number identifies the event's livescore group (e.g. 0 or 100), not just the tab
+      basePage = iframeSrc[1].match(/Livescore(\d+)\.html/)?.[1] ?? '100';
+      lsIdCache.set(resultsUrl, { id: lsId, page: basePage, ts: Date.now() });
     }
 
+    const page = requestedPage ?? basePage;
     const livescoreUrl = `https://www.showmanager.info/Livescore/Livescore/Livescore${page}.html?id=${lsId}`;
     const data = parseLivescorePage(await fetchHtml(livescoreUrl));
 
     return new Response(
-      JSON.stringify({ ...data, fetchedAt: new Date().toISOString(), livescoreUrl }),
+      JSON.stringify({ ...data, page: parseInt(page), fetchedAt: new Date().toISOString(), livescoreUrl }),
       { status: 200, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } }
     );
   } catch (e) {
